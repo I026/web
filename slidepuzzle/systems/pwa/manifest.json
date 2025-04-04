@@ -1,0 +1,17 @@
+{  
+"name": "SlidePuzzle",
+"short_name": "Puzzle",
+"display": "fullscreen",
+"background_color": "white",
+"theme_color": "white",
+"start_url": "https://i026.github.io/play/slidepuzzle/sort/",
+"scope": "https://i026.github.io/play/slidepuzzle/",
+"icons": [
+  {
+    "src": "../imgs/icon.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any maskable"
+  }
+]
+}
