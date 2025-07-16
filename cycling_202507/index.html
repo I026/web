@@ -59,12 +59,14 @@
                 </div>
             </div>
             <div class="bikeIcon">
-                <img src="medias/bikeIcons/bike_tire.svg">
-                <img class="arm" src="medias/bikeIcons/bike_arm.svg">
-                <img class="leg1" src="medias/bikeIcons/bike_leg1.svg">
-                <img class="leg2" src="medias/bikeIcons/bike_leg2.svg">
-                <img src="medias/bikeIcons/bike_head.svg">
-                <img src="medias/bikeIcons/bike_body.svg">
+                <div>
+                    <img src="medias/bikeIcons/bike_tire.svg">
+                    <img class="arm" src="medias/bikeIcons/bike_arm.svg">
+                    <img class="leg1" src="medias/bikeIcons/bike_leg1.svg">
+                    <img class="leg2" src="medias/bikeIcons/bike_leg2.svg">
+                    <img src="medias/bikeIcons/bike_head.svg">
+                    <img src="medias/bikeIcons/bike_body.svg">
+                </div>
             </div>
         </div>
         <!-- <div class="courses">
@@ -85,7 +87,7 @@
         }
         .container {
             padding-top: 25vh;
-            font-size: 1.5em;
+            font-size: 1em;
             position: relative;
             z-index: 3;
             height: 1000vh;
@@ -108,12 +110,13 @@
             z-index: 2;
         }
         .bikes {
+            font-size: max(1.25vw, .8em);
             position: sticky;
             height: 100vh;
             top: 0;
             display: flex;
-            justify-content: center;
             overflow-x: hidden;
+            text-align: center;
         }
         .bikes .contentsDisplay {
             white-space: nowrap;
@@ -347,7 +350,7 @@
 
         function scrollEvent (e) {
             const scrollTop   = getScrollTop();
-            const scrollRatio = scrollTop / d.body.scrollHeight;
+            const scrollRatio = (scrollTop / d.body.scrollHeight) * 10;
 
             clog(`${scrollTop}\n${scrollRatio}`);
 
@@ -357,14 +360,14 @@
 
             topLogoImgs.forEach((logo, index) => {
                 if (!(isLogosAnimationRunning)) {
-                    logo.style.opacity = Math.max(1 - (scrollRatio * (topLogoImgs.length - index) * .5), 0);
+                    logo.style.opacity = Math.max(1 - (scrollRatio * (topLogoImgs.length - index) * .005), 0);
                 }
             });
 
             topTitles.style.transform = `translateY(${scrollTop * -1}px)`;
 
             const bikeIcon_ContentsDisplay = d.querySelector(".bikes .contentsDisplay");
-            bikeIcon_ContentsDisplay.style.transform = `translateX(${(scrollRatio * -250) + 75}vw)`;
+            bikeIcon_ContentsDisplay.style.transform = `translateX(${((Math.max(scrollRatio, 1.25) - 1.25) * -100)}vw)`;
 
             (() => {
                 const bikeIcon_arm  = d.querySelector(".bikes .bikeIcon img.arm");
