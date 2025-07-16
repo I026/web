@@ -52,6 +52,7 @@
                 <div>
                     <h1>私達は､秩父地域を自転車を活用し移動しました｡</h1>
                     <p>実際に移動して気付いたことなどをまとめます｡</p>
+                    <img src="medias/cyclings/container1.jpg">
                 </div>
                 <div>
                     <h1>Test</h1>
@@ -60,12 +61,14 @@
             </div>
             <div class="bikeIcon">
                 <div>
-                    <img src="medias/bikeIcons/bike_tire.svg">
-                    <img class="arm" src="medias/bikeIcons/bike_arm.svg">
-                    <img class="leg1" src="medias/bikeIcons/bike_leg1.svg">
-                    <img class="leg2" src="medias/bikeIcons/bike_leg2.svg">
-                    <img src="medias/bikeIcons/bike_head.svg">
-                    <img src="medias/bikeIcons/bike_body.svg">
+                    <div>
+                        <img src="medias/bikeIcons/bike_tire.svg">
+                        <img class="arm" src="medias/bikeIcons/bike_arm.svg">
+                        <img class="leg1" src="medias/bikeIcons/bike_leg1.svg">
+                        <img class="leg2" src="medias/bikeIcons/bike_leg2.svg">
+                        <img src="medias/bikeIcons/bike_head.svg">
+                        <img src="medias/bikeIcons/bike_body.svg">
+                    </div>
                 </div>
             </div>
         </div>
@@ -115,25 +118,40 @@
             height: 100vh;
             top: 0;
             display: flex;
-            overflow-x: hidden;
+            overflow: hidden;
             text-align: center;
         }
         .bikes .contentsDisplay {
             white-space: nowrap;
             display: flex;
-            align-items: center;
             text-align: left;
+            margin-top: 50px;
         }
         .bikes .contentsDisplay div {
             margin-right: max(250px, 10vw);
         }
         .bikes .bikeIcon {
             position: absolute;
-            margin: 0;
+            bottom: 0;
+            width: 100%;
             bottom: 50px;
+            height: 15vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            left: 0;
+        }
+        .bikes .bikeIcon div {
+            position: absolute;
+            margin: 0;
             --iconSide: min(min(25vw, 25vh), 300px);
             width: var(--iconSide);
             height: var(--iconSide);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .bikes .bikeIcon img {
             position: absolute;
