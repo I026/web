@@ -48,8 +48,11 @@
     <div class="filter"></div>
     <div class="container">
         <div class="courses">
-            <h1></h1>
-            <img src="medias/cyclings/container1.jpg" alt="">
+            <h1>テキスト</h1>
+            <p>
+                テキストテキストテキストテキストテキストテキストテキストテキストテキスト
+            </p>
+            <img src="medias/cyclings/container1.jpg">
         </div>
     </div>
     <style>
@@ -58,17 +61,19 @@
             font-family: "Outfit", "Outfit_Local", "Noto Sans JP", "SF Pro JP", "Arial", sans-serif;
         }
         .container {
+            padding-top: 25vh;
             font-size: 1.5em;
+            position: relative;
+            z-index: 3;
         }
         .container div {
             padding: 10px;
+            margin-bottom: 30vh;
         }
         .container img, .container video {
+            max-width: 1000px;
             width: 100%;
             border-radius: 15px;
-        }
-        .container .courses {
-            padding-top: 50vh;
         }
         .filter {
             position: fixed;
@@ -76,9 +81,11 @@
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 2;
         }
         .top {
             height: 100vh;
+            z-index: 1;
         }
         .top .bg {
             position: absolute;
@@ -96,6 +103,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            opacity: .5;
         }
         .top .bg img, .top .bg video {
             object-fit: cover;
@@ -133,6 +141,7 @@
             width: 200%;
             max-width: 2000px;
             opacity: 0;
+            transition: opacity 0.05s ease-in-out;
         }
         .top .titles .logos div.bottomLogos img {
             width: 100%;
@@ -153,7 +162,7 @@
             }
         }
         .logoDisplayAnimation {
-            animation: logoDisplay 0.5s ease-in-out forwards;
+            animation: logoDisplay 0.5s ease-in-out;
         }
     </style>
     <script>
@@ -166,23 +175,30 @@
         const topBgContents = d.querySelector(".top .bg div.content");
         const topLogoImgs   = d.querySelectorAll(".top .titles .logos img");
 
+        function getScrollTop () {
+            return d.documentElement.scrollTop || d.body.scrollTop;
+        }
+
+        let isLogosAnimationRunning = false;
+
         function logosAnimation () {
-            let completedCount = 0;
-            topLogoImgs.forEach((logo, index) => {
-                const timeOutMs = 75;
-                const timeoutId = setTimeout(() => {
+            if (isLogosAnimationRunning) return;
+            isLogosAnimationRunning = true;
+
+            for (let i = 0; i < topLogoImgs.length; i += 1) {
+                const logo = topLogoImgs[i];
+                const animationTimeout = setTimeout(() => {
                     logo.classList.add("logoDisplayAnimation");
                     logo.style.opacity = 1;
-                    completedCount++;
-                    if (completedCount === topLogoImgs.length) {
-                        const completedTimeout = setTimeout(() => {
-                            topBgContents.style.opacity = .5;
-                            clearTimeout(completedTimeout);
-                        }, timeOutMs * 10);
-                    }
-                    clearTimeout(timeoutId);
-                }, index * timeOutMs);
-            });
+                    clearTimeout(animationTimeout);
+                }, i * 75);
+                if (i === topLogoImgs.length - 1) {
+                    const completedTimeout = setTimeout(() => {
+                        isLogosAnimationRunning = false;
+                        clearTimeout(completedTimeout);
+                    }, i * 75 + 750);
+                }
+            }
         }
 
         Promise.all(Array.from(topLogoImgs).map(node => {
@@ -194,7 +210,9 @@
                 node.addEventListener('error', resolve); // エラーでも完了扱いする場合
             }
         });
-        })).then(logosAnimation);
+        })).then(() => {
+            logosAnimation();
+        });
 
         (() => {
             const topBgMedias = topBgContents.querySelectorAll("img, video");
@@ -229,12 +247,32 @@
             setInterval(() => exe(), 2500);
         })();
 
+        const containerH1s = d.querySelectorAll(".container h1");
+        containerH1s.forEach(h1 => {
+            const text = h1.textContent;
+            h1.innerHTML = "";
+            text.split("").forEach((character, index) => {
+                h1.innerHTML += `<span>${character}</span>`;
+            });
+        });
+
         function scrollEvent (e) {
-            const scrollTop = e.target.scrollingElement.scrollTop;
-            topTitles.style.transform = `translateY(${scrollTop * -1}px)`;
-            container.style.transform = `translateY(${scrollTop * -.5}px)`;
+            const scrollTop   = getScrollTop();
+            const scrollRatio = scrollTop / d.body.scrollHeight;
+
+            clog(`${scrollTop}\n${scrollRatio}`);
+
+            const containerTexts = d.querySelectorAll(".container h1, .container p");
+            
             filter.style.backdropFilter = `blur(${scrollTop * 0.01}px)`;
 
+            topLogoImgs.forEach((logo, index) => {
+                if (!(isLogosAnimationRunning)) {
+                    logo.style.opacity = Math.max(1 - (scrollRatio * (topLogoImgs.length - index) * .5), 0);
+                }
+            });
+
+            topTitles.style.transform = `translateY(${scrollTop * -1}px)`;
         }
 
         d.addEventListener("scroll", scrollEvent);
