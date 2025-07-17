@@ -63,12 +63,56 @@
                     <h1>Test</h1>
                     <p>Test</p>
                 </div>
+                <div>
+                    <h1>Test</h1>
+                    <p>Test</p>
+                </div>
+                <div>
+                    <h1>Test</h1>
+                    <p>Test</p>
+                </div>
+                <div>
+                    <h1>Test</h1>
+                    <p>Test</p>
+                </div>
+                <div>
+                    <h1>Test</h1>
+                    <p>Test</p>
+                </div>
+                <div>
+                    <h1>Test</h1>
+                    <p>Test</p>
+                </div>
+                <div>
+                    <h1>Test</h1>
+                    <p>Test</p>
+                </div>
                 <div class="bottom">
                     <div>
                         <img src="medias/bikeLoad/loadSign_bike.svg">
                     </div>
                     <div>
+                        <img src="medias/bikeLoad/loadSign_speed.svg">
+                    </div>
+                    <div>
                         <img src="medias/bikeLoad/trafficLight.svg">
+                    </div>
+                    <div>
+                        <img src="medias/bikeLoad/loadSign_speed.svg">
+                    </div>
+                    <div>
+                        <img src="medias/bikeLoad/loadSign_speed.svg">
+                    </div>
+                    <div>
+                        <img src="medias/bikeLoad/loadSign_speed.svg">
+                    </div>
+                    <div>
+                        <img src="medias/bikeLoad/loadSign_speed.svg">
+                    </div>
+                    <div>
+                        <img src="medias/bikeLoad/loadSign_speed.svg">
+                    </div>
+                    <div>
                         <img src="medias/bikeLoad/loadSign_speed.svg">
                     </div>
                 </div>
@@ -159,7 +203,7 @@
             bottom: 0;
             left: 0;
             height: 250px;
-            width: 100%;
+            width: 200%;
             border-radius: 0;
         }
         .bikes .contentsDisplay .bottom div {
@@ -168,6 +212,7 @@
             bottom: 0;
             float: left;
             height: 100%;
+            padding-right: 100vw;
         }
         .bikes .contentsDisplay .bottom div img {
             object-fit: contain;
@@ -446,6 +491,10 @@
 
             const bikeIcon_ContentsDisplay = d.querySelector(".bikes .contentsDisplay");
             bikeIcon_ContentsDisplay.style.transform = `translateX(${((Math.max(scrollRatio, 1.25) - 1.25) * -100)}vw)`;
+
+            const bikesBottom = d.querySelector(".bikes .contentsDisplay .bottom");
+            clog(scrollRatio - 1.25);
+            bikesBottom.style.transform = `translateX(${Math.max(scrollRatio - 1.25, 0) * -100}vw)`;
 
             (() => {
                 const bikeIcon_arm  = d.querySelector(".bikes .bikeIcon img.arm");
