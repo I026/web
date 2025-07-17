@@ -43,6 +43,7 @@
                     <img src="medias/logos/6/2.svg">
                 </div>
             </div>
+            <span class="subTitle">2025年度 中学2年 キャンプ</span>
         </div>
     </div>
     <div class="filter"></div>
@@ -57,6 +58,10 @@
                 <div>
                     <h1>Test</h1>
                     <p>Test</p>
+                </div>
+                <div class="bottom">
+                    <img src="medias/bikeLoad/loadSign_bike.svg">
+                    <img src="medias/bikeLoad/loadSign_speed.svg">
                 </div>
             </div>
             <div class="bikeIcon">
@@ -126,19 +131,33 @@
             display: flex;
             text-align: left;
             margin-top: 50px;
+            height: calc(100% - 100px);
+        }
+        .bikes .contentsDisplay .bottom {
+            position: absolute;
+            margin-bottom: 0;
+            margin-left: 0;
+            bottom: 0;
+            left: 0;
+            height: 250px;
+            object-fit: contain;
+            border-radius: 0;
+            width: 100%;
+        }
+        .bikes .contentsDisplay .bottom img {
+            height: 100%;
         }
         .bikes .contentsDisplay div {
-            margin-right: max(250px, 10vw);
+            padding-right: max(250px, 10vw);
+            height: calc(80vh - 250px);
         }
         .bikes .bikeIcon {
             position: absolute;
-            bottom: 0;
             width: 100%;
-            bottom: 50px;
+            bottom: 15px;
             height: 15vh;
             display: flex;
             justify-content: center;
-            align-items: center;
             margin: 0;
             padding: 0;
             left: 0;
@@ -146,7 +165,8 @@
         .bikes .bikeIcon div {
             position: absolute;
             margin: 0;
-            --iconSide: min(min(25vw, 25vh), 300px);
+            bottom: 0;
+            --iconSide: min(25vh, 300px);
             width: var(--iconSide);
             height: var(--iconSide);
             display: flex;
@@ -230,8 +250,14 @@
             flex-direction: column;
             text-align: center;
         }
+        .top .titles .subTitle {
+            position: absolute;
+            bottom: 50px;
+            opacity: 0;
+            transition: opacity .5s ease-in-out;
+        }
         .top .titles .logos {
-            position: relative;
+            position: absolute;
             min-height: 100%;
             width: 100%;
             display: flex;
@@ -247,15 +273,13 @@
         .top .titles .logos img {
             position: absolute;
             object-fit: cover;
-            width: 200%;
-            max-width: 2000px;
+            width: min(200vw, 150vh);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.05s ease-in-out;
         }
         .top .titles .logos div.bottomLogos img {
-            width: 100%;
-            max-width: 500px;
+            width: min(100vw, 75vh);
             margin-top: 45vh;
         }
         @keyframes logoDisplay {
@@ -347,6 +371,9 @@
                 const displayTargetIndex = (displayIndex + 1) % topBgMedias.length;
                 topBgMedias[displayTargetIndex].style.opacity = 1;
 
+                const subTitle = topTitles.querySelector(".subTitle");
+                subTitle.style.opacity = 1;
+
                 if (isVideoElement(topBgMedias[displayTargetIndex])) {
                     topBgMedias[displayTargetIndex].muted = true;
                     topBgMedias[displayTargetIndex].play();
@@ -378,7 +405,7 @@
 
             topLogoImgs.forEach((logo, index) => {
                 if (!(isLogosAnimationRunning)) {
-                    logo.style.opacity = Math.max(1 - (scrollRatio * (topLogoImgs.length - index) * .005), 0);
+                    logo.style.opacity = Math.max(1 - (scrollRatio * (topLogoImgs.length - index) * .5), 0);
                 }
             });
 
@@ -397,7 +424,7 @@
                     return mod <= max ? mod : max * 2 - mod;
                 }
 
-                const iterationNum = getRotateDeg(scrollTop, 100) / 100;
+                const iterationNum = getRotateDeg(scrollTop, 250) / 250;
 
                 bikeIcon_arm.style.transform  = `rotate(${iterationNum * 2}deg)`;
                 bikeIcon_leg1.style.transform = `rotate(${iterationNum * 11 - 3}deg)`;
