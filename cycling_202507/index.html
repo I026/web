@@ -191,6 +191,7 @@
             margin-left: var(--bikeLoadMargin);
             margin-top: 50px;
             height: calc(100vh - 100px);
+            transition: transform .5s ease-out;
         }
         .bikes .contentsDisplay div:not(.bottom) img {
             height: 90%;
@@ -205,6 +206,7 @@
             height: 250px;
             width: 200%;
             border-radius: 0;
+            transition: transform .5s ease-out;
         }
         .bikes .contentsDisplay .bottom div {
             display: flex;
@@ -491,11 +493,12 @@
             topTitles.style.transform = `translateY(${scrollTop * -1}px)`;
 
             const bikeIcon_ContentsDisplay = d.querySelector(".bikes .contentsDisplay");
-            bikeIcon_ContentsDisplay.style.transform = `translateX(${((Math.max(scrollRatio, 1.25) - 1.25) * -100)}vw)`;
-
             const bikesBottom = d.querySelector(".bikes .contentsDisplay .bottom");
-            clog(scrollRatio - 1.25);
+            
+            bikeIcon_ContentsDisplay.style.transform = `translateX(${((Math.max(scrollRatio, 1.25) - 1.25) * -100)}vw)`;
             bikesBottom.style.transform = `translateX(${Math.max(scrollRatio - 1.25, 0) * -100}vw)`;
+
+            clog(scrollRatio - 1.25);
 
             (() => {
                 const bikeIcon_arm  = d.querySelector(".bikes .bikeIcon img.arm");
