@@ -476,7 +476,7 @@
 
         function scrollEvent (e) {
             const scrollTop   = getScrollTop();
-            const scrollRatio = (scrollTop / d.body.scrollHeight) * 10 + .155;
+            const scrollRatio = (scrollTop / d.body.scrollHeight) * 10;
 
             clog(`${scrollTop}\n${scrollRatio}`);
 
@@ -495,8 +495,8 @@
             const bikeIcon_ContentsDisplay = d.querySelector(".bikes .contentsDisplay");
             const bikesBottom = d.querySelector(".bikes .contentsDisplay .bottom");
             
-            bikeIcon_ContentsDisplay.style.transform = `translateX(${((Math.max(scrollRatio, 1.25) - 1.25) * -100)}vw)`;
-            bikesBottom.style.transform = `translateX(${Math.max(scrollRatio - 1.25, 0) * -100}vw)`;
+            bikeIcon_ContentsDisplay.style.transform = `translateX(${((Math.max((scrollRatio + .155), 1.25) - 1.25) * -100)}vw)`;
+            bikesBottom.style.transform = `translateX(${               Math.max((scrollRatio + .155) - 1.25, 0) * -100}vw)`;
 
             clog(scrollRatio - 1.25);
 
