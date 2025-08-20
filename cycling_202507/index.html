@@ -476,7 +476,7 @@
 
         function scrollEvent (e) {
             const scrollTop   = getScrollTop();
-            const scrollRatio = (scrollTop / d.body.scrollHeight) * 10;
+            const scrollRatio = (scrollTop / d.body.scrollHeight) * 10 + .155;
 
             clog(`${scrollTop}\n${scrollRatio}`);
 
