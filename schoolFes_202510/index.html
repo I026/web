@@ -58,6 +58,7 @@
             stroke-width: 2;
             stroke-dasharray: 0;
             stroke-dashoffset: 0;
+            opacity: 0;
             /* animation: draw 3s ease-in-out forwards; */
             transform-origin: 50% 50%;
         }
@@ -1428,6 +1429,7 @@
                     path.style.strokeDasharray = length;
                     path.style.strokeDashoffset = length;
 
+                    path.style.opacity = 1;
                     path.style.animation = "draw 3s ease-in-out forwards";
                 });
             });
