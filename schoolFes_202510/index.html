@@ -3,105 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Handwriting Animation</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-        .content.top {
-            height: 100vh;
-            width: 100vw;
-            position: relative;
-        }
-        .content.topTitle {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100vw;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        .content.topTitle svg, .content.topTitle img, .content.topTitle video {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            object-fit: contain;
-            position: absolute;
-            --scale: calc(min(100vh, 100vw));
-            height: var(--scale);
-            width : var(--scale);
-        }
-        .content.topTitle video {
-            opacity: 0;
-            object-fit: cover;
-            animation: topBackground 3s ease-in-out forwards;
-            animation-delay: 3s;
-        }
-        @keyframes topBackground {
-            0% {
-                opacity: 0;
-            }
-            100% {
-                opacity: .5;
-            }
-        }
-        .content.topTitle svg {
-            width: 80%;
-            height: 100vh;
-        }
-        .content.topTitle svg path {
-            fill: none;
-            stroke: black;
-            stroke-width: 2;
-            stroke-dasharray: 0;
-            stroke-dashoffset: 0;
-            opacity: 0;
-            /* animation: draw 3s ease-in-out forwards; */
-            transform-origin: 50% 50%;
-        }
-        .content.topTitle svg path.countDown {
-            animation-delay: 3s;
-        }
-        @keyframes draw {
-            0% {
-                stroke-dashoffset: var(--path-length);
-            }
-            50% {
-                transform: translateY(0);
-            }
-            100% {
-                stroke-dashoffset: 0;
-            }
-        }
-        .content.top .button {
-            position: absolute;
-            right: 20px;
-            bottom: 20px;
-            backdrop-filter: blur(5px);
-            --webkit-backdrop-filter: blur(5px);
-            background-color: rgba(211, 211, 211, .25);
-            box-shadow: 0 0 10px gray;
-            border-radius: 40px;
-            padding: 10px;
-            height: min-content;
-        }
-        .emphasisText {
-            font-size: 150%;
-        }
-        .content.main {
-            min-height: 100vh;
-        }
-    </style>
+    <title>学園祭</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="top content">
         <div class="topTitle content">
             <!-- <img src="_medias/images/top2024.jpg"> -->
             <video autoplay muted loop src="_medias/videos/IMG_1478.mp4"></video>
-            <svg viewBox="" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+            <div class="videoFilter"></div>
+            <svg xmlns="http://www.w3.org/2000/svg">
                 <!-- <g><path class="countDown" d="M300.006,552.052L300.006,143.028L390.385,143.028L390.385,552.052L300.006,552.052ZM221.214,220.082L221.214,143.028L384.592,143.028L384.592,220.082L221.214,220.082Z" style="fill-rule:nonzero;"/></g> -->
 
                 <g><path d="M 240.5,71.5 C 247.586,70.9684 251.253,74.3018 251.5,81.5C 251.712,84.0114 251.045,86.1781 249.5,88C 252.638,89.2444 255.972,89.911 259.5,90C 259.957,90.414 260.291,90.914 260.5,91.5C 255.868,92.3283 251.202,92.8283 246.5,93C 244.656,95.3429 242.656,97.5096 240.5,99.5C 237.853,97.4509 237.019,94.7842 238,91.5C 240.637,89.5395 243.303,87.5395 246,85.5C 249.05,79.846 247.55,77.0127 241.5,77C 238.572,78.2873 236.238,80.2873 234.5,83C 233.552,83.4828 232.552,83.6495 231.5,83.5C 232.726,78.1158 235.726,74.1158 240.5,71.5 Z"/></g>
@@ -121,6 +32,7 @@
                 <g><path d="M 551.5,171.5 C 555.029,172.367 558.362,173.7 561.5,175.5C 563.089,179.329 562.089,182.329 558.5,184.5C 553.036,183.679 547.37,182.679 541.5,181.5C 537.336,182.669 533.169,182.669 529,181.5C 527.352,182.717 525.519,183.55 523.5,184C 524.578,184.674 525.245,185.674 525.5,187C 524.621,191.733 523.621,196.4 522.5,201C 526.667,210.186 525.833,218.686 520,226.5C 517.845,227.683 515.845,227.35 514,225.5C 511.297,221.63 508.797,217.63 506.5,213.5C 506.667,212.833 506.833,212.167 507,211.5C 513.87,217.652 517.37,215.985 517.5,206.5C 517.534,199.89 517.201,193.224 516.5,186.5C 514.727,185.913 512.894,185.58 511,185.5C 505.851,186.412 500.684,187.245 495.5,188C 489.498,190.778 483.331,192.944 477,194.5C 472.015,194.247 468.515,191.913 466.5,187.5C 466.833,186.833 467.167,186.167 467.5,185.5C 470.833,186.167 474.167,186.833 477.5,187.5C 488.222,181.975 499.389,178.641 511,177.5C 516.01,176.081 521.343,174.747 527,173.5C 528.268,173.616 529.602,173.949 531,174.5C 537.755,173.746 544.588,172.746 551.5,171.5 Z"/></g>
                 <g><path d="M 491.5,191.5 C 493.417,192.909 495.25,194.576 497,196.5C 497.635,198.635 497.301,200.635 496,202.5C 491.167,206.667 486.333,210.833 481.5,215C 477.363,217.392 473.03,217.892 468.5,216.5C 476.648,212.523 483.815,207.19 490,200.5C 491.289,197.649 491.789,194.649 491.5,191.5 Z"/></g>
                 <g><path d="M 534.5,192.5 C 534.735,191.903 535.235,191.57 536,191.5C 545.572,194.536 554.405,199.036 562.5,205C 564.743,207.488 566.743,210.154 568.5,213C 566.685,215.27 564.352,215.936 561.5,215C 555.549,211.05 550.216,206.383 545.5,201C 543.421,199.36 541.088,198.194 538.5,197.5C 537.388,195.581 536.054,193.914 534.5,192.5 Z"/></g>
+
                 <!-- <g><path style="opacity:1" fill="#1c1b1a" d="M 239.5,71.5 C 246.791,70.6254 251.125,73.7921 252.5,81C 252.249,82.9497 251.582,85.1164 250.5,87.5C 253.454,88.6247 256.454,89.6247 259.5,90.5C 259.333,90.8333 259.167,91.1667 259,91.5C 254.92,92.3002 250.753,92.8002 246.5,93C 244.654,95.5625 242.487,97.7292 240,99.5C 236.899,97.7233 235.899,95.0566 237,91.5C 239.797,89.758 242.464,87.758 245,85.5C 247.004,82.4264 246.837,79.5931 244.5,77C 240.24,76.2986 237.24,77.9652 235.5,82C 233.975,83.0086 232.308,83.5086 230.5,83.5C 231.578,77.9901 234.578,73.9901 239.5,71.5 Z"/></g>
                 <g><path style="opacity:1" fill="#201e1d" d="M 284.5,72.5 C 287.978,72.1842 291.312,72.6842 294.5,74C 301.079,80.9673 301.079,87.9673 294.5,95C 284.985,97.484 279.985,93.8174 279.5,84C 280.213,79.7413 281.88,75.9079 284.5,72.5 Z M 287.5,75.5 C 293.596,75.9973 296.096,79.3306 295,85.5C 294.086,87.6641 292.919,89.6641 291.5,91.5C 283.275,87.5437 281.942,82.2104 287.5,75.5 Z"/></g>
                 <g><path style="opacity:1" fill="#110f0f" d="M 413.5,71.5 C 412.069,72.7804 411.402,74.4471 411.5,76.5C 410.624,76.3691 409.957,76.7025 409.5,77.5C 410.833,78.1667 412.167,78.8333 413.5,79.5C 410.337,80.8072 407.337,80.4738 404.5,78.5C 405.04,77.2519 405.707,76.0852 406.5,75C 406.272,74.6012 405.938,74.4346 405.5,74.5C 405.982,67.6219 408.648,66.6219 413.5,71.5 Z"/></g>
@@ -1404,75 +1316,39 @@
                 <g><path style="opacity:0.578" fill="#2d2c2b" d="M 109.5,949.5 C 114.639,950.941 114.639,951.941 109.5,952.5C 109.5,951.5 109.5,950.5 109.5,949.5 Z"/></g> -->
             </svg>
         </div>
+        <div class="bottomBar">
+            <!-- <svg xmlns="http://www.w3.org/2000/svg">
+                <g><path d="M228.451,230.092L228.451,850.906L849.265,850.906"/></g>
+            </svg> -->
+        </div>
         <div class="button"></div>
     </div>
     <div class="main content">
-
+        <div class="exhibits">
+            <div class="tile sortList"></div>
+            <div class="list"></div>
+        </div>
     </div>
 
+    <div class="topBars">
+        <div class="button topBar">
+            <div class="content">
+                目次
+            </div>
+        </div>
+    </div>
+    
+    </div>
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"></script>
     <script>
-        const d = document;
-        const topContentButton = d.querySelector(".content.top .button");
-        const topTitleContent  = d.querySelector(".content.topTitle");
-        const paths = d.querySelectorAll(".content.topTitle path");
-
-        (() => {
-
-            window.addEventListener("DOMContentLoaded", () => {
-                paths.forEach(path => {
-                    const length = path.getTotalLength();
-
-                    // CSS変数にパス長を代入
-                    path.style.setProperty("--path-length", length);
-
-                    // stroke-dasharray と stroke-dashoffset を初期化
-                    path.style.strokeDasharray = length;
-                    path.style.strokeDashoffset = length;
-
-                    path.style.opacity = 1;
-                    path.style.animation = "draw 3s ease-in-out forwards";
-                });
-            });
-
-            // すべてのパスのバウンディングボックスを統合して viewBox を調整
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            paths.forEach(path => {
-                const bbox = path.getBBox();
-                if (bbox.x < minX) minX = bbox.x;
-                if (bbox.y < minY) minY = bbox.y;
-                if (bbox.x + bbox.width > maxX) maxX = bbox.x + bbox.width;
-                if (bbox.y + bbox.height > maxY) maxY = bbox.y + bbox.height;
-            });
-
-            function windowResizeHandler() {
-                topTitleContent.style.setProperty("--titleImageWidth", topTitleContent.clientWidth + "px");
-            }
-            windowResizeHandler();
-            window.addEventListener("resize", windowResizeHandler);
-
-            const svg = d.querySelector("svg");
-            const margin = 0; // 余白
-            svg.setAttribute(
-                "viewBox",
-                `${minX - margin} ${minY - margin} ${maxX - minX + margin*2} ${maxY - minY + margin*2}`
-            );
-        })();
-
-        function dateUpdate () {
-            const nowDate = new Date("2025-10-24");
-            if (nowDate <= new Date("2025-10-26")) {
-                const daysLeft = Math.ceil((new Date("2025-10-25") - nowDate) / (1000 * 60 * 60 * 24));
-                let HTML = "あと&nbsp;" + "<span class='emphasisText'>" + daysLeft + "</span>" + "日";
-                if (daysLeft < 1) {
-                    HTML = "開催中";
-                }
-                topContentButton.innerHTML = HTML;
-            } else {
-                topContentButton.style.display = "none";
-            }
+        const lenis = new Lenis();
+        function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
         }
-        dateUpdate();
-        setInterval(dateUpdate, 10000);
+
+        requestAnimationFrame(raf);
     </script>
 </body>
 </html>

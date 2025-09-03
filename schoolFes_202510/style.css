@@ -1,0 +1,323 @@
+:root {
+    --checkBox_BaseWidth: 1.1em;
+    --checkBox_borderWidth: 1.5px;
+    --exhibitsTileMargin: 10px;
+    --topBarMargin: 10px;
+}
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Outfit", "Outfit_Local", "Noto Sans JP", "SF Pro JP", "Arial", sans-serif;
+}
+.content.top {
+    height: 100dvh;
+    width: 100vw;
+    position: relative;
+}
+.content.topTitle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.content.topTitle svg,
+.content.topTitle img,
+.content.topTitle video,
+.content.topTitle .videoFilter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    object-fit: contain;
+    position: absolute;
+    --scale: calc(min(100vh, 100vw));
+    height: var(--scale);
+    width : var(--scale);
+}
+.content.topTitle video {
+    opacity: 0;
+    object-fit: cover;
+    animation: topBackground 3s ease-in-out forwards;
+    animation-delay: 3s;
+    height: 100vh;
+}
+.content.topTitle .videoFilter {
+    backdrop-filter: blur(1px);
+    --webkit-backdrop-filter: blur(1px);
+    background-color: transparent;
+}
+@keyframes topBackground {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: .5;
+    }
+}
+.content.topTitle svg {
+    width: 80%;
+    height: 100vh;
+}
+.content.top .bottomBar {
+    position: absolute;
+    width: 100vw;
+    height: 150px;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.content.top .bottomBar .downArrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: rotate(-45deg);
+    width: 100px;
+    height: 100px;
+}
+.content.top .bottomBar .downArrow svg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.content.topTitle svg path {
+    fill: none;
+    stroke: black;
+    stroke-width: 2;
+    stroke-dasharray: 0;
+    stroke-dashoffset: 0;
+    opacity: 0;
+    /* animation: draw 3s ease-in-out forwards; */
+    transform-origin: 50% 50%;
+}
+.content.topTitle svg path.countDown {
+    animation-delay: 3s;
+}
+@keyframes draw {
+    0% {
+        stroke-dashoffset: var(--path-length);
+    }
+    50% {
+        transform: translateY(0);
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+.content.top .button {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+}
+.button {
+    backdrop-filter: blur(5px);
+    --webkit-backdrop-filter: blur(5px);
+    background-color: rgba(211, 211, 211, .25);
+    box-shadow: 0 0 10px gray;
+    border-radius: 40px;
+    padding: 10px;
+}
+.topBars {
+    width: 100vw;
+    height: 80px;
+    top: 0;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+}
+.topBars .topBar {
+    top: 10px;
+    --topBarMargin: 10px;
+    width: calc(100vw - var(--topBarMargin) * 4);
+    margin: var(--topBarMargin);
+    height: 40px;
+    opacity: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    opacity: 0;
+    transition: 
+    ease-in-out .5s opacity,
+    ease-in-out .5s backdrop-filter,
+    ease-in-out .5s background-color,
+    ease-in-out .5s box-shadow,
+    ease-in-out .5s animation,
+    ease-in-out .5s --webkit-backdrop-filter;
+}
+.topBars .topBar .content {
+    width: 100%;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+}
+.topBars .topBar .content div {
+    margin: 10px;
+}
+.topBars .topBar .content div svg {
+    height: 2.5em;
+    width : 2.5em;
+}
+.topBars .topBar .content div svg path {
+    fill: transparent;
+    stroke: black;
+    stroke-width: 2;
+    stroke-dasharray: 0;
+    stroke-dashoffset: 0;
+    animation: draw 3s ease-in-out forwards;
+}
+@keyframes topBarShow {
+    0% {
+        opacity: 0;
+        width: 0;
+        transform: translateY(-50px);
+    }
+    35% {
+        opacity: 1;
+        transform: translateY(8px);
+    }
+    50% {
+        width: calc(100vw - var(--topBarMargin) * 4 + 5px);
+    }
+    60% {
+        width: calc(100vw - var(--topBarMargin) * 4 - 5px);
+        transform: translateY(-2px);
+    }
+    100% {
+        opacity: 1;
+        width: calc(100vw - var(--topBarMargin) * 4);
+        transform: translateY(0);
+    }
+}
+.topBarHidden_Animation {
+    backdrop-filter: blur(0);
+    --webkit-backdrop-filter: blur(0);
+    background-color: transparent;
+    box-shadow: none;
+}
+.emphasisText {
+    font-size: 150%;
+}
+.content.main {
+    min-height: 100vh;
+}
+.content.main .exhibits {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.content.main .exhibits .list {
+    overflow-x: hidden;
+    padding-bottom: 10px;
+}
+.content.main .exhibits .tile {
+    margin: var(--exhibitsTileMargin);
+    margin-bottom: 0;
+    width: calc(100vw - var(--exhibitsTileMargin) * 2);
+    min-height: 100px;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: 0 0 10px gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    position: relative;
+    overflow: hidden;
+}
+.content.main .exhibits .tile .names {
+    position: absolute;
+    width: 100%;
+    padding-left: 10px;
+    top: 5px;
+}
+.content.main .exhibits .tile .tags {
+    position: absolute;
+    font-size: .65em;
+    color: gray;
+    bottom: 8px;
+    left: 0;
+    display: flex;
+    overflow-x: scroll;
+    white-space: nowrap;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: calc(100% - 20px);
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+.content.main .exhibits .tile .tags.listView {
+    height: calc(100% - 16px);
+    flex-wrap: wrap;
+    /* white-space: normal; */
+}
+.content.main .exhibits .tile .tags.listView .tag {
+    opacity: .5;
+    transition: opacity ease-in-out .3s;
+    transition-delay: .1s;
+}
+.content.main .exhibits .tile .tags::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+.content.main .exhibits .tag {
+    display: flex;
+    flex-direction: row;
+    color: white;
+    background-color: black;
+    padding: .1em .2em .1em .2em;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    position: relative;
+    font-weight: bold;
+    /* Reverse the clip-path horizontally so the point is on the right */
+    margin-right: .5em;
+    border-radius: 5px;
+    height: 1.5em;
+    width: max-content;
+    align-items: center;
+}
+.content.main .exhibits .tag span {
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+@keyframes tag_show {
+    0% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+.subText {
+    font-size: 75%;
+}
+.checkBox {
+    border-radius: 5px;
+    position: absolute;
+    border: var(--checkBox_borderWidth) solid white;
+    height: calc(var(--checkBox_BaseWidth) - var(--checkBox_borderWidth) * 2);
+    width : calc(var(--checkBox_BaseWidth) - var(--checkBox_borderWidth) * 2);
+    display: inline-block;
+    position: relative;
+    margin: 5px;
+    margin-right: 2px;
+    top: 0;
+    opacity: .5;
+    transition: 
+    ease-in-out .1s background-color;
+}
+.checkedBox .checkBox {
+    opacity: 1;
+    background-color: lightgray;
+}
+.checkedBox {
+    opacity: 1 !important;
+}
