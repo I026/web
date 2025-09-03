@@ -218,7 +218,7 @@ body {
     margin: var(--exhibitsTileMargin);
     margin-bottom: 0;
     width: calc(100vw - var(--exhibitsTileMargin) * 2);
-    min-height: 100px;
+    min-height: 200px;
     border-radius: 10px;
     background-color: white;
     box-shadow: 0 0 10px gray;
@@ -237,7 +237,7 @@ body {
 }
 .content.main .exhibits .tile .tags {
     position: absolute;
-    font-size: .65em;
+    font-size: 1em;
     color: gray;
     bottom: 8px;
     left: 0;
@@ -253,9 +253,12 @@ body {
 .content.main .exhibits .tile .tags.listView {
     height: calc(100% - 16px);
     flex-wrap: wrap;
+    align-content: flex-start;
     /* white-space: normal; */
 }
 .content.main .exhibits .tile .tags.listView .tag {
+    cursor: pointer;
+    user-select: none;
     opacity: .5;
     transition: opacity ease-in-out .3s;
     transition-delay: .1s;
@@ -264,13 +267,14 @@ body {
     display: none; /* Chrome, Safari, Opera */
 }
 .content.main .exhibits .tag {
+    cursor: default;
     display: flex;
     flex-direction: row;
     color: white;
     background-color: black;
     padding: .1em .2em .1em .2em;
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin-top   : 3px;
+    margin-bottom: 3px;
     position: relative;
     font-weight: bold;
     /* Reverse the clip-path horizontally so the point is on the right */
