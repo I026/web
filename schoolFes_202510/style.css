@@ -3,6 +3,7 @@
     --checkBox_borderWidth: 1.5px;
     --exhibitsTileMargin: 10px;
     --topBarMargin: 10px;
+    --sortListArea_heightBase: 200px;
 }
 body {
     margin: 0;
@@ -10,7 +11,7 @@ body {
     font-family: "Outfit", "Outfit_Local", "Noto Sans JP", "SF Pro JP", "Arial", sans-serif;
 }
 .content.top {
-    height: calc(100vh - 50px);
+    height: calc(100vh - 100px);
     width: 100vw;
     position: relative;
 }
@@ -18,7 +19,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 100%;
     width: 100vw;
     position: absolute;
     top: 0;
@@ -42,7 +43,7 @@ body {
     object-fit: cover;
     animation: topBackground 3s ease-in-out forwards;
     animation-delay: 3s;
-    height: 100vh;
+    height: 100%;
 }
 .content.topTitle .videoFilter {
     backdrop-filter: blur(1px);
@@ -127,6 +128,12 @@ body {
     position: fixed;
     display: flex;
     justify-content: center;
+    z-index: 20;
+}
+.topBarReduced {
+    --reduce: 100px;
+    height: var(--reduce) !important;
+    margin-top: calc(var(--exhibitsTileMargin) + var(--sortListArea_heightBase) - var(--reduce)) !important;
 }
 .topBars .topBar {
     top: 10px;
@@ -213,14 +220,17 @@ body {
 .content.main .exhibits .list {
     overflow-x: hidden;
     padding-bottom: 10px;
+    z-index: 9;
 }
 .content.main .exhibits .tile {
     margin: var(--exhibitsTileMargin);
     margin-bottom: 0;
     width: calc(100vw - var(--exhibitsTileMargin) * 2);
-    min-height: 200px;
+    height: 200px;
+    backdrop-filter: blur(10px);
+    --webkit-backdrop-filter: blur(10px);
     border-radius: 10px;
-    background-color: white;
+    background-color: rgba(211, 211, 211, .25);
     box-shadow: 0 0 10px gray;
     display: flex;
     justify-content: center;
@@ -229,11 +239,27 @@ body {
     position: relative;
     overflow: hidden;
 }
+.topTileStyle {
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+}
+.lowestTileStyle {
+    border-bottom-left-radius: 20px !important;
+    border-bottom-right-radius: 20px !important;
+}
 .content.main .exhibits .tile .names {
     position: absolute;
     width: 100%;
-    padding-left: 10px;
-    top: 5px;
+    padding-left: 8px;
+    top: 8px;
+}
+.content.main .exhibits .tile .names .subText {    
+    position: absolute;
+    right: 8px;
+}
+.content.main .exhibits .tile .description {
+    position: absolute;
+    left: 8px;
 }
 .content.main .exhibits .tile .tags {
     position: absolute;
@@ -249,6 +275,14 @@ body {
     width: calc(100% - 20px);
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
+}
+.content.main .exhibits .tile.sortList {
+    top: 100px;
+    position: sticky;
+    z-index: 10;
+    transition: 
+    .5s ease-in-out height,
+    .5s ease-in-out margin;
 }
 .content.main .exhibits .tile .tags.listView {
     height: calc(100% - 16px);
@@ -272,7 +306,7 @@ body {
     flex-direction: row;
     color: white;
     background-color: black;
-    padding: .1em .2em .1em .2em;
+    padding: .1em .2em .1em .1em;
     margin-top   : 3px;
     margin-bottom: 3px;
     position: relative;

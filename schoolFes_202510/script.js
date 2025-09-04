@@ -63,10 +63,14 @@ function dateUpdate () {
 dateUpdate();
 setInterval(dateUpdate, 10000);
 
+const sortListArea = d.querySelector(".exhibits .sortList");
+const exhibitsArea = d.querySelector(".exhibits .list");
+
 let animationNoneTimeout;
 let last_isShowTopBar = false;
 function scrollProcess() {
-    const get_isShowTopBar = () => window.scrollY > window.innerHeight * .25;
+    const scrollRatio = window.scrollY / window.innerHeight
+    const get_isShowTopBar = () => scrollRatio > .25;
     if (last_isShowTopBar !== get_isShowTopBar()) {
         if (get_isShowTopBar()) {
             clearTimeout(animationNoneTimeout);
@@ -79,27 +83,41 @@ function scrollProcess() {
         }
     }
     last_isShowTopBar = get_isShowTopBar();
+
+    console.log(scrollRatio);
+
+    (() => { // sortListAreaHeight
+        if (scrollRatio > .75 && exhibitsArea.querySelector(".tile")?.style.display !== "none") {
+            sortListArea.classList.add("topBarReduced");
+            // sortListArea.style.height = "100px";
+        } else {
+            sortListArea.classList.remove("topBarReduced");
+            // sortListArea.style.height = "var(--sortListArea_heightBase)";
+        }
+    })();
 }
 scrollProcess();
 window.addEventListener("scroll", scrollProcess);
 
 (() => {
-    const sortListArea = d.querySelector(".exhibits .sortList");
-    const exhibitsArea = d.querySelector(".exhibits .list");
+    const getClassName = (school, input_grade, input_class) => (
+        `${school == "H" || input_class > 3 ? "高校" : "中学"} ${input_grade}年${input_class}組`
+    )
     const exhibits = {
         J2_1: {
             name: "お化け屋敷",
-            location: "J2-1",
+            location: getClassName("J", 2, 1),
+            description: "怖いお化けが出る屋敷",
             tag: [
                 "byClass",
                 "J2",
                 "attractions",
             ],
-            description: "怖いお化けが出る屋敷",
         },
         J2_2: {
-            name: "メルカリ屋さん",
-            location: "J2-2",
+            name: "サービスエリア",
+            location: getClassName("J", 2, 2),
+            description: "(テスト文)",
             tag: [
                 "byClass",
                 "J2",
@@ -108,20 +126,23 @@ window.addEventListener("scroll", scrollProcess);
             ],
         },
         J2_3: {
-            name: "爪切り屋さん",
-            location: "J2-3",
+            name: "(テスト文)",
+            location: getClassName("J", 2, 3),
+            description: "(テスト文)",
             tag: [
                 "byClass",
                 "J2",
-                "foods",
-                "merchandise",
-                "display",
             ],
         },
     }
     const getExhibits = (n) => ([ Object.keys(exhibits)[n], Object.values(exhibits)[n] ])
     const exhibitsLength = Object.keys(exhibits).length;
     const tagOrder = {
+        resetButton: {
+            displayName: "すべて選択",
+            themeColor: "gray",
+            isButton: true
+        },
         byClass: {
             displayName: "クラス企画",
             themeColor: "orange"
@@ -174,14 +195,18 @@ window.addEventListener("scroll", scrollProcess);
     for (let i = 0; i < exhibitsLength; i += 1) {
         const tile = d.createElement("div");
         const names = d.createElement("div");
+        const description = d.createElement("div");
         const tags = d.createElement("div");
 
         tile.style.animation = "tag_show .5s both";
         tile.style.animationDelay = `${i * 0.1}s`;
         tile.className = "tile";
 
-        names.innerHTML = `${getExhibits(i)[1].name}<br><span class="subText">場所 : ${getExhibits(i)[1].location}</span>`;
+        names.innerHTML = `${getExhibits(i)[1].name}<span class="subText">場所 : ${getExhibits(i)[1].location}</span>`;
         names.classList.add("names");
+        
+        description.innerHTML = `<span>${getExhibits(i)[1].description}</span>`;
+        description.classList.add("description");
 
         let displayTagNames = [];
         const usedTags = new Set();
@@ -205,34 +230,52 @@ window.addEventListener("scroll", scrollProcess);
         tags.classList.add("tags");
 
         tile.appendChild(names);
+        tile.appendChild(description);
         tile.appendChild(tags);
         exhibitsArea.appendChild(tile);
     }
 
     function sortUpdate () {
         let conditions = [];
-        sortListArea.querySelectorAll(".checkedBox").forEach(element => {
-            conditions.push(element.getAttribute("tag"));
-        });
-        exhibitsArea.querySelectorAll(".tile").forEach(element => {
-            element.style.opacity = .2;
-            element.style.display = "none";
-        });
-        let lastElement;
-        targetTagElements = exhibitsArea.querySelectorAll(`[tag_${conditions[0]}]`);
-        targetTagElements.forEach(element => {
-            element.style.opacity = 1;
-            element.style.display = "flex";
-            lastElement = element;
-        });
-        if (targetTagElements[0]) {
-            targetTagElements[0].style.borderTopLeftRadius = "20px";
-            targetTagElements[0].style.borderTopRightRadius = "20px";
-        }
-        if (lastElement) {
-            lastElement.style.borderBottomLeftRadius = "20px";
-            lastElement.style.borderBottomRightRadius = "20px";
-        }
+        (() => {
+            const checkedTags = sortListArea.querySelectorAll(".tag.checkedBox:not([isButton])");
+            checkedTags.forEach(element => {
+                conditions.push(element.getAttribute("tag"));
+            });
+        })();
+
+        (() => {
+            let selector = `[tag_${conditions[0]}]`;
+
+            conditions.forEach(condition => {
+                selector += `[tag_${condition}]`;
+            });
+            const allTiles = exhibitsArea.querySelectorAll(".tile");
+            allTiles.forEach(element => {
+                element.style.display = `${conditions[0] ? "none" : "flex"}`;
+                element.classList.remove("topTileStyle");
+                element.classList.remove("lowestTileStyle");
+            });
+
+            const targetTagElements = exhibitsArea.querySelectorAll(selector);
+            targetTagElements.forEach(element => {
+                element.style.opacity = 1;
+                element.style.display = "flex";
+            });
+            // 角丸系
+
+            const activeAllTiles = Array.from(allTiles).filter(tile => 
+                tile.style.display != "none"
+            );
+
+            console.log(activeAllTiles);
+            if (activeAllTiles[0]) {
+                activeAllTiles[0].classList.add("topTileStyle");
+            }
+            if (activeAllTiles[activeAllTiles.length - 1]) {
+                activeAllTiles[activeAllTiles.length - 1].classList.add("lowestTileStyle");
+            }
+        })();
     }
 
     sortUpdate();
@@ -245,18 +288,67 @@ window.addEventListener("scroll", scrollProcess);
         newTag.className = "tag";
         // newTag.className = "tag checkedBox";
         newTag.style.backgroundColor = tagOrder[tag].themeColor;
-        newTag.innerHTML = `<span>${tagOrder[tag].displayName}</span>`;
+        newTag.textContent = tagOrder[tag].displayName;
         newTag.setAttribute("tag", tag);
+        if (tagOrder[tag].isButton) newTag.setAttribute("isButton", "");
 
-        const checkBox = d.createElement("div");
-        checkBox.className = "checkBox";
-        newTag.appendChild(checkBox);
-        
+        function generateCheckBox () {
+            const checkBox = d.createElement("div");
+            checkBox.className = "checkBox";
+            newTag.appendChild(checkBox);   
+        }
         tags.appendChild(newTag);
 
-        newTag.addEventListener("click", () => {
-            newTag.classList.toggle("checkedBox");
+        if (tagOrder[tag].isButton) {
+            newTag.classList.add("checkedBox");
+        } else {
+            generateCheckBox();
+        }
+
+        const get_isButton = () => tagOrder[tag].isButton;
+
+        function updateResetButton (pushed = false) {
+            const resetButton = sortListArea.querySelector(".tags.listView .tag[tag='resetButton']");
+            const tagElements = sortListArea.querySelectorAll(".tags.listView .tag:not([isButton=''])");
+            const tag_isCheckeds = [];
+            tagElements.forEach(tag => {
+                tag_isCheckeds.push(tag.classList.contains("checkedBox"));
+            });
+            console.log(tag_isCheckeds);
+            if (tag_isCheckeds.every(item => item === false)) { // すべてのタグが選ばれていない
+                if (get_isButton()) resetButton.textContent = tagOrder[tag].displayName;
+                if (pushed) {
+                    tagElements.forEach(tag => {
+                        tag.classList.add("checkedBox");
+                    });
+                }
+            } else {
+                resetButton.textContent = "すべて解除";
+                if (pushed) {
+                    tagElements.forEach(tag => {
+                        tag.classList.remove("checkedBox");
+                    });
+                }
+            }
+        }
+
+        function tagClicked () {
+            if (get_isButton()) {
+                updateResetButton(true);
+            } else {
+                newTag.classList.toggle("checkedBox");
+            }
+            updateResetButton();
             sortUpdate();
-        });
+        }
+        newTag.addEventListener("click", tagClicked);
     });
+})();
+
+(() => {
+    const element = sortListArea.querySelector(".tags.listView");
+    function process () {
+        sortListArea.classList.remove("topBarReduced");
+    }
+    element.addEventListener("click", process);
 })();
