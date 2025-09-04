@@ -139,7 +139,7 @@ window.addEventListener("scroll", scrollProcess);
     const exhibitsLength = Object.keys(exhibits).length;
     const tagOrder = {
         resetButton: {
-            displayName: "すべて選択",
+            displayName: "すべて解除",
             themeColor: "gray",
             isButton: true
         },
@@ -314,23 +314,21 @@ window.addEventListener("scroll", scrollProcess);
             tagElements.forEach(tag => {
                 tag_isCheckeds.push(tag.classList.contains("checkedBox"));
             });
+
             console.log(tag_isCheckeds);
-            if (tag_isCheckeds.every(item => item === false)) { // すべてのタグが選ばれていない
-                if (get_isButton()) resetButton.textContent = tagOrder[tag].displayName;
-                if (pushed) {
-                    tagElements.forEach(tag => {
-                        tag.classList.add("checkedBox");
-                    });
-                }
+            const isAllSelected = tag_isCheckeds.every(item => item === false);
+            if (isAllSelected) { // すべてのタグが選ばれていない
+                resetButton.classList.remove("checkedBox");
             } else {
-                resetButton.textContent = "すべて解除";
                 if (pushed) {
                     tagElements.forEach(tag => {
                         tag.classList.remove("checkedBox");
                     });
                 }
+                resetButton.classList.add("checkedBox");
             }
         }
+        updateResetButton();
 
         function tagClicked () {
             if (get_isButton()) {
