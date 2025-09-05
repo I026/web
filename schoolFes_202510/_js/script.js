@@ -109,7 +109,7 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
 
 (() => { // スムーズスクロール
     const scriptTag = d.createElement("script");
-    scriptTag.src = "https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js"; 
+    scriptTag.src = "https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js";
     d.head.appendChild(scriptTag);
 
     scriptTag.onload = () => {
