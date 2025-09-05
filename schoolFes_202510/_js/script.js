@@ -1,3 +1,5 @@
+console.log("script.js");
+
 const d = document;
 const topContentButton = d.querySelector(".content.top .button");
 const topTitleContent  = d.querySelector(".content.topTitle");
@@ -12,13 +14,15 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
         index: "デジタルパンフレット",
         exhibits: "企画一覧",
     };
-
+    
     const title = d.createElement("title");
     title.textContent = `学園祭${titleMap[HTMLFileName] ? ` : ${titleMap[HTMLFileName]}` : ""}`;
     d.head.appendChild(title);
+    console.log("title");
 })();
 
 (() => { // lang
+    console.log("lang");
     d.querySelector("html").lang = "ja";
 
     const meta_charset = d.createElement("meta");
@@ -40,6 +44,7 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
     link_favicon.href = "_medias/images/favicon.ico";
     
     d.head.appendChild(link_favicon);
+    console.log("favicon");
 })();
 
 (() => { // style
@@ -48,20 +53,22 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
     
     link_style.rel = "stylesheet";
     link_style.href = "_css/style.css";
-
+    
     link_customStyle.rel = "stylesheet";
     link_customStyle.href = `_css/${HTMLFileName}.css`;
     
     d.head.appendChild(link_style);
     d.head.appendChild(link_customStyle);
+    console.log("style");
 })();
 
 (() => { // js
     const script_customJS = d.createElement("script");
-
+    
     script_customJS.src = `_js/${HTMLFileName}.js`;
-
+    
     d.head.appendChild(script_customJS);
+    console.log("js");
 })();
 
 (() => { // pathsごとのviewBox設定
@@ -122,7 +129,7 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
         }
         requestAnimationFrame(raf);
     };
-})();
+});
 
 // topBars
 const topBars = d.createElement("div");
