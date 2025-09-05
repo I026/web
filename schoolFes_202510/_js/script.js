@@ -1,5 +1,3 @@
-console.log("script.js");
-
 const d = document;
 const topContentButton = d.querySelector(".content.top .button");
 const topTitleContent  = d.querySelector(".content.topTitle");
@@ -129,7 +127,7 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
         }
         requestAnimationFrame(raf);
     };
-});
+})();
 
 // topBars
 const topBars = d.createElement("div");
