@@ -1,109 +1,35 @@
-const d = document;
-const topBar = d.querySelector(".topBar");
-const topContentButton = d.querySelector(".content.top .button");
-const topTitleContent  = d.querySelector(".content.topTitle");
-const paths = d.querySelectorAll(".content.topTitle path");
-
-(() => {
-    window.addEventListener("DOMContentLoaded", () => {
-        paths.forEach(path => {
-            const length = path.getTotalLength();
-
-            // CSS変数にパス長を代入
-            path.style.setProperty("--path-length", length);
-
-            // stroke-dasharray と stroke-dashoffset を初期化
-            path.style.strokeDasharray = length;
-            path.style.strokeDashoffset = length;
-
-            path.style.opacity = 1;
-            path.style.animation = "draw 3s ease-in-out forwards";
-        });
-    });
-
-    // すべてのパスのバウンディングボックスを統合して viewBox を調整
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    paths.forEach(path => {
-        const bbox = path.getBBox();
-        if (bbox.x < minX) minX = bbox.x;
-        if (bbox.y < minY) minY = bbox.y;
-        if (bbox.x + bbox.width > maxX) maxX = bbox.x + bbox.width;
-        if (bbox.y + bbox.height > maxY) maxY = bbox.y + bbox.height;
-    });
-
-    function windowResizeHandler() {
-        topTitleContent.style.setProperty("--titleImageWidth", topTitleContent.clientWidth + "px");
-    }
-    windowResizeHandler();
-    window.addEventListener("resize", windowResizeHandler);
-
-    const svgs = d.querySelectorAll("svg");
-    const margin = 0; // 余白
-    svgs.forEach(svg => {
-        svg.setAttribute(
-            "viewBox",
-            `${minX - margin} ${minY - margin} ${maxX - minX + margin*2} ${maxY - minY + margin*2}`
-        );
-    });
-})();
-
-function dateUpdate () {
-    const nowDate = new Date();
-    if (nowDate <= new Date("2025-10-26")) {
-        const daysLeft = Math.ceil((new Date("2025-10-25") - nowDate) / (1000 * 60 * 60 * 24));
-        let HTML = "あと&nbsp;" + "<span class='emphasisText'>" + daysLeft + "</span>" + "&nbsp;日";
-        if (daysLeft < 1) {
-            HTML = "開催中";
-        }
-        topContentButton.innerHTML = HTML;
-    } else {
-        topContentButton.style.display = "none";
-    }
-}
-dateUpdate();
-setInterval(dateUpdate, 10000);
-
-const sortListArea = d.querySelector(".exhibits .sortList");
-const exhibitsArea = d.querySelector(".exhibits .list");
-
-let animationNoneTimeout;
-let last_isShowTopBar = false;
-function scrollProcess() {
-    const scrollRatio = window.scrollY / window.innerHeight
-    const get_isShowTopBar = () => scrollRatio > .25;
-    if (last_isShowTopBar !== get_isShowTopBar()) {
-        if (get_isShowTopBar()) {
-            clearTimeout(animationNoneTimeout);
-            topBar.style.opacity = 1;
-            topBar.style.animation = "topBarShow 1s ease-in-out";
-        } else {
-            if (topBar.style.opacity === 0) return;
-            clearTimeout(animationNoneTimeout);
-            topBar.style.opacity = 0;
-        }
-    }
-    last_isShowTopBar = get_isShowTopBar();
-
-    console.log(scrollRatio);
-
-    (() => { // sortListAreaHeight
-        if (scrollRatio > .75 && exhibitsArea.querySelector(".tile")?.style.display !== "none") {
-            sortListArea.classList.add("topBarReduced");
-            // sortListArea.style.height = "100px";
-        } else {
-            sortListArea.classList.remove("topBarReduced");
-            // sortListArea.style.height = "var(--sortListArea_heightBase)";
-        }
-    })();
-}
-scrollProcess();
-window.addEventListener("scroll", scrollProcess);
-
 (() => {
     const getClassName = (school, input_grade, input_class) => (
         `${school == "H" || input_class > 3 ? "高校" : "中学"} ${input_grade}年${input_class}組`
     )
     const exhibits = {
+        J1_1: {
+            name: "(テスト文)",
+            location: getClassName("J", 1, 1),
+            description: "(テスト文)",
+            tag: [
+                "byClass",
+                "J1",
+            ],
+        },
+        J1_2: {
+            name: "(テスト文)",
+            location: getClassName("J", 1, 2),
+            description: "(テスト文)",
+            tag: [
+                "byClass",
+                "J1",
+            ],
+        },
+        J1_3: {
+            name: "(テスト文)",
+            location: getClassName("J", 1, 3),
+            description: "(テスト文)",
+            tag: [
+                "byClass",
+                "J1",
+            ],
+        },
         J2_1: {
             name: "お化け屋敷",
             location: getClassName("J", 2, 1),
@@ -123,15 +49,17 @@ window.addEventListener("scroll", scrollProcess);
                 "J2",
                 "foods",
                 "merchandise",
+                "attractions",
             ],
         },
         J2_3: {
-            name: "(テスト文)",
+            name: "SASUKE",
             location: getClassName("J", 2, 3),
             description: "(テスト文)",
             tag: [
                 "byClass",
                 "J2",
+                "attractions",
             ],
         },
     }
@@ -342,6 +270,18 @@ window.addEventListener("scroll", scrollProcess);
         newTag.addEventListener("click", tagClicked);
     });
 })();
+
+window.addEventListener("scroll", () => { // sortListAreaHeight
+    const scrollRatio = window.scrollY / window.innerHeight;
+    sortListArea.style.transition = "height .5s ease-in-out, margin .5s ease-in-out";
+    if (scrollRatio > .25 && exhibitsArea.querySelector(".tile")?.style.display !== "none") {
+        sortListArea.classList.add("topBarReduced");
+        // sortListArea.style.height = "100px";
+    } else {
+        sortListArea.classList.remove("topBarReduced");
+        // sortListArea.style.height = "var(--sortListArea_heightBase)";
+    }
+});
 
 (() => {
     const element = sortListArea.querySelector(".tags.listView");
