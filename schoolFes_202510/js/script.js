@@ -92,8 +92,8 @@ const titleMap = {
             to { transform: rotate(360deg); }
         }
         @keyframes show {
-            from { width: 0; height: 0; }
-            to { width: 50px; height: 50px; }
+            from { width: 0; height: 0; opacity: 0; }
+            to { width: 50px; height: 50px; opacity: 1; }
         }
     `;
     d.head.appendChild(styleSheet);
