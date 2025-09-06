@@ -21,20 +21,26 @@ const titleMap = {
     console.log("title");
 })();
 
-(() => { // lang
+(() => { // lang､viewport､noindex
     console.log("lang");
     d.querySelector("html").lang = "ja";
 
     const meta_charset = d.createElement("meta");
     const meta_viewport = d.createElement("meta");
+    const meta_noindex = d.createElement("meta");
     
     meta_charset.setAttribute("charset", "UTF-8")
 
     meta_viewport.name = "viewport";
     meta_viewport.content = "width=device-width, initial-scale=1.0";
+
+    meta_noindex.name = "robots";
+    meta_noindex.content = "noindex";
+    meta_noindex.nofollow = "";
     
     d.head.appendChild(meta_charset);
     d.head.appendChild(meta_viewport);
+    d.head.appendChild(meta_noindex);
 })();
 
 (() => { // favicon
