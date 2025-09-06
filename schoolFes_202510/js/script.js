@@ -60,6 +60,7 @@ const titleMap = {
     d.head.appendChild(link_style);
     d.head.appendChild(link_customStyle);
 
+    d.body.style.pointerEvents = "none";
     // 両方のスタイルシート読み込み完了後にページを表示
     Promise.all([
         new Promise(resolve => link_style.addEventListener("load", resolve)),
@@ -67,7 +68,8 @@ const titleMap = {
     ]).then(() => {
         console.log("style : load");
         d.body.style.transition = "opacity 0.5s ease";
-        d.body.style.display = "block";
+        d.body.style.opacity = 1;
+        d.body.style.pointerEvents = "auto";
     });
 })();
 
