@@ -8,11 +8,12 @@ const exhibitsArea = d.querySelector(".exhibits .list");
 let HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
 if (HTMLFileName == "") HTMLFileName = "index";
 
+const titleMap = {
+    index: "デジタルパンフレット",
+    exhibits: "企画一覧",
+};
+
 (() => { // title
-    const titleMap = {
-        index: "デジタルパンフレット",
-        exhibits: "企画一覧",
-    };
     
     const title = d.createElement("title");
     title.textContent = `学園祭${titleMap[HTMLFileName] ? ` : ${titleMap[HTMLFileName]}` : ""}`;
@@ -76,18 +77,20 @@ if (HTMLFileName == "") HTMLFileName = "index";
             const paths = svg.querySelectorAll("path");
 
             // path の長さや stroke-dasharray 初期化
-            let path_idx = 0;
-            paths.forEach(path => {
+            paths.forEach((path, index) => {
                 const length = path.getTotalLength();
+
+                // strokeDasharray と offset を設定
                 path.style.strokeDasharray = length;
                 path.style.strokeDashoffset = length;
                 path.style.opacity = 1;
 
-                setTimeout(() => {
-                    path.style.strokeDashoffset = 0;
-                }, 10);
+                // CSS変数に長さをセット
+                path.style.setProperty("--pathLength", length);
 
-                path_idx += 1;
+                // アニメーションを設定（indexを使って遅延）
+                path.style.animation = `drawPath 2s ease forwards`;
+                path.style.animationDelay = `${index * 0.1}s`; // パスごとに0.5秒ずつ遅らせる
             });
 
             // 各svgごとのバウンディングボックス計算
@@ -164,7 +167,6 @@ topBar_filter.addEventListener("click", (e) => {
     console.log(e.target);
     topBars.classList.remove("opened");
 });
-
 topBar.className = "topBar button hidden";
 topBar.style.opacity = 0;
 
@@ -191,6 +193,64 @@ function showTopBarAnim(show) {
         topBar.classList.add("hidden");
     }
 }
+
+// footers
+const footers = d.createElement("div");
+const footer = d.createElement("div");
+function footer_partition () {
+    const element = d.createElement("div");
+    element.className = "footer_partition";
+    return element;
+}
+
+footers.className = "footers";
+footer.className = "footer button";
+
+(() => {
+    const pageList = d.createElement("div");
+    pageList.classList = "pageList";
+
+    Object.keys(titleMap).forEach(key => {
+        const a = d.createElement("a");
+        const underLine = d.createElement("div");
+
+        a.className = "content";
+        a.innerHTML = titleMap[key];
+        a.href = `${key}.html`;
+        
+        underLine.className = "underLine";
+
+        pageList.appendChild(a);
+        a.appendChild(underLine);
+        // pageList.appendChild(d.createElement("br"));
+    });
+
+    const contentsArray = [
+        ["広報係&nbsp;<span class='subText'>&nbsp;2025年度 学園祭</span>", "title"],
+        footer_partition(),
+        [pageList],
+        ["<span class='name'>中学2年1組 小暮千秋</span>", "title"],
+    ];
+    contentsArray.forEach((item, i) => {
+        const footer_contents = d.createElement("div");
+        footer_contents.className = `content${item[1] ? ` ${item[1]}` : ""}`;
+
+        let newItem = item;
+        if (!item[0]) newItem = [item];
+
+        if (typeof newItem[0] === "string") {
+            footer_contents.innerHTML = newItem[0];
+        } else {
+            footer_contents.appendChild(newItem[0]);
+        }
+        
+        footer.appendChild(footer_contents);
+    });
+})();
+
+d.body.appendChild(footers);
+footers.appendChild(footer);
+
 
 function scrollProcess() {
     const scrollRatio = window.scrollY / window.innerHeight;

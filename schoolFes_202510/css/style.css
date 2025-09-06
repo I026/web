@@ -81,16 +81,23 @@ svg {
     justify-content: center;
     align-items: center;
 }
+@keyframes drawPath {
+    from {
+        stroke-dashoffset: var(--pathLength);
+        opacity: 1;
+    }
+    to {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
+}
 svg path {
     position: absolute;
     fill: none;
     stroke: black;
     stroke-width: 2;
     opacity: 0;
-    /* animation: draw 2.5s ease-in-out both; */
-    transition:
-    stroke-dasharray  2.5s  ease-in-out,
-    stroke-dashoffset 2.5s ease-in-out;
+    animation: drawPath 2.5s ease-in-out both;
     transform-origin: 50% 50%;
 }
 .content.topTitle svg path.countDown {
@@ -272,4 +279,72 @@ svg path {
 }
 .checkedBox {
     opacity: 1 !important;
+}
+
+.footers {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+    height: 300px;
+    --margin: 20px;
+    bottom: var(--margin);
+    padding: var(--margin);
+}
+.footers .footer .title {
+    display: flex;
+    align-items: center;
+}
+.footers .footer {
+    background-color: lightgray;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+}
+.footers .footer span.name {
+    margin-top: 5px;
+    font-size: .6em;
+    position: absolute;
+    bottom: 20px;
+}
+.footers .footer .footer_partition {
+    background-color: black;
+    position: relative;
+    left: 0;
+    width: 100%;
+    height: 1px;
+}
+.footers .footer a {
+    color: var(--base_color);
+    text-decoration: none;
+    display: block;
+    width: max-content;
+    margin-bottom: 5px;
+}
+@keyframes a_hover {
+    from {
+        border-bottom: 1px;
+    }
+    to {
+        border-bottom: 1px;
+    }
+}
+.footers .footer .pageList {
+    margin-top: 10px;
+}
+.footers .footer .underLine {
+    height: 1px;
+    width: 0;
+    background-color: black;
+    transition: width .5s ease-in-out;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.footers .footer a:hover .underLine {
+    width: 100%;
+    /* animation: a_hover .5s ease-in-out both; */
+}
+.footers .footer .content.title {
+    font-size: 1.5em;
 }

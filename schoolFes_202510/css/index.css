@@ -39,7 +39,11 @@ body {
         stroke-dashoffset: 1241.6280517578125;
         opacity: 0;
     }
-    50% {
+    30% {
+        stroke-dashoffset: 0;
+        opacity: .5;
+    }
+    70% {
         stroke-dashoffset: 0;
         opacity: .5;
     }
@@ -52,6 +56,5 @@ body {
 .content.top .bottomBar svg path {
     stroke-width: 50;
     transform: rotate(-45deg);
-    transition: none;
-    animation: arrow 2s ease-in-out infinite;
+    animation: arrow 2s ease-in-out infinite !important;
 }
