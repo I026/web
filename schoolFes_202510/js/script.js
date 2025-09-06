@@ -71,6 +71,18 @@ if (HTMLFileName == "") HTMLFileName = "index";
 
 (() => { // pathsごとのviewBox設定
     window.addEventListener("DOMContentLoaded", () => {
+        (() => {
+            const entries = performance.getEntriesByType("resource");
+            const currentScript = entries.find(entry => entry.name.includes("script.js"));
+            
+            if (currentScript) {
+                console.log("読み込み時間(ms):", currentScript.duration);
+                console.log("詳細:", currentScript);
+            } else {
+                console.log("script.js の読み込み情報が見つかりませんでした");
+            }
+        })();
+
         const svgs = d.querySelectorAll("svg");
         svgs.forEach(svg => {
             const paths = svg.querySelectorAll("path");
