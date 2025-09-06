@@ -169,7 +169,7 @@ function setPathViewBox () { // pathsごとのviewBox設定
                 });
             }
 
-            console.log(path, length);
+            // console.log(path, length);
         });
 
         // 各svgごとのバウンディングボックス計算

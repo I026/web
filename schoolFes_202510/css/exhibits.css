@@ -6,6 +6,7 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    min-height: 100vh;
 }
 .content.main .exhibits .list {
     overflow-x: hidden;
@@ -35,29 +36,6 @@
     width: 100%;
     padding-left: 8px;
     top: 8px;
-}
-.content.main .exhibits .tile .names .subText {    
-    position: absolute;
-    right: 8px;
-}
-.content.main .exhibits .tile .description {
-    position: absolute;
-    left: 8px;
-}
-.content.main .exhibits .tile .tags {
-    position: absolute;
-    font-size: 1em;
-    color: gray;
-    bottom: 8px;
-    left: 0;
-    display: flex;
-    overflow-x: scroll;
-    white-space: nowrap;
-    padding-left: 10px;
-    padding-right: 10px;
-    width: calc(100% - 20px);
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
 }
 .content.main .exhibits .tile.sortList {
     top: 100px;
@@ -97,9 +75,9 @@
     padding-left: 8px;
     top: 8px;
 }
-.content.main .exhibits .tile .names .subText {    
+.content.main .exhibits .tile .names .subText {
     position: absolute;
-    right: 8px;
+    right: 10   px;
 }
 .content.main .exhibits .tile .description {
     position: absolute;
