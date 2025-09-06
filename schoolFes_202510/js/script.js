@@ -114,7 +114,6 @@ const titleMap = {
     loadingScreen.appendChild(loader);
     d.body.appendChild(loadingScreen);
 
-    d.body.style.pointerEvents = "none";
     Promise.all([
         new Promise(resolve => link_style.addEventListener("load", resolve)),
         new Promise(resolve => link_customStyle.addEventListener("load", resolve)),
