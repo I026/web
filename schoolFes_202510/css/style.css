@@ -102,6 +102,9 @@ svg path {
     animation: drawPath 2.5s ease-in-out both;
     transform-origin: 50% 50%;
 }
+.content.top svg path {
+    stroke-width: 5;
+}
 .content.topTitle svg path.countDown {
     animation-delay: 3s;
 }
