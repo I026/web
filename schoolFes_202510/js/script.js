@@ -141,9 +141,9 @@ const topBar = d.createElement("div");
     content.innerHTML = item[1];
     topBar.appendChild(content);
 
-    switch (item) {
+    switch (item[0]) {
         case "menuOpen_button":
-            item.addEventListener("click", () => {
+            content.addEventListener("click", () => {
                 topBar.classList.toggle("topBarOpened");
             });
             break;
