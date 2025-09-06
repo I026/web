@@ -295,7 +295,7 @@ footer.className = "footer button";
         ["広報係&nbsp;<span class='subText'>&nbsp;2025年度 学園祭</span>", "title"],
         footer_partition(),
         [pageList],
-        ["<span class='name'>中学2年1組 小暮千秋</span>", "title"],
+        ["<span class='name'>制作 : 中学2年1組 小暮千秋</span>", "title"],
     ];
     contentsArray.forEach((item, i) => {
         const footer_contents = d.createElement("div");
