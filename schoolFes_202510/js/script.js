@@ -7,11 +7,8 @@ const exhibitsArea = d.querySelector(".exhibits .list");
 
 let HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
 if (HTMLFileName == "") HTMLFileName = "index";
-<<<<<<< HEAD
 
 d.body.style.opacity = 0;
-=======
->>>>>>> ff82d88b0be44f73d809736429b1ef5fe0514973
 
 (() => { // title
     const titleMap = {
