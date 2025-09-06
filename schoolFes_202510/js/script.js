@@ -47,7 +47,7 @@ const titleMap = {
     console.log("favicon");
 })();
 
-(() => { // style
+(() => { // style + loading screen
     const link_style = d.createElement("link");
     const link_customStyle = d.createElement("link");
 
@@ -60,16 +60,55 @@ const titleMap = {
     d.head.appendChild(link_style);
     d.head.appendChild(link_customStyle);
 
+    // loading screen
+    const loadingScreen = d.createElement("div");
+    loadingScreen.style.position = "fixed";
+    loadingScreen.style.top = 0;
+    loadingScreen.style.left = 0;
+    loadingScreen.style.width = "100vw";
+    loadingScreen.style.height = "100vh";
+    loadingScreen.style.backgroundColor = "white";
+    loadingScreen.style.display = "flex";
+    loadingScreen.style.justifyContent = "center";
+    loadingScreen.style.alignItems = "center";
+    loadingScreen.style.zIndex = 9999;
+    loadingScreen.style.opacity = 1;
+    loadingScreen.style.transition = "opacity .1s ease-in-out"
+
+    // ロード中アイコン
+    const loader = d.createElement("div");
+    loader.style.width = "50px";
+    loader.style.height = "50px";
+    loader.style.border = "5px solid #ccc";
+    loader.style.borderTop = "5px solid #333";
+    loader.style.borderRadius = "50%";
+    loader.style.animation = "spin 1s linear infinite";
+
+    // CSSアニメーションを追加
+    const styleSheet = d.createElement("style");
+    styleSheet.textContent = `
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    `;
+    d.head.appendChild(styleSheet);
+
+    loadingScreen.appendChild(loader);
+    d.body.appendChild(loadingScreen);
+
     d.body.style.pointerEvents = "none";
-    // 両方のスタイルシート読み込み完了後にページを表示
     Promise.all([
         new Promise(resolve => link_style.addEventListener("load", resolve)),
         new Promise(resolve => link_customStyle.addEventListener("load", resolve)),
     ]).then(() => {
-        console.log("style : load");
         d.body.style.transition = "opacity 0.5s ease";
         d.body.style.opacity = 1;
         d.body.style.pointerEvents = "auto";
+        loadingScreen.style.opacity = 0;
+        setTimeout(() => {
+            loadingScreen.remove();
+        }, 500);
     });
 })();
 
