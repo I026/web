@@ -153,6 +153,7 @@
             tag.innerHTML = item[1];
             tag.style.backgroundColor = item[2];
             tag.className = "tag";
+            tag.setAttribute(`tag_${item[0]}`, "");
             tags.appendChild(tag);
         });
         displayTagNames.map(subArr => subArr[0]).forEach(item => {
@@ -182,6 +183,7 @@
             conditions.forEach(condition => {
                 selector += `[tag_${condition}]`;
             });
+
             const allTiles = exhibitsArea.querySelectorAll(".tile");
             allTiles.forEach(element => {
                 element.style.display = `${conditions[0] ? "none" : "flex"}`;
@@ -189,13 +191,24 @@
                 element.classList.remove("lowestTileStyle");
             });
 
-            const targetTagElements = exhibitsArea.querySelectorAll(selector);
-            targetTagElements.forEach(element => {
+            const allTags = exhibitsArea.querySelectorAll(".tags .tag");
+            allTags.forEach(element => {
+                element.style.opacity = `${conditions[0] ? .3 : 1}`;
+            });
+
+            const targetElements = exhibitsArea.querySelectorAll(selector);
+            targetElements.forEach(element => {
                 element.style.opacity = 1;
                 element.style.display = "flex";
             });
-            // 角丸系
 
+            conditions.forEach(condition => {
+                exhibitsArea.querySelectorAll(`.tags [tag_${condition}]`).forEach(element => {
+                    element.style.opacity = 1;
+                });
+            });
+
+            // 角丸系
             const activeAllTiles = Array.from(allTiles).filter(tile => 
                 tile.style.display != "none"
             );
@@ -212,9 +225,6 @@
 
     sortUpdate();
 
-    {/* <svg xmlns="http://www.w3.org/2000/svg">
-        <path d="M416.256,646.066L239.48,469.289L133.414,575.355L416.256,858.198L946.586,327.868L840.52,221.802L416.256,646.066Z"/>
-    </svg> */}
     const tags = d.createElement("div");
     tags.className = "tags listView";
     sortListArea.appendChild(tags);

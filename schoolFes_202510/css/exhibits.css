@@ -66,6 +66,7 @@
     height: 1.5em;
     width: max-content;
     align-items: center;
+    transition: opacity .5s ease-in-out;
 }
 .content.main .exhibits .tag span {
     bottom: 0;
@@ -111,7 +112,7 @@
 .content.main .exhibits .tile .tags.listView .tag {
     cursor: pointer;
     user-select: none;
-    opacity: .5;
+    opacity: .3;
     transition: opacity ease-in-out .3s;
     transition-delay: .1s;
 }
