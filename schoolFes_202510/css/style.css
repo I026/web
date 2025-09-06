@@ -103,7 +103,7 @@ svg path {
     transform-origin: 50% 50%;
 }
 .content.top svg path {
-    stroke-width: 5;
+    stroke-width: 3;
 }
 .content.topTitle svg path.countDown {
     animation-delay: 3s;
