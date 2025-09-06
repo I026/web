@@ -22,7 +22,7 @@ setInterval(dateUpdate, 10000);
 
     if (currentScript) {
         console.log("load : ", currentScript.duration, "ms")
-        if (currentScript.duration < 1000) loadVideo();
+        if (currentScript.duration < 500) loadVideo();
     } else {
         loadVideo();
     }
