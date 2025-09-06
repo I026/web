@@ -13,7 +13,6 @@ body {
     padding: 0;
     font-family: "Outfit", "Outfit_Local", "Noto Sans JP", "SF Pro JP", "Arial", sans-serif;
     transition: opacity .5s ease-in-out;
-    opacity: 1 !important;
     color: rgb(var(--base_color));
     background-color: rgb(var(--base_backgroundColor));
 }
@@ -49,8 +48,8 @@ body {
 }
 .content.topTitle video {
     opacity: 0;
+    animation: opacity_0to1 3s ease-in-out forwards;
     object-fit: cover;
-    animation: topBackground 3s ease-in-out forwards;
     animation-delay: .5s;
     width: 100%;
     height: 100%;
@@ -58,14 +57,14 @@ body {
 .content.topTitle .videoFilter {
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
-    background-color: transparent;
+    background-color: rgba(var(--base_backgroundColor), .6);
 }
-@keyframes topBackground {
+@keyframes opacity_0to1 {
     0% {
         opacity: 0;
     }
     100% {
-        opacity: .5;
+        opacity: 1;
     }
 }
 .content.topTitle svg {

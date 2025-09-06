@@ -53,8 +53,14 @@ body {
     }
 }
 
+.content.top .button {
+    animation: opacity_0to1 .5s ease-in-out both !important;
+    animation-delay: 2.5s !important;
+}
+
 .content.top .bottomBar svg path {
     stroke-width: 50;
     transform: rotate(-45deg);
     animation: arrow 2s ease-in-out infinite !important;
+    animation-delay: 2.5s !important;
 }

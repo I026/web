@@ -59,6 +59,15 @@ const titleMap = {
 
     d.head.appendChild(link_style);
     d.head.appendChild(link_customStyle);
+
+    // 両方のスタイルシート読み込み完了後にページを表示
+    Promise.all([
+        new Promise(resolve => link_style.addEventListener("load", resolve)),
+        new Promise(resolve => link_customStyle.addEventListener("load", resolve)),
+    ]).then(() => {
+        d.body.style.transition = "opacity 0.5s ease";
+        d.body.style.opacity = "1";
+    });
 })();
 
 (() => { // js
