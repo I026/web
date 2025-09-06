@@ -67,7 +67,7 @@ const titleMap = {
     ]).then(() => {
         console.log("style : load");
         d.body.style.transition = "opacity 0.5s ease";
-        d.body.style.opacity = "1";
+        d.body.style.display = "block";
     });
 })();
 
