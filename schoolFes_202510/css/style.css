@@ -1,4 +1,7 @@
 :root {
+    --base_backgroundColor: 255, 255, 255;
+    --base_color: 0, 0, 0;
+
     --checkBox_BaseWidth: 1.1em;
     --checkBox_borderWidth: 1.5px;
     --exhibitsTileMargin: 10px;
@@ -11,6 +14,8 @@ body {
     font-family: "Outfit", "Outfit_Local", "Noto Sans JP", "SF Pro JP", "Arial", sans-serif;
     transition: opacity .5s ease-in-out;
     opacity: 1 !important;
+    color: rgb(var(--base_color));
+    background-color: rgb(var(--base_backgroundColor));
 }
 .content.top {
     height: calc(50vh - 100px);
@@ -139,44 +144,66 @@ svg path {
     border-radius: 40px;
     padding: 10px;
 }
+.topBarReduced {
+    --reduce: 100px;
+    height: var(--reduce) !important;
+    margin-top: calc(var(--exhibitsTileMargin) + var(--sortListArea_heightBase) - var(--reduce)) !important;
+}
 .topBars {
     width: 100vw;
-    height: 80px;
+    height: 100px;
     top: 0;
     position: fixed;
     display: flex;
     justify-content: center;
     z-index: 20;
 }
-.topBarReduced {
-    --reduce: 100px;
-    height: var(--reduce) !important;
-    margin-top: calc(var(--exhibitsTileMargin) + var(--sortListArea_heightBase) - var(--reduce)) !important;
+.topBars .topBar_filter {
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    pointer-events: none;
+    transition:
+    background-color .5s ease-in-out,
+    backdrop-filter .5s ease-in-out,
+    --webkit-backdrop-filter .5s ease-in-out;
 }
 .topBars .topBar {
-    top: 10px;
+    pointer-events: auto;
+    top: 5px;
     --topBarMargin: 10px;
     width: calc(100vw - var(--topBarMargin) * 4);
     margin: var(--topBarMargin);
     height: 40px;
-    opacity: 1;
-    display: flex;
-    justify-content: left;
+    border-radius: calc(40px - var(--topBarMargin));
+    background-color: rgba(var(--base_backgroundColor), .1);
     cursor: default;
     align-items: center;
-    position: absolute;
-    opacity: 0;
+    position: relative;
     transition:
     height .5s ease-in-out,
     opacity .5s ease-in-out,
-    backdrop-filter .5s ease-in-out,
     background-color .5s ease-in-out,
     box-shadow .5s ease-in-out,
     animation .5s ease-in-out,
+    backdrop-filter .5s ease-in-out,
     --webkit-backdrop-filter .5s ease-in-out;
 }
-.topBarOpened {
-    height: 160px;
+.topBars .topBar .topBar_menus {
+    height: 40px;
+    display: flex;
+    justify-content: left;
+    margin: 0;
+    padding: 0;
+}
+.topBars.opened .topBar {
+    height: calc(40vh - 40px) !important;
+}
+.topBars.opened .topBar_filter {
+    backdrop-filter: blur(5px);
+    --webkit-backdrop-filter: blur(5px);
+    background-color: rgba(var(--base_backgroundColor), .2);
+    pointer-events: auto;
 }
 .topBars .topBar .content {
     margin-right: 15px;
@@ -221,11 +248,31 @@ svg path {
         transform: translateY(0);
     }
 }
-.topBarHidden_Animation {
-    backdrop-filter: blur(0);
-    --webkit-backdrop-filter: blur(0);
-    background-color: transparent;
-    box-shadow: none;
+@keyframes topBarHidden {
+    30% {
+        opacity: 0;
+        width: 0;
+        transform: translateY(-50px);
+    }
+    65% {
+        opacity: 1;
+        transform: translateY(8px);
+    }
+    80% {
+        width: calc(100vw - var(--topBarMargin) * 4 + 5px);
+    }
+    90% {
+        width: calc(100vw - var(--topBarMargin) * 4 - 5px);
+        transform: translateY(-2px);
+    }
+    100% {
+        opacity: 1;
+        width: calc(100vw - var(--topBarMargin) * 4);
+        transform: translateY(0);
+    }
+}
+.topBars .topBar.hidden {
+    opacity: 0;
 }
 
 .content.main {

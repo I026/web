@@ -131,6 +131,8 @@ if (HTMLFileName == "") HTMLFileName = "index";
 // topBars
 const topBars = d.createElement("div");
 const topBar = d.createElement("div");
+const topBar_menus = d.createElement("div");
+const topBar_filter = d.createElement("div");
 
 [
     ["menuOpen_button", "Menu"],
@@ -139,37 +141,59 @@ const topBar = d.createElement("div");
     const content = d.createElement("div");
     content.className = `content ${item[0]}`;
     content.innerHTML = item[1];
-    topBar.appendChild(content);
+    topBar.appendChild(topBar_menus);
+    topBar_menus.appendChild(content);
 
     switch (item[0]) {
         case "menuOpen_button":
             content.addEventListener("click", () => {
-                topBar.classList.toggle("topBarOpened");
+                topBars.classList.toggle("opened");
             });
             break;
     }
 });
 
 topBars.className = "topBars";
-topBar.className = "topBar button";
+topBar_filter.addEventListener("click", (e) => {
+    console.log(e.target);
+    topBars.classList.remove("opened");
+});
+
+topBar.className = "topBar button hidden";
+topBar.style.opacity = 0;
+
+topBar_menus.className = "topBar_menus";
+
+topBar_filter.className = "topBar_filter";
 
 d.body.appendChild(topBars);
+topBars.appendChild(topBar_filter);
 topBars.appendChild(topBar);
 
 let animationNoneTimeout;
 let last_isShowTopBar = false;
+function showTopBarAnim(show) {
+    topBar.style.animation = "none"; // アニメーションをリセット
+    void topBar.offsetWidth; // 再描画強制（リセットを反映させるトリック）
+    
+    if (show) {
+        topBar.style.animation = "topBarShow 1s ease-out both";
+        topBar.classList.remove("hidden");
+    } else {
+        topBar.style.animation = "topBarHidden 1s ease-out reverse both";
+        topBars.classList.remove("opened");
+        topBar.classList.add("hidden");
+    }
+}
+
 function scrollProcess() {
-    const scrollRatio = window.scrollY / window.innerHeight
-    const get_isShowTopBar = () => HTMLFileName === "index.html" ? scrollRatio > .25 : true;
+    const scrollRatio = window.scrollY / window.innerHeight;
+    const get_isShowTopBar = () => HTMLFileName === "index" ? window.scrollY > 100 : true;
     if (last_isShowTopBar !== get_isShowTopBar()) {
-        if (get_isShowTopBar()) {
-            clearTimeout(animationNoneTimeout);
-            topBar.style.opacity = 1;
-            topBar.style.animation = "topBarShow 1s ease-in-out";
+        if (HTMLFileName === "index") {
+            showTopBarAnim(get_isShowTopBar());
         } else {
-            if (topBar.style.opacity === 0) return;
-            clearTimeout(animationNoneTimeout);
-            topBar.style.opacity = 0;
+            topBar.style.opacity = 1;
         }
     }
     last_isShowTopBar = get_isShowTopBar();
