@@ -35,8 +35,7 @@ const titleMap = {
     meta_viewport.content = "width=device-width, initial-scale=1.0";
 
     meta_noindex.name = "robots";
-    meta_noindex.content = "noindex";
-    meta_noindex.nofollow = "";
+    meta_noindex.content = "noindex, nofollow";
     
     d.head.appendChild(meta_charset);
     d.head.appendChild(meta_viewport);
