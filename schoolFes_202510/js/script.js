@@ -161,7 +161,7 @@ const titleMap = {
 
                 // アニメーションを設定（indexを使って遅延）
                 path.style.animation = `drawPath 2s ease forwards`;
-                path.style.animationDelay = `${index * 0.1}s`; // パスごとに0.5秒ずつ遅らせる
+                path.style.animationDelay = `${index * 0.1}s`;
             });
 
             // 各svgごとのバウンディングボックス計算
