@@ -166,13 +166,17 @@ svg path {
     align-items: center;
     position: absolute;
     opacity: 0;
-    transition: 
-    ease-in-out .5s opacity,
-    ease-in-out .5s backdrop-filter,
-    ease-in-out .5s background-color,
-    ease-in-out .5s box-shadow,
-    ease-in-out .5s animation,
-    ease-in-out .5s --webkit-backdrop-filter;
+    transition:
+    height .5s ease-in-out,
+    opacity .5s ease-in-out,
+    backdrop-filter .5s ease-in-out,
+    background-color .5s ease-in-out,
+    box-shadow .5s ease-in-out,
+    animation .5s ease-in-out,
+    --webkit-backdrop-filter .5s ease-in-out;
+}
+.topBarOpened {
+    height: 160px;
 }
 .topBars .topBar .content {
     margin-right: 15px;

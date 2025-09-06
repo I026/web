@@ -134,13 +134,20 @@ const topBar = d.createElement("div");
 
 [
     ["menuOpen_button", "Menu"],
-    ["", "目次"],
     ["exhibits_button", "企画一覧"],
 ].forEach(item => {
     const content = d.createElement("div");
     content.className = `content ${item[0]}`;
     content.innerHTML = item[1];
     topBar.appendChild(content);
+
+    switch (item) {
+        case "menuOpen_button":
+            item.addEventListener("click", () => {
+                topBar.classList.toggle("topBarOpened");
+            });
+            break;
+    }
 });
 
 topBars.className = "topBars";
