@@ -65,6 +65,7 @@ const titleMap = {
         new Promise(resolve => link_style.addEventListener("load", resolve)),
         new Promise(resolve => link_customStyle.addEventListener("load", resolve)),
     ]).then(() => {
+        console.log("style : load");
         d.body.style.transition = "opacity 0.5s ease";
         d.body.style.opacity = "1";
     });
