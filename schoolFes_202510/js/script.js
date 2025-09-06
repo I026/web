@@ -82,7 +82,7 @@ const titleMap = {
     loader.style.border = "5px solid #ccc";
     loader.style.borderTop = "5px solid #333";
     loader.style.borderRadius = "50%";
-    loader.style.animation = "spin 1s linear infinite";
+    loader.style.animation = "spin 1s linear infinite, show 1s ease-in-out both";
 
     // CSSアニメーションを追加
     const styleSheet = d.createElement("style");
@@ -90,6 +90,10 @@ const titleMap = {
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+        @keyframes show {
+            from { width: 0; height: 0; }
+            to { width: 50px; height: 50px; }
         }
     `;
     d.head.appendChild(styleSheet);
