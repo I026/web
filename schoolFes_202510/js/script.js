@@ -84,9 +84,8 @@ if (HTMLFileName == "") HTMLFileName = "index";
                 path.style.opacity = 1;
 
                 setTimeout(() => {
-                    // path.style.transition = `stroke-dasharray ${length * 0.001}s ease-in-out, stroke-dashoffset ${length * 0.001}s ease-in-out`;
                     path.style.strokeDashoffset = 0;
-                });
+                }, 10);
 
                 path_idx += 1;
             });
