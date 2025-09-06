@@ -6,3 +6,52 @@ body {
 .main.content {
     min-height: 100vh;
 }
+
+.content.top .topTitle svg {
+    transform: translateY( calc(var(--scrollPx) * -1) );
+}
+
+.content.top .bottomBar {
+    position: absolute;
+    width: 100vw;
+    height: 50px;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.content.top .bottomBar .downArrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: rotate(-45deg);
+    width: 100px;
+    height: 100px;
+}
+.content.top .bottomBar .downArrow svg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@keyframes arrow {
+    from {
+        stroke-dashoffset: 1241.6280517578125;
+        opacity: 0;
+    }
+    50% {
+        stroke-dashoffset: 0;
+        opacity: .5;
+    }
+    to {
+        stroke-dashoffset: -1241.6280517578125;
+        opacity: 0;
+    }
+}
+
+.content.top .bottomBar svg path {
+    stroke-width: 50;
+    transform: rotate(-45deg);
+    transition: none;
+    animation: arrow 2s ease-in-out infinite;
+}

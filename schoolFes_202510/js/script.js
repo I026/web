@@ -76,12 +76,19 @@ if (HTMLFileName == "") HTMLFileName = "index";
             const paths = svg.querySelectorAll("path");
 
             // path の長さや stroke-dasharray 初期化
+            let path_idx = 0;
             paths.forEach(path => {
                 const length = path.getTotalLength();
-                path.style.setProperty("--path-length", length);
                 path.style.strokeDasharray = length;
                 path.style.strokeDashoffset = length;
                 path.style.opacity = 1;
+
+                setTimeout(() => {
+                    // path.style.transition = `stroke-dasharray ${length * 0.001}s ease-in-out, stroke-dashoffset ${length * 0.001}s ease-in-out`;
+                    path.style.strokeDashoffset = 0;
+                });
+
+                path_idx += 1;
             });
 
             // 各svgごとのバウンディングボックス計算
@@ -97,7 +104,7 @@ if (HTMLFileName == "") HTMLFileName = "index";
             const margin = 200; // 余白
             svg.setAttribute(
                 "viewBox",
-                `${minX - margin} ${minY - margin} ${maxX - minX + margin*2} ${maxY - minY + margin*2}`
+                `${minX - margin} ${minY - margin} ${maxX - minX + margin * 2} ${maxY - minY + margin * 2}`
             );
         });
 
@@ -188,7 +195,10 @@ function showTopBarAnim(show) {
 
 function scrollProcess() {
     const scrollRatio = window.scrollY / window.innerHeight;
-    const get_isShowTopBar = () => HTMLFileName === "index" ? window.scrollY > 100 : true;
+
+    d.documentElement.style.setProperty("--scrollPx", `${window.scrollY}px`);
+
+    const get_isShowTopBar = () => HTMLFileName === "index" ? window.scrollY !== 0 : true;
     if (last_isShowTopBar !== get_isShowTopBar()) {
         if (HTMLFileName === "index") {
             showTopBarAnim(get_isShowTopBar());
