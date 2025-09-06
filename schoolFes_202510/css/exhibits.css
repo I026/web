@@ -1,0 +1,169 @@
+.content.main .exhibits {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.content.main .exhibits .list {
+    overflow-x: hidden;
+    padding-bottom: 10px;
+    z-index: 9;
+}
+.content.main .exhibits .tile {
+    margin: var(--exhibitsTileMargin);
+    margin-bottom: 0;
+    width: calc(100vw - var(--exhibitsTileMargin) * 2);
+    height: 200px;
+    backdrop-filter: blur(10px);
+    --webkit-backdrop-filter: blur(10px);
+    border-radius: 10px;
+    background-color: rgba(211, 211, 211, .25);
+    box-shadow: 0 0 10px gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    position: relative;
+    overflow: hidden;
+}
+
+.content.main .exhibits .tile .names {
+    position: absolute;
+    width: 100%;
+    padding-left: 8px;
+    top: 8px;
+}
+.content.main .exhibits .tile .names .subText {    
+    position: absolute;
+    right: 8px;
+}
+.content.main .exhibits .tile .description {
+    position: absolute;
+    left: 8px;
+}
+.content.main .exhibits .tile .tags {
+    position: absolute;
+    font-size: 1em;
+    color: gray;
+    bottom: 8px;
+    left: 0;
+    display: flex;
+    overflow-x: scroll;
+    white-space: nowrap;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: calc(100% - 20px);
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+.content.main .exhibits .tile.sortList {
+    top: 100px;
+    position: sticky;
+    z-index: 10;
+}
+.content.main .exhibits .tile .tags::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+.content.main .exhibits .tag {
+    cursor: default;
+    display: flex;
+    flex-direction: row;
+    color: white;
+    background-color: black;
+    padding: .1em .2em .1em .1em;
+    margin-top   : 3px;
+    margin-bottom: 3px;
+    position: relative;
+    font-weight: bold;
+    /* Reverse the clip-path horizontally so the point is on the right */
+    margin-right: .5em;
+    border-radius: 5px;
+    height: 1.5em;
+    width: max-content;
+    align-items: center;
+}
+.content.main .exhibits .tag span {
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.content.main .exhibits .tile .names {
+    position: absolute;
+    width: 100%;
+    padding-left: 8px;
+    top: 8px;
+}
+.content.main .exhibits .tile .names .subText {    
+    position: absolute;
+    right: 8px;
+}
+.content.main .exhibits .tile .description {
+    position: absolute;
+    left: 8px;
+}
+.content.main .exhibits .tile .tags {
+    position: absolute;
+    font-size: 1em;
+    color: gray;
+    bottom: 8px;
+    left: 0;
+    display: flex;
+    overflow-x: scroll;
+    white-space: nowrap;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: calc(100% - 20px);
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+.content.main .exhibits .tile .tags.listView {
+    height: calc(100% - 16px);
+    flex-wrap: wrap;
+    align-content: flex-start;
+    /* white-space: normal; */
+}
+.content.main .exhibits .tile .tags.listView .tag {
+    cursor: pointer;
+    user-select: none;
+    opacity: .5;
+    transition: opacity ease-in-out .3s;
+    transition-delay: .1s;
+}
+.content.main .exhibits .tile .tags::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+.content.main .exhibits .tag {
+    cursor: default;
+    display: flex;
+    flex-direction: row;
+    color: white;
+    background-color: black;
+    padding: .1em .2em .1em .1em;
+    margin-top   : 3px;
+    margin-bottom: 3px;
+    position: relative;
+    font-weight: bold;
+    /* Reverse the clip-path horizontally so the point is on the right */
+    margin-right: .5em;
+    border-radius: 5px;
+    height: 1.5em;
+    width: max-content;
+    align-items: center;
+}
+.content.main .exhibits .tag span {
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+@keyframes tag_show {
+    0% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
