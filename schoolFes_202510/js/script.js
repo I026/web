@@ -100,7 +100,7 @@ const titleMap = {
             50% {
                 width: 55px;
                 height: 55px;
-                opacity: .25;
+                opacity: .75;
             }
             to {
                 width: 50px;
