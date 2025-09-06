@@ -79,8 +79,8 @@ const titleMap = {
     const loader = d.createElement("div");
     loader.style.width = "50px";
     loader.style.height = "50px";
-    loader.style.border = "5px solid #ccc";
-    loader.style.borderTop = "5px solid #333";
+    loader.style.border = "5px solid lightgray";
+    loader.style.borderTop = "5px solid gray";
     loader.style.borderRadius = "50%";
     loader.style.animation = "spin 1s linear infinite, show 1s ease-in-out both";
 
