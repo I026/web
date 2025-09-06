@@ -2,6 +2,7 @@
 const entries = performance.getEntriesByType("resource");
 const currentScript = entries.find(entry => entry.name.includes("script.js"));
 
+console.log("load : ", currentScript.duration, "ms")
 if (currentScript && currentScript.duration < 200) {
     topTitleContent.querySelector("video").src = "./medias/videos/IMG_1478.mp4";
 }
