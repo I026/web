@@ -82,7 +82,7 @@ const titleMap = {
     loader.style.border = "5px solid #ccc";
     loader.style.borderTop = "5px solid #333";
     loader.style.borderRadius = "50%";
-    loader.style.animation = "spin 1s linear infinite, show 1s ease-in-out both";
+    loader.style.animation = "spin 1s linear infinite, show 1s ease-out both";
 
     // CSSアニメーションを追加
     const styleSheet = d.createElement("style");
@@ -92,8 +92,16 @@ const titleMap = {
             to { transform: rotate(360deg); }
         }
         @keyframes show {
-            from { width: 0; height: 0; opacity: 0; }
-            to { width: 50px; height: 50px; opacity: 1; }
+            from {
+                width: 0;
+                height: 0;
+                opacity: 0;
+            }
+            to {
+                width: 50px;
+                height: 50px;
+                opacity: 1; 
+            }
         }
     `;
     d.head.appendChild(styleSheet);
