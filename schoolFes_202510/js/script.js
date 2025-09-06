@@ -58,6 +58,7 @@ if (HTMLFileName == "") HTMLFileName = "index";
 
     // 読み込み完了を監視
     link_style.addEventListener("load", () => {
+        console.log("style_load");
         d.body.style.opacity = 1;
     });
 
