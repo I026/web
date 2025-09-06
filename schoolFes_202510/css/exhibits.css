@@ -41,6 +41,11 @@
     position: sticky;
     z-index: 10;
 }
+.content.main .exhibits .tile.sortList.reduced {
+    --reduce: 100px;
+    height: var(--reduce) !important;
+    margin-top: calc(var(--exhibitsTileMargin) + var(--sortListArea_heightBase) - var(--reduce)) !important;
+}
 .content.main .exhibits .tile .tags::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
 }

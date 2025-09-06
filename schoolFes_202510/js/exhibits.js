@@ -283,11 +283,11 @@
 window.addEventListener("scroll", () => { // sortListAreaHeight
     const scrollRatio = window.scrollY / window.innerHeight;
     sortListArea.style.transition = "height .5s ease-in-out, margin .5s ease-in-out";
-    if (scrollRatio > .25 && exhibitsArea.querySelector(".tile")?.style.display !== "none") {
-        sortListArea.classList.add("topBarReduced");
+    if (scrollRatio > .25) {
+        sortListArea.classList.add("reduced");
         // sortListArea.style.height = "100px";
     } else {
-        sortListArea.classList.remove("topBarReduced");
+        sortListArea.classList.remove("reduced");
         // sortListArea.style.height = "var(--sortListArea_heightBase)";
     }
 });
@@ -295,7 +295,7 @@ window.addEventListener("scroll", () => { // sortListAreaHeight
 (() => {
     const element = sortListArea.querySelector(".tags.listView");
     function process () {
-        sortListArea.classList.remove("topBarReduced");
+        sortListArea.classList.remove("reduced");
     }
     element.addEventListener("click", process);
 })();
