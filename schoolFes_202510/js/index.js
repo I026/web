@@ -3,8 +3,7 @@ const entries = performance.getEntriesByType("resource");
 const currentScript = entries.find(entry => entry.name.includes("script.js"));
 
 if (currentScript && currentScript.duration < 200) {
-    const topContent = d.querySelector("video");
-    topContent.src = "./medias/videos/IMG_1478.mp4";
+    topTitleContent.querySelector("video").src = "./medias/videos/IMG_1478.mp4";
 }
 })();
 
