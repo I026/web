@@ -1,13 +1,3 @@
-(() => {
-    const entries = performance.getEntriesByType("resource");
-    const currentScript = entries.find(entry => entry.name.includes("script.js"));
-
-    console.log("load : ", currentScript.duration, "ms")
-    if (currentScript && currentScript.duration < 1000) {
-        topTitleContent.querySelector("video").src = "./medias/videos/IMG_1478.mp4";
-    }
-})();
-
 function dateUpdate () {
     const nowDate = new Date();
     if (nowDate <= new Date("2025-10-26")) {
@@ -23,3 +13,13 @@ function dateUpdate () {
 }
 dateUpdate();
 setInterval(dateUpdate, 10000);
+
+(() => {
+    const entries = performance.getEntriesByType("resource");
+    const currentScript = entries.find(entry => entry.name.includes("script.js"));
+
+    if (currentScript) {
+        console.log("load : ", currentScript.duration, "ms")
+        if (currentScript.duration < 1000) topTitleContent.querySelector("video").src = "./medias/videos/IMG_1478.mp4";
+    }
+})();
