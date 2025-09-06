@@ -97,10 +97,15 @@ const titleMap = {
                 height: 0;
                 opacity: 0;
             }
+            50% {
+                width: 55px;
+                height: 55px;
+                opacity: .25;
+            }
             to {
                 width: 50px;
                 height: 50px;
-                opacity: 1; 
+                opacity: 1;
             }
         }
     `;
