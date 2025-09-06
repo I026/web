@@ -109,8 +109,6 @@ if (HTMLFileName == "") HTMLFileName = "index";
         }
         windowResizeHandler();
         window.addEventListener("resize", windowResizeHandler);
-
-        d.body.style.opacity = 1;
     });
 })();
 
