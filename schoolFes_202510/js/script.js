@@ -49,16 +49,20 @@ if (HTMLFileName == "") HTMLFileName = "index";
 (() => { // style
     const link_style = d.createElement("link");
     const link_customStyle = d.createElement("link");
-    
+
     link_style.rel = "stylesheet";
     link_style.href = "./css/style.css";
-    
+
     link_customStyle.rel = "stylesheet";
     link_customStyle.href = `./css/${HTMLFileName}.css`;
-    
+
+    // 読み込み完了を監視
+    link_style.addEventListener("load", () => {
+        d.body.style.opacity = 1;
+    });
+
     d.head.appendChild(link_style);
     d.head.appendChild(link_customStyle);
-    console.log("style");
 })();
 
 (() => { // js
