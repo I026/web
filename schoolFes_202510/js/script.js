@@ -216,7 +216,7 @@ footer.className = "footer button";
 
         a.className = "content";
         a.innerHTML = titleMap[key];
-        a.href = `${key}.html`;
+        a.href = `${window.location.protocol === "file:" ? `${key}.html` : `${key === "index" ? "/" : key}`}`;
         
         underLine.className = "underLine";
 
