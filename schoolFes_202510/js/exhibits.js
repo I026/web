@@ -191,7 +191,7 @@
                 element.classList.remove("lowestTileStyle");
             });
 
-            const allTags = exhibitsArea.querySelectorAll(".tags .tag");
+            const allTags = mainContent.querySelectorAll(".tags .tag");
             allTags.forEach(element => {
                 element.style.opacity = `${conditions[0] ? .3 : 1}`;
             });

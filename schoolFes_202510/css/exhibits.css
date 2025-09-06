@@ -112,7 +112,7 @@
 .content.main .exhibits .tile .tags.listView .tag {
     cursor: pointer;
     user-select: none;
-    opacity: .3;
+    opacity: 1;
     transition: opacity ease-in-out .3s;
     transition-delay: .1s;
 }

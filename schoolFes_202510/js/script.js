@@ -2,6 +2,7 @@ const d = document;
 const topContentButton = d.querySelector(".content.top .button");
 const topTitleContent  = d.querySelector(".content.topTitle");
 
+const mainContent  = d.querySelector(".main.content");
 const sortListArea = d.querySelector(".exhibits .sortList");
 const exhibitsArea = d.querySelector(".exhibits .list");
 
