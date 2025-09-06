@@ -118,6 +118,7 @@ const titleMap = {
         new Promise(resolve => link_style.addEventListener("load", resolve)),
         new Promise(resolve => link_customStyle.addEventListener("load", resolve)),
     ]).then(() => {
+        d.body.style.opacity = 1;
         loadingScreen.style.opacity = 0;
         setTimeout(() => {
             loadingScreen.remove();
