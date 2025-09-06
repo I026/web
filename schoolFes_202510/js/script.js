@@ -72,8 +72,6 @@ if (HTMLFileName == "") HTMLFileName = "index";
 
 (() => { // pathsごとのviewBox設定
     window.addEventListener("DOMContentLoaded", () => {
-        d.body.style.opacity = 1;
-
         const svgs = d.querySelectorAll("svg");
         svgs.forEach(svg => {
             const paths = svg.querySelectorAll("path");
@@ -111,6 +109,8 @@ if (HTMLFileName == "") HTMLFileName = "index";
         }
         windowResizeHandler();
         window.addEventListener("resize", windowResizeHandler);
+
+        d.body.style.opacity = 1;
     });
 })();
 
@@ -121,7 +121,7 @@ if (HTMLFileName == "") HTMLFileName = "index";
 
     scriptTag.onload = () => {
         const lenis = new Lenis({
-            smoothTouch: true,
+            smoothTouch: false,
         });
         function raf(time) {
             lenis.raf(time);
