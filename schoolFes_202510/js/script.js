@@ -8,8 +8,6 @@ const exhibitsArea = d.querySelector(".exhibits .list");
 let HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
 if (HTMLFileName == "") HTMLFileName = "index";
 
-d.body.style.opacity = 0;
-
 (() => { // title
     const titleMap = {
         index: "デジタルパンフレット",
