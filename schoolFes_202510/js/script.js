@@ -56,12 +56,6 @@ if (HTMLFileName == "") HTMLFileName = "index";
     link_customStyle.rel = "stylesheet";
     link_customStyle.href = `./css/${HTMLFileName}.css`;
 
-    // 読み込み完了を監視
-    link_style.addEventListener("load", () => {
-        console.log("style_load");
-        d.body.style.opacity = 1;
-    });
-
     d.head.appendChild(link_style);
     d.head.appendChild(link_customStyle);
 })();
