@@ -1,5 +1,3 @@
-console.log("script.js");
-
 const d = document;
 const topContentButton = d.querySelector(".content.top .button");
 const topTitleContent  = d.querySelector(".content.topTitle");
@@ -7,7 +5,10 @@ const topTitleContent  = d.querySelector(".content.topTitle");
 const sortListArea = d.querySelector(".exhibits .sortList");
 const exhibitsArea = d.querySelector(".exhibits .list");
 
-const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
+let HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
+if (HTMLFileName == "") HTMLFileName = "index";
+
+d.body.style.opacity = 0;
 
 (() => { // title
     const titleMap = {
@@ -41,7 +42,7 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
     const link_favicon = d.createElement("link");
     
     link_favicon.rel = "icon";
-    link_favicon.href = "_medias/images/favicon.ico";
+    link_favicon.href = "./medias/images/favicon.ico";
     
     d.head.appendChild(link_favicon);
     console.log("favicon");
@@ -52,10 +53,10 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
     const link_customStyle = d.createElement("link");
     
     link_style.rel = "stylesheet";
-    link_style.href = "_css/style.css";
+    link_style.href = "./css/style.css";
     
     link_customStyle.rel = "stylesheet";
-    link_customStyle.href = `_css/${HTMLFileName}.css`;
+    link_customStyle.href = `./css/${HTMLFileName}.css`;
     
     d.head.appendChild(link_style);
     d.head.appendChild(link_customStyle);
@@ -65,7 +66,7 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
 (() => { // js
     const script_customJS = d.createElement("script");
     
-    script_customJS.src = `_js/${HTMLFileName}.js`;
+    script_customJS.src = `./js/${HTMLFileName}.js`;
     
     d.head.appendChild(script_customJS);
     console.log("js");
@@ -73,6 +74,7 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
 
 (() => { // pathsごとのviewBox設定
     window.addEventListener("DOMContentLoaded", () => {
+        d.body.style.opacity = 1;
 
         const svgs = d.querySelectorAll("svg");
         svgs.forEach(svg => {
@@ -129,7 +131,7 @@ const HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
         }
         requestAnimationFrame(raf);
     };
-});
+})();
 
 // topBars
 const topBars = d.createElement("div");
