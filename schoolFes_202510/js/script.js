@@ -113,12 +113,12 @@ const titleMap = {
 
     loadingScreen.appendChild(loader);
     d.body.appendChild(loadingScreen);
+    d.body.style.opacity = 1;
 
     Promise.all([
         new Promise(resolve => link_style.addEventListener("load", resolve)),
         new Promise(resolve => link_customStyle.addEventListener("load", resolve)),
     ]).then(() => {
-        d.body.style.opacity = 1;
         loadingScreen.style.opacity = 0;
         setTimeout(() => {
             loadingScreen.remove();
