@@ -88,7 +88,7 @@ const titleMap = {
     loader.style.borderTop = "5px solid gray";
     loader.style.borderRadius = "50%";
     loader.style.animation = "spin 1s linear infinite, show 1s ease-in-out both";
-    loader.style.animationDelay = ".25s";
+    loader.style.animationDelay = ".2s";
 
     // CSSアニメーションを追加
     const styleSheet = d.createElement("style");

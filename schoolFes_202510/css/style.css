@@ -20,10 +20,9 @@ body {
     height: calc(50vh - 100px);
     width: 100vw;
     position: relative;
-    overflow: hidden;
 }
 .content.top.fullSize {
-    height: calc(100vh - 100px);
+    height: 100vh;
 }
 .content.topTitle {
     display: flex;
@@ -56,6 +55,7 @@ body {
     height: 100%;
 }
 .content.topTitle .videoFilter {
+    height: calc(100% + 50px);
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
     background-color: rgba(var(--base_backgroundColor), .6);

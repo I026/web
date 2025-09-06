@@ -8,14 +8,17 @@ body {
 }
 
 .content.top .topTitle svg {
-    transform: translateY( calc(var(--scrollPx) * -1) ) scale(1.4);
+    transform: translateY( calc(var(--scrollPx) * -1) );
+}
+.content.top .topTitle svg path {
+    transform: scale(1.5) translateX(4.5%);
 }
 
 .content.top .bottomBar {
     position: absolute;
     width: 100vw;
     height: 50px;
-    bottom: 0;
+    bottom: 100px;
     display: flex;
     justify-content: center;
     align-items: center;
