@@ -1,3 +1,6 @@
+.content.main {
+    min-height: 100vh;
+}
 .content.main .exhibits {
     display: flex;
     justify-content: center;

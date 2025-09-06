@@ -7,6 +7,8 @@
     --exhibitsTileMargin: 10px;
     --topBarMargin: 10px;
     --sortListArea_heightBase: 200px;
+
+    /* --checkPathLength: 849.9996337890625; */
 }
 body {
     margin: 0;
@@ -265,17 +267,32 @@ svg path {
     height: calc(var(--checkBox_BaseWidth) - var(--checkBox_borderWidth) * 2);
     width : calc(var(--checkBox_BaseWidth) - var(--checkBox_borderWidth) * 2);
     display: inline-block;
+    overflow: visible;
     position: relative;
     margin: 5px;
     margin-right: 2px;
     top: 0;
     opacity: .5;
-    transition: 
-    ease-in-out .1s background-color;
+    transition:
+    background-color .5s ease-in-out;
+}
+.checkBox svg {
+    overflow: visible;
 }
 .checkedBox .checkBox {
     opacity: 1;
     background-color: lightgray;
+}
+.checkBox svg path {
+    transform: scale(1.25) translate(1%, -1%);
+    stroke: black;
+    animation: none !important;
+    stroke-dasharray: var(--checkPathLength) !important;
+    stroke-dashoffset: var(--checkPathLength) !important;
+    stroke-width: 125;
+}
+.checkedBox .checkBox svg path {
+    stroke-dashoffset: 0 !important;
 }
 .checkedBox {
     opacity: 1 !important;

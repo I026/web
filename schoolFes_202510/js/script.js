@@ -141,55 +141,56 @@ const titleMap = {
     console.log("js");
 })();
 
-(() => { // pathsごとのviewBox設定
-    window.addEventListener("DOMContentLoaded", () => {
-        const svgs = d.querySelectorAll("svg");
-        svgs.forEach(svg => {
-            const paths = svg.querySelectorAll("path");
+function setPathViewBox () { // pathsごとのviewBox設定
+    const svgs = d.querySelectorAll("svg");
+    svgs.forEach(svg => {
+        const paths = svg.querySelectorAll("path");
 
-            // path の長さや stroke-dasharray 初期化
-            paths.forEach((path, index) => {
-                const length = path.getTotalLength();
+        // path の長さや stroke-dasharray 初期化
+        paths.forEach((path, index) => {
+            const length = path.getTotalLength();
 
-                // strokeDasharray と offset を設定
-                path.style.strokeDasharray = length;
-                path.style.strokeDashoffset = length;
-                path.style.opacity = 1;
+            // strokeDasharray と offset を設定
+            path.style.strokeDasharray = length;
+            path.style.strokeDashoffset = length;
+            path.style.opacity = 1;
 
-                // CSS変数に長さをセット
-                path.style.setProperty("--pathLength", length);
+            // CSS変数に長さをセット
+            path.style.setProperty("--pathLength", length);
+            
+            // アニメーションを設定（indexを使って遅延）
+            path.style.animation = `drawPath 2s ease forwards`;
+            path.style.animationDelay = `${index * 0.1}s`;
 
-                // アニメーションを設定（indexを使って遅延）
-                path.style.animation = `drawPath 2s ease forwards`;
-                path.style.animationDelay = `${index * 0.1}s`;
-            });
+            if (path.parentElement.parentElement.classList.contains("checkBox")) {
+                d.documentElement.style.setProperty("--checkPathLength", length);
+                setTimeout(() => {
+                    path.style.transition = "stroke-dashoffset .5s ease-in-out";
+                });
+            }
 
-            // 各svgごとのバウンディングボックス計算
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            paths.forEach(path => {
-                const bbox = path.getBBox();
-                if (bbox.x < minX) minX = bbox.x;
-                if (bbox.y < minY) minY = bbox.y;
-                if (bbox.x + bbox.width > maxX) maxX = bbox.x + bbox.width;
-                if (bbox.y + bbox.height > maxY) maxY = bbox.y + bbox.height;
-            });
-
-            const margin = 200; // 余白
-            svg.setAttribute(
-                "viewBox",
-                `${minX - margin} ${minY - margin} ${maxX - minX + margin * 2} ${maxY - minY + margin * 2}`
-            );
+            console.log(path, length);
         });
 
-        // トップタイトルの幅をCSS変数にセット
-        const topTitleContent = d.querySelector(".content.topTitle");
-        function windowResizeHandler() {
-            topTitleContent?.style.setProperty("--titleImageWidth", topTitleContent.clientWidth + "px");
-        }
-        windowResizeHandler();
-        window.addEventListener("resize", windowResizeHandler);
+        // 各svgごとのバウンディングボックス計算
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        paths.forEach(path => {
+            const bbox = path.getBBox();
+            if (bbox.x < minX) minX = bbox.x;
+            if (bbox.y < minY) minY = bbox.y;
+            if (bbox.x + bbox.width > maxX) maxX = bbox.x + bbox.width;
+            if (bbox.y + bbox.height > maxY) maxY = bbox.y + bbox.height;
+        });
+
+        const margin = 200; // 余白
+        svg.setAttribute(
+            "viewBox",
+            `${minX - margin} ${minY - margin} ${maxX - minX + margin * 2} ${maxY - minY + margin * 2}`
+        );
     });
-})();
+}
+
+window.addEventListener("DOMContentLoaded", setPathViewBox);
 
 (() => { // スムーズスクロール
     const scriptTag = d.createElement("script");

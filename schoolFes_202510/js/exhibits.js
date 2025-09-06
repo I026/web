@@ -79,16 +79,20 @@
             displayName: "有志企画",
             themeColor: "tan"
         },
+        announcement: {
+            displayName: "発表",
+            themeColor: "orchid"
+        },
         foods: {
             displayName: "飲食",
             themeColor: "crimson"
         },
         merchandise: {
-            displayName: "グッズ",
+            displayName: "物販",
             themeColor: "lightcoral"
         },
         attractions: {
-            displayName: "体験",
+            displayName: "アトラクション",
             themeColor: "skyblue"
         },
         display: {
@@ -208,6 +212,9 @@
 
     sortUpdate();
 
+    {/* <svg xmlns="http://www.w3.org/2000/svg">
+        <path d="M416.256,646.066L239.48,469.289L133.414,575.355L416.256,858.198L946.586,327.868L840.52,221.802L416.256,646.066Z"/>
+    </svg> */}
     const tags = d.createElement("div");
     tags.className = "tags listView";
     sortListArea.appendChild(tags);
@@ -222,8 +229,10 @@
 
         function generateCheckBox () {
             const checkBox = d.createElement("div");
+            checkBox.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M239.48,469.289 L416.256,646.066 L840.52,221.802"/></svg>`;
             checkBox.className = "checkBox";
-            newTag.appendChild(checkBox);   
+            newTag.appendChild(checkBox);
+            setPathViewBox();
         }
         tags.appendChild(newTag);
 
@@ -243,7 +252,7 @@
                 tag_isCheckeds.push(tag.classList.contains("checkedBox"));
             });
 
-            console.log(tag_isCheckeds);
+            // console.log(tag_isCheckeds);
             const isAllSelected = tag_isCheckeds.every(item => item === false);
             if (isAllSelected) { // すべてのタグが選ばれていない
                 resetButton.classList.remove("checkedBox");
