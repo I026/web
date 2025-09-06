@@ -18,8 +18,12 @@ setInterval(dateUpdate, 10000);
     const entries = performance.getEntriesByType("resource");
     const currentScript = entries.find(entry => entry.name.includes("script.js"));
 
+    function loadVideo () {topTitleContent.querySelector("video").src = "./medias/videos/IMG_1478.mp4"}
+
     if (currentScript) {
         console.log("load : ", currentScript.duration, "ms")
-        if (currentScript.duration < 1000) topTitleContent.querySelector("video").src = "./medias/videos/IMG_1478.mp4";
+        if (currentScript.duration < 1000) loadVideo();
+    } else {
+        loadVideo();
     }
 })();

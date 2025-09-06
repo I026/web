@@ -39,7 +39,7 @@ body {
     align-items: center;
     object-fit: contain;
     position: absolute;
-    --scale: calc(min(100vh, 100vw));
+    --scale: calc(max(100vh, 100vw));
     height: var(--scale);
     width : var(--scale);
 }
@@ -52,8 +52,8 @@ body {
     height: 100%;
 }
 .content.topTitle .videoFilter {
-    backdrop-filter: blur(1px);
-    --webkit-backdrop-filter: blur(1px);
+    backdrop-filter: blur(10px);
+    --webkit-backdrop-filter: blur(10px);
     background-color: transparent;
 }
 @keyframes topBackground {
