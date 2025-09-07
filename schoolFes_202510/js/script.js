@@ -298,16 +298,16 @@ topBars.appendChild(topBar);
 let animationNoneTimeout;
 let last_isShowTopBar = false;
 function showTopBarAnim(show) {
-    topBar.style.animation = "none"; // アニメーションをリセット
-    void topBar.offsetWidth; // 再描画強制（リセットを反映させるトリック）
+    /* topBar.style.animation = "none"; // アニメーションをリセット
+    void topBar.offsetWidth; // 再描画強制（リセットを反映させるトリック） */
     
     if (show) {
         topBar.style.animation = "topBarShow 1s ease-out both";
         topBar.classList.remove("hidden");
     } else {
-        topBar.style.animation = "topBarHidden 1s ease-out reverse both";
+        /* topBar.style.animation = "topBarHidden 1s ease-out reverse both";
         topBars.classList.remove("opened");
-        topBar.classList.add("hidden");
+        topBar.classList.add("hidden"); */
     }
 }
 
