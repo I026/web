@@ -55,27 +55,16 @@ const titleMap = {
 
 (() => { // style + loading screen
     const link_style = d.createElement("link");
+    const link_customStyle = d.createElement("link");
+
     link_style.rel = "stylesheet";
     link_style.href = "./css/style.css";
-    d.head.appendChild(link_style);
 
-    /* const link_customStyle = d.createElement("link");
     link_customStyle.rel = "stylesheet";
     link_customStyle.href = `./css/${HTMLFileName}.css`;
-    d.head.appendChild(link_customStyle); */
 
-    fetch(`./css/${HTMLFileName}.css`)
-    .then(res => {
-        if (res.ok) {
-            const link_customStyle = d.createElement("link");
-            link_customStyle.rel = "stylesheet";
-            link_customStyle.href = `./css/${HTMLFileName}.css`;
-            d.head.appendChild(link_customStyle);
-        } else {
-            console.warn(`${HTMLFileName}.css は存在しません`);
-        }
-    })
-    .catch(() => console.warn(`${HTMLFileName}.css の取得に失敗しました`));
+    d.head.appendChild(link_style);
+    d.head.appendChild(link_customStyle);
 
     // loading screen
     const loadingScreen = d.createElement("div");
@@ -134,8 +123,14 @@ const titleMap = {
     d.body.style.opacity = 1;
 
     Promise.all([
-        new Promise(resolve => link_style.addEventListener("load", resolve)),
-        new Promise(resolve => link_customStyle.addEventListener("load", resolve)),
+        new Promise(resolve => {
+            link_style.addEventListener("load", resolve);
+            link_style.addEventListener("error", resolve); // 存在しない場合でもresolve
+        }),
+        new Promise(resolve => {
+            link_customStyle.addEventListener("load", resolve);
+            link_customStyle.addEventListener("error", resolve); // 存在しない場合でもresolve
+        })
     ]).then(() => {
         loadingScreen.style.opacity = 0;
         setTimeout(() => {
@@ -145,24 +140,12 @@ const titleMap = {
 })();
 
 (() => { // js
-    /* const script_customJS = d.createElement("script");
+    const script_customJS = d.createElement("script");
     
     script_customJS.src = `./js/${HTMLFileName}.js`;
 
     d.head.appendChild(script_customJS);
-    console.log("js"); */
-
-    fetch(`./js/${HTMLFileName}.js`)
-    .then(res => {
-        if (res.ok) {
-            const script_customJS = d.createElement("script");
-            script_customJS.src = `./js/${HTMLFileName}.js`;
-            d.head.appendChild(script_customJS);
-        } else {
-            console.warn(`${HTMLFileName}.js は存在しません`);
-        }
-    })
-    .catch(() => console.warn(`${HTMLFileName}.js の取得に失敗しました`));
+    console.log("js");
 })();
 
 function setPathViewBox () { // pathsごとのviewBox設定
