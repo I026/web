@@ -270,19 +270,18 @@ function marginBottomUpdate (isToClose) {
     let currentPos = [];
     let difference = [0, 0];
 
-    let sortListTransition = "";
+    sortListArea.style.transition = "opacity .5s ease-in-out";
+
+    let sortListTransition = sortListArea.style.transition;
     const getMarginBottomPx = () => (
         window.getComputedStyle(sortListArea).marginBottom.replace("px", "") * 1
     );
     let touchStart_marginBottom = getMarginBottomPx();
     
-    sortListArea.style.transition = "opacity .5s ease-in-out";
-    
     sortListArea.addEventListener("touchstart", (e) => {
         sortListArea.classList.add("nowBeingHeld");
         sortListArea.style.transition = "none";
         difference = [0, 0];
-        sortListTransition = sortListArea.style.transition;
         const touch = e.touches[0];
         touchStartPos = [touch.clientX, touch.clientY];
         touchStart_marginBottom = getMarginBottomPx();
