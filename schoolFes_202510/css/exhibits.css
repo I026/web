@@ -32,41 +32,58 @@
 
 .content.main .exhibits .tile .names {
     position: absolute;
+    height: auto;
     width: 100%;
     padding-left: 8px;
     top: 8px;
 }
+.content.main .exhibits .tile.sortList * {
+    touch-action: none;
+}
 .content.main .exhibits .tile.sortList {
-    top: 100px;
-    position: sticky;
+    touch-action: none;
+    /* top: 40vh; */
+    /* height: auto !important; */
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    height: max-content;
+    height: 60vh;
+    bottom: -10px;
+    margin-bottom: var(--marginBottom) !important;
+    padding-bottom: 10px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    left: 0;
     z-index: 10;
+    transition: opacity .5s ease-in-out;
+    /* 
+    --reducePx: calc(50vh + 10px);
+    --currentHeight: clamp(
+        100px,
+        calc(0px - (var(--scrollPx) - var(--reducePx))),
+        200px
+    );
+    height: var(--currentHeight);
+    margin-top: calc(100px - var(--currentHeight)); */
+}
+.content.main .exhibits .tile.sortList .topBar {
+    top: 0;
+    width: 100%;
+    height: 40px;
+}
+
+.content.main .exhibits .tile.sortList:not(.reduced) {
+    margin-bottom: 0;
 }
 .content.main .exhibits .tile.sortList.reduced {
-    --reduce: 100px;
-    height: var(--reduce) !important;
-    margin-top: calc(var(--exhibitsTileMargin) + var(--sortListArea_heightBase) - var(--reduce)) !important;
+    margin-bottom: calc(-60vh + 80px);
 }
+
 .content.main .exhibits .tile .tags::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
-}
-.content.main .exhibits .tag {
-    cursor: default;
-    display: flex;
-    flex-direction: row;
-    color: white;
-    background-color: black;
-    padding: .1em .2em .1em .1em;
-    margin-top   : 3px;
-    margin-bottom: 3px;
-    position: relative;
-    font-weight: bold;
-    /* Reverse the clip-path horizontally so the point is on the right */
-    margin-right: .5em;
-    border-radius: 5px;
-    height: 1.5em;
-    width: max-content;
-    align-items: center;
-    transition: opacity .5s ease-in-out;
 }
 .content.main .exhibits .tag span {
     bottom: 0;
@@ -92,21 +109,24 @@
     position: absolute;
     font-size: 1em;
     color: gray;
-    bottom: 8px;
+    bottom: 0;
     left: 0;
+    width: 100%;
     display: flex;
     overflow-x: scroll;
     white-space: nowrap;
-    padding-left: 10px;
-    padding-right: 10px;
-    width: calc(100% - 20px);
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
 }
 .content.main .exhibits .tile .tags.listView {
-    height: calc(100% - 16px);
+    /* height: calc(100% - 16px); */
+    top: 0;
+    padding: 2.5px;
+    width: 100%;
+    height: min-content;
     flex-wrap: wrap;
     align-content: flex-start;
+    position: relative;
     /* white-space: normal; */
 }
 .content.main .exhibits .tile .tags.listView .tag {
@@ -126,12 +146,10 @@
     color: white;
     background-color: black;
     padding: .1em .2em .1em .1em;
-    margin-top   : 3px;
-    margin-bottom: 3px;
     position: relative;
     font-weight: bold;
     /* Reverse the clip-path horizontally so the point is on the right */
-    margin-right: .5em;
+    margin: .25em;
     border-radius: 5px;
     height: 1.5em;
     width: max-content;

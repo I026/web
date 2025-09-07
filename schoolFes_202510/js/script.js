@@ -3,8 +3,6 @@ const topContentButton = d.querySelector(".content.top .button");
 const topTitleContent  = d.querySelector(".content.topTitle");
 
 const mainContent  = d.querySelector(".main.content");
-const sortListArea = d.querySelector(".exhibits .sortList");
-const exhibitsArea = d.querySelector(".exhibits .list");
 
 let HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
 if (HTMLFileName == "") HTMLFileName = "index";
