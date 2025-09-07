@@ -260,7 +260,7 @@ function marginBottomUpdate (isToClose) {
         sortListArea.style.setProperty("--marginBottom", 0);
         sortListArea.classList.add("opened");
     } else {
-        sortListArea.style.setProperty("--marginBottom", "calc(-60vh + 130px)");
+        sortListArea.style.setProperty("--marginBottom", "min(calc(-60vh + 130px), 0px)");
         sortListArea.classList.remove("opened");
     }
 }
@@ -293,10 +293,10 @@ function marginBottomUpdate (isToClose) {
         currentPos = [touch.clientX, touch.clientY];
         difference = [touchStartPos[0] - currentPos[0], touchStartPos[1] - currentPos[1]];
 
-        sortListArea.style.setProperty("--marginBottom", `${Math.min(touchStart_marginBottom + difference[1], 0)}px`);
+        sortListArea.style.setProperty("--marginBottom", `${Math.min( touchStart_marginBottom + difference[1], 0 )}px`);
 
         console.log(
-            Math.abs(difference[1]), window.innerHeight * .25
+            Math.min(touchStart_marginBottom + difference[1], 0) * -.15
         );
     });
 
