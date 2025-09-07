@@ -232,10 +232,10 @@ const topBar_filter = d.createElement("div");
         </g>
         <g class="close">
             <g transform="matrix(0.84617,0.84617,-0.591951,0.591951,341.915,-139.383)">
-                <path style="transition-delay: .1s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
+                <path style="opacity: 0; transition-delay: .1s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
             </g>
             <g transform="matrix(0.84617,-0.84617,0.591951,0.591951,-139.383,738.085)">
-                <path style="transition-delay: 0s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
+                <path style="opacity: 0; transition-delay: 0s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
             </g>
         </g>
         </svg>`],

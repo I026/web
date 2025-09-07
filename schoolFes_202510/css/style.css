@@ -19,7 +19,7 @@ body {
     background-color: rgb(var(--base_backgroundColor));
 }
 .content.top {
-    height: calc(50vh - 100px);
+    height: 50vh;
     width: 100vw;
     position: relative;
 }
@@ -71,9 +71,10 @@ body {
     }
 }
 .content.topTitle svg {
-    --scale: min(100vw, 100vh);
+    --scale: min(100vw, 80vh);
     width : var(--scale);
     height: var(--scale);
+    transform: translateY(2.5vh);
 }
 svg {
     position: relative;
