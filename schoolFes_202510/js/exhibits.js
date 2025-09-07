@@ -65,6 +65,17 @@
     }
     const getExhibits = (n) => ([ Object.keys(exhibits)[n], Object.values(exhibits)[n] ])
     const exhibitsLength = Object.keys(exhibits).length;
+    const tagGroups = {
+        project: {
+            isMultSel: false
+        },
+        genre: {
+            isMultSel: true
+        },
+        grade: {
+            isMultSel: false
+        }
+    };
     const tagOrder = {
         resetButton: {
             displayName: "すべて解除",
@@ -73,55 +84,68 @@
         },
         byClass: {
             displayName: "クラス企画",
-            themeColor: "orange"
+            themeColor: "orange",
+            group: tagGroups.project
         },
         byVolunteers: {
             displayName: "有志企画",
-            themeColor: "tan"
+            themeColor: "tan",
+            group: tagGroups.project
         },
         announcement: {
             displayName: "発表",
-            themeColor: "orchid"
+            themeColor: "orchid",
+            group: tagGroups.genre
         },
         foods: {
             displayName: "飲食",
-            themeColor: "crimson"
+            themeColor: "crimson",
+            group: tagGroups.genre
         },
         merchandise: {
             displayName: "物販",
-            themeColor: "lightcoral"
+            themeColor: "lightcoral",
+            group: tagGroups.genre
         },
         attractions: {
             displayName: "アトラクション",
-            themeColor: "skyblue"
+            themeColor: "skyblue",
+            group: tagGroups.genre
         },
         display: {
             displayName: "展示",
-            themeColor: "lightseagreen"
+            themeColor: "lightseagreen",
+            group: tagGroups.genre
         },
         J1: {
             displayName: "中学1年",
-            themeColor: "gray"
+            themeColor: "gray",
+            group: tagGroups.grade
         },
         J2: {
             displayName: "中学2年",
-            themeColor: "gray"
+            themeColor: "gray",
+            group: tagGroups.grade
         },
         J3: {
             displayName: "中学3年",
-            themeColor: "gray"
+            themeColor: "gray",
+            group: tagGroups.grade
         },
         H1: {
             displayName: "高校1年",
-            themeColor: "slategray"
+            themeColor: "slategray",
+            group: tagGroups.grade
         },
         H2: {
             displayName: "高校2年",
-            themeColor: "slategray"
+            themeColor: "slategray",
+            group: tagGroups.grade
         },
         H3: {
             displayName: "高校3年",
-            themeColor: "slategray"
+            themeColor: "slategray",
+            group: tagGroups.grade
         },
     };
     for (let i = 0; i < exhibitsLength; i += 1) {
@@ -235,6 +259,11 @@
         newTag.style.backgroundColor = tagOrder[tag].themeColor;
         newTag.textContent = tagOrder[tag].displayName;
         newTag.setAttribute("tag", tag);
+        if (tagOrder[tag].group) {
+            const groupKey = Object.keys(tagGroups).find(key => tagGroups[key] === tagOrder[tag].group);
+            newTag.setAttribute("group", groupKey);
+        }
+        if (tagOrder[tag].group) newTag.setAttribute("isMultSel", tagOrder[tag].group.isMultSel);
         if (tagOrder[tag].isButton) newTag.setAttribute("isButton", "");
 
         function generateCheckBox () {
@@ -282,6 +311,13 @@
                 updateResetButton(true);
             } else {
                 newTag.classList.toggle("checkedBox");
+                if (newTag.getAttribute("isMultSel")) {
+                    tags.querySelectorAll(`.tag[group='${newTag.getAttribute("group")}'][isMultSel='false']`).forEach(tag => {
+                        if (tag !== newTag) {
+                            tag.classList.remove("checkedBox");
+                        }
+                    });
+                }
             }
             updateResetButton();
             sortUpdate();
