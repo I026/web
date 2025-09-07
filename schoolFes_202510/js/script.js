@@ -134,12 +134,24 @@ const titleMap = {
 })();
 
 (() => { // js
-    const script_customJS = d.createElement("script");
+    /* const script_customJS = d.createElement("script");
     
     script_customJS.src = `./js/${HTMLFileName}.js`;
 
     d.head.appendChild(script_customJS);
-    console.log("js");
+    console.log("js"); */
+
+    fetch(`./js/${HTMLFileName}.js`)
+    .then(res => {
+        if (res.ok) {
+            const script_customJS = d.createElement("script");
+            script_customJS.src = `./js/${HTMLFileName}.js`;
+            d.head.appendChild(script_customJS);
+        } else {
+            console.warn(`${HTMLFileName}.js は存在しません`);
+        }
+    })
+    .catch(() => console.warn(`${HTMLFileName}.js の取得に失敗しました`));
 })();
 
 function setPathViewBox () { // pathsごとのviewBox設定
