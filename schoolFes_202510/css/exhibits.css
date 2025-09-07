@@ -15,7 +15,7 @@
 .content.main .exhibits .tile {
     margin: var(--exhibitsTileMargin);
     margin-bottom: 0;
-    width: calc(100vw - var(--exhibitsTileMargin) * 2);
+    width: calc(100% - var(--exhibitsTileMargin) * 2);
     height: 200px;
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
