@@ -220,14 +220,14 @@ const topBar_filter = d.createElement("div");
 [
     ["menuOpen_button", `<svg xmlns="http://www.w3.org/2000/svg">
         <g class="open">
-            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,509.671)">
-                <path style="transition-delay: .2s !important;" d="M969.748,406.536L67.24,406.536L969.748,406.536Z"/>
+            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,-110.329)">
+                <path style="transition-delay: 0s !important;"  d="M969.748,406.536L969.748,406.536L67.24,406.536Z"/>
             </g>
             <g transform="matrix(1.19666,0,0,0.837145,-80.4631,199.671)">
-                <path style="transition-delay: .1s !important;" d="M969.748,406.536L67.24,406.536L969.748,406.536Z"/>
+                <path style="transition-delay: .1s !important;" d="M969.748,406.536L969.748,406.536L67.24,406.536Z"/>
             </g>
-            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,-110.329)">
-                <path style="transition-delay: 0s !important;"  d="M969.748,406.536L67.24,406.536L969.748,406.536Z"/>
+            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,509.671)">
+                <path style="transition-delay: .2s !important;" d="M969.748,406.536L969.748,406.536L67.24,406.536Z"/>
             </g>
         </g>
         <g class="close">
