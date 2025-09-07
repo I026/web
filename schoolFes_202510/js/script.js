@@ -12,10 +12,10 @@ if (HTMLFileName == "") HTMLFileName = "index";
 const titleMap = {
     index: "デジタルパンフレット",
     exhibits: "企画一覧",
+    lyrics: "歌詞",
 };
 
 (() => { // title
-    
     const title = d.createElement("title");
     title.textContent = `学園祭${titleMap[HTMLFileName] ? ` : ${titleMap[HTMLFileName]}` : ""}`;
     d.head.appendChild(title);
@@ -137,7 +137,7 @@ const titleMap = {
     const script_customJS = d.createElement("script");
     
     script_customJS.src = `./js/${HTMLFileName}.js`;
-    
+
     d.head.appendChild(script_customJS);
     console.log("js");
 })();
@@ -243,7 +243,7 @@ const topBar_filter = d.createElement("div");
         </svg>`],
     ["", "Home", "index"],
     ["", "企画一覧", "exhibits"],
-    ["", "歌詞", "index"],
+    ["", "歌詞", "lyrics"],
 ].forEach(item => {
     const content = d.createElement("a");
     content.className = `content ${item[0]}`;
