@@ -164,7 +164,6 @@ function setPathViewBox () { // pathsごとのviewBox設定
             path.style.animationDelay = `${index * 0.1}s`;
 
             if (path.parentElement.parentElement.classList.contains("checkBox")) {
-                d.documentElement.style.setProperty("--checkPathLength", length);
                 setTimeout(() => {
                     path.style.transition = "stroke-dashoffset .5s ease-in-out";
                 });
@@ -210,6 +209,8 @@ window.addEventListener("DOMContentLoaded", setPathViewBox);
     };
 })();
 
+const isLocalFile = window.location.protocol === "file:";
+
 // topBars
 const topBars = d.createElement("div");
 const topBar = d.createElement("div");
@@ -217,7 +218,27 @@ const topBar_menus = d.createElement("div");
 const topBar_filter = d.createElement("div");
 
 [
-    ["menuOpen_button", "Menu"],
+    ["menuOpen_button", `<svg xmlns="http://www.w3.org/2000/svg">
+        <g class="open">
+            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,-210.329)">
+                <path style="transition-delay: .2s !important;" d="M67.24,406.536 L969.748,406.536 L67.24,406.536 Z"/>
+            </g>
+            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,99.671)">
+                <path style="transition-delay: .1s !important;" d="M67.24,406.536 L969.748,406.536 L67.24,406.536 Z"/>
+            </g>
+            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,409.671)">
+                <path style="transition-delay: 0s !important;"  d="M67.24,406.536 L969.748,406.536 L67.24,406.536 Z"/>
+            </g>
+        </g>
+        <g class="close">
+            <g transform="matrix(0.84617,0.84617,-0.591951,0.591951,341.915,-139.383)">
+                <path style="transition-delay: .1s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
+            </g>
+            <g transform="matrix(0.84617,-0.84617,0.591951,0.591951,-139.383,738.085)">
+                <path style="transition-delay: 0s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
+            </g>
+        </g>
+        </svg>`],
     ["exhibits_button", "企画一覧"],
 ].forEach(item => {
     const content = d.createElement("div");
@@ -226,13 +247,16 @@ const topBar_filter = d.createElement("div");
     topBar.appendChild(topBar_menus);
     topBar_menus.appendChild(content);
 
-    switch (item[0]) {
-        case "menuOpen_button":
-            content.addEventListener("click", () => {
+    content.addEventListener("click", () => {
+        switch (item[0]) {
+            case "menuOpen_button":
                 topBars.classList.toggle("opened");
-            });
-            break;
-    }
+                break;
+            case "exhibits_button":
+                window.location.href = `${isLocalFile ? "exhibits.html" : "exhibits"}`;
+                break;
+        }
+    });
 });
 
 topBars.className = "topBars";
@@ -289,7 +313,7 @@ footer.className = "footer button";
 
         a.className = "content";
         a.innerHTML = titleMap[key];
-        a.href = `${window.location.protocol === "file:" ? `${key}.html` : `${key === "index" ? "./" : key}`}`;
+        a.href = `${isLocalFile ? `${key}.html` : `${key === "index" ? "./" : key}`}`;
         
         underLine.className = "underLine";
 

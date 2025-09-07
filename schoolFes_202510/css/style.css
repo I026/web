@@ -161,6 +161,28 @@ svg path {
     backdrop-filter .5s ease-in-out,
     --webkit-backdrop-filter .5s ease-in-out;
 }
+.topBars .topBar svg path {
+    animation: none !important;
+    stroke-width: 80px !important;
+    stroke-dashoffset: 0 !important;
+    transition:
+    stroke-dashoffset 1s ease-in-out,
+    opacity .5s ease-in-out
+    !important;
+}
+.topBars.opened .topBar svg .open path {
+    stroke-dashoffset: var(--pathLength) !important;
+    opacity: 0 !important;
+}
+.topBars.opened .topBar svg .close path {
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+}
+.topBars .topBar svg .close path {
+    stroke-dashoffset: var(--pathLength) !important;
+    opacity: 0 !important;
+}
+
 .topBars .topBar .topBar_menus {
     height: 40px;
     display: flex;
@@ -285,8 +307,8 @@ svg path {
     transform: scale(1.25) translate(1%, -1%);
     stroke: black;
     animation: none !important;
-    stroke-dasharray: var(--checkPathLength) !important;
-    stroke-dashoffset: var(--checkPathLength) !important;
+    stroke-dasharray: var(--pathLength) !important;
+    stroke-dashoffset: var(--pathLength) !important;
     stroke-width: 125;
 }
 .checkedBox .checkBox svg path {
