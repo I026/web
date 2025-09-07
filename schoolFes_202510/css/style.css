@@ -104,7 +104,9 @@ svg path {
     transform-origin: 50% 50%;
 }
 .content.top svg {
-    transform: scale(.75);
+    width: 100vw;
+    max-width: 900px;
+    max-height: 450px;
 }
 .content.top svg path {
     stroke-width: 3;
