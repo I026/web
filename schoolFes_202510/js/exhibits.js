@@ -423,7 +423,7 @@ window.addEventListener("scroll", () => { // sortListAreaHeight
         sortListArea.style.pointerEvents = "auto";
     }
 
-    if (Math.abs(lastScrollPx - window.scrollY) > 200) marginBottomUpdate(false);
+    // if (Math.abs(lastScrollPx - window.scrollY) > 200) marginBottomUpdate(false);
 
     console.log(Date.now() - lastScrollTime + " ms差")
     if (Date.now() - lastScrollTime > 20) lastScrollPx = window.scrollY;
