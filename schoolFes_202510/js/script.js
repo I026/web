@@ -386,5 +386,3 @@ function scrollProcess() {
 }
 scrollProcess();
 window.addEventListener("scroll", scrollProcess);
-
-alert(window.innerWidth);
