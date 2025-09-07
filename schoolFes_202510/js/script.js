@@ -211,6 +211,8 @@ window.addEventListener("DOMContentLoaded", setPathViewBox);
 
 const isLocalFile = window.location.protocol === "file:";
 
+const getHref = (item) => `${isLocalFile ? `${item}.html` : `${item === "index" ? "./" : item}`}`;
+
 // topBars
 const topBars = d.createElement("div");
 const topBar = d.createElement("div");
@@ -239,21 +241,27 @@ const topBar_filter = d.createElement("div");
             </g>
         </g>
         </svg>`],
-    ["exhibits_button", "企画一覧"],
+    ["", "デジタルパンフレット", "index"],
+    ["", "企画一覧", "exhibits"],
 ].forEach(item => {
-    const content = d.createElement("div");
+    const content = d.createElement("a");
     content.className = `content ${item[0]}`;
     content.innerHTML = item[1];
     topBar.appendChild(topBar_menus);
     topBar_menus.appendChild(content);
 
+    if (item[2]) {
+        const underLine = d.createElement("div");
+        underLine.className = "underLine";
+        content.href = getHref(item[2]);
+
+        content.appendChild(underLine);
+    }
+
     content.addEventListener("click", () => {
         switch (item[0]) {
             case "menuOpen_button":
                 topBars.classList.toggle("opened");
-                break;
-            case "exhibits_button":
-                window.location.href = `${isLocalFile ? "exhibits.html" : "exhibits"}`;
                 break;
         }
     });
@@ -313,7 +321,7 @@ footer.className = "footer button";
 
         a.className = "content";
         a.innerHTML = titleMap[key];
-        a.href = `${isLocalFile ? `${key}.html` : `${key === "index" ? "./" : key}`}`;
+        a.href = getHref(key);
         
         underLine.className = "underLine";
 
