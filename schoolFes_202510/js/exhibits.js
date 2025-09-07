@@ -254,7 +254,7 @@ function marginBottomUpdate (isToClose) {
     if (isToClose) {
         sortListArea.style.setProperty("--marginBottom", 0);
     } else {
-        sortListArea.style.setProperty("--marginBottom", "calc(-60vh + 85px)");
+        sortListArea.style.setProperty("--marginBottom", "calc(-60vh + 130px)");
     }
 }
 
