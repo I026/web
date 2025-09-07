@@ -162,6 +162,9 @@ svg path {
     backdrop-filter .5s ease-in-out,
     --webkit-backdrop-filter .5s ease-in-out;
 }
+.topBars .topBar svg > g {
+    transform: translateY(-25%);
+}
 .topBars .topBar svg path {
     animation: none !important;
     stroke-width: 80px !important;
