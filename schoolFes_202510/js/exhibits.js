@@ -247,14 +247,21 @@ function sortUpdate () {
 sortUpdate();
 
 const sortList_topBar = d.createElement("div");
+sortList_topBar.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg">
+                <path d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
+                <path class="close" d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
+            </svg>`;
 sortList_topBar.className = "topBar";
 
 
 function marginBottomUpdate (isToClose) {
     if (isToClose) {
         sortListArea.style.setProperty("--marginBottom", 0);
+        sortListArea.classList.add("opened");
     } else {
         sortListArea.style.setProperty("--marginBottom", "calc(-60vh + 130px)");
+        sortListArea.classList.remove("opened");
     }
 }
 
@@ -272,6 +279,7 @@ function marginBottomUpdate (isToClose) {
     sortListArea.style.transition = "opacity .5s ease-in-out";
     
     sortListArea.addEventListener("touchstart", (e) => {
+        sortListArea.classList.add("nowBeingHeld");
         sortListArea.style.transition = "none";
         difference = [0, 0];
         sortListTransition = sortListArea.style.transition;
@@ -298,7 +306,7 @@ function marginBottomUpdate (isToClose) {
     let lastTouchendTime = Date.now();
 
     function touchend (e) {
-        console.log(Date.now() - lastTouchendTime);
+        sortListArea.classList.remove("nowBeingHeld");
         if (Date.now() - lastTouchendTime < 50) return;
         sortListArea.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}margin-bottom .4s ease-out`;
         const isNowOpen = touchStart_marginBottom === 0;
@@ -308,9 +316,8 @@ function marginBottomUpdate (isToClose) {
                 marginBottomUpdate( !isNowOpen );
             } else { // swipe
                 console.log("Math.abs(difference[1])", Math.abs(difference[1]));
-                const absDifference = Math.abs(difference[1]);
                 const threshold = 100;
-                marginBottomUpdate( isNowOpen ? absDifference < threshold : absDifference > threshold );
+                marginBottomUpdate( isNowOpen ? difference[1] * -1 < threshold : difference[1] > threshold );
             }
         }
         lastTouchendTime = Date.now();

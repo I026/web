@@ -146,11 +146,12 @@ const titleMap = {
     console.log("js");
 })();
 
-function setPathViewBox () { // pathsごとのviewBox設定
-    const svgs = d.querySelectorAll("svg");
+function setPathViewBox() {
+    const svgs = document.querySelectorAll("svg");
+
     svgs.forEach(svg => {
         const paths = svg.querySelectorAll("path");
-
+        
         // path の長さや stroke-dasharray 初期化
         paths.forEach((path, index) => {
             const length = path.getTotalLength();
@@ -176,21 +177,29 @@ function setPathViewBox () { // pathsごとのviewBox設定
             // console.log(path, length);
         });
 
-        // 各svgごとのバウンディングボックス計算
+        if (paths.length === 0) return; // pathがない場合はスキップ
+
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        // 各pathの境界を計算
         paths.forEach(path => {
             const bbox = path.getBBox();
-            if (bbox.x < minX) minX = bbox.x;
-            if (bbox.y < minY) minY = bbox.y;
-            if (bbox.x + bbox.width > maxX) maxX = bbox.x + bbox.width;
-            if (bbox.y + bbox.height > maxY) maxY = bbox.y + bbox.height;
+            minX = Math.min(minX, bbox.x);
+            minY = Math.min(minY, bbox.y);
+            maxX = Math.max(maxX, bbox.x + bbox.width);
+            maxY = Math.max(maxY, bbox.y + bbox.height);
         });
 
-        const margin = 200; // 余白
-        svg.setAttribute(
-            "viewBox",
-            `${minX - margin} ${minY - margin} ${maxX - minX + margin * 2} ${maxY - minY + margin * 2}`
-        );
+        // 余白を追加
+        const margin = 200;
+        const x = minX - margin;
+        const y = minY - margin;
+        const width = (maxX - minX) + margin * 2;
+        const height = (maxY - minY) + margin * 2;
+
+        // SVG全体が収まるように設定
+        svg.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
+        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     });
 }
 

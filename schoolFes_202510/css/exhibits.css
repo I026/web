@@ -73,14 +73,51 @@
     top: 0;
     width: 100%;
     height: 40px;
+    display: flex;
+    justify-content: center;
+}
+.content.main .exhibits .tile.sortList .topBar svg {
+    margin-top: 5px;
+    height: 1.75em;
+    width: 1.75em;
+    pointer-events: none;
+    transform-origin: 50% 50%;
+    transform: rotate(-45deg);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    transition:
+    opacity .5s ease-in-out,
+    transform .5s ease-in-out;
+}
+.content.main .exhibits .tile.sortList .topBar svg path {
+    transform: rotate(180deg);
+    transform-origin: 51.3% 54.4%;
+    stroke-width: 60px;
+    animation: none !important;
+    transition:
+    opacity .5s ease-in-out,
+    stroke-dashoffset .5s ease-in-out;
+}
+.content.main .exhibits .tile.sortList .topBar svg path:not(.close) {
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+}
+.content.main .exhibits .tile.sortList .topBar svg path.close {
+    transform: rotate(0deg);
+    transform-origin: 50% 50%;
+    stroke-dashoffset: var(--pathLength) !important;
+    opacity: 0 !important;
+}
+.content.main .exhibits .tile.sortList.opened .topBar svg path.close {
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+}
+.content.main .exhibits .tile.sortList.opened .topBar svg path {
+    stroke-dashoffset: var(--pathLength) !important;
+    opacity: 0 !important;
 }
 
-.content.main .exhibits .tile.sortList:not(.reduced) {
-    margin-bottom: 0;
-}
-.content.main .exhibits .tile.sortList.reduced {
-    margin-bottom: calc(-60vh + 80px);
-}
 
 .content.main .exhibits .tile .tags::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
@@ -133,8 +170,12 @@
     cursor: pointer;
     user-select: none;
     opacity: 1;
-    transition: opacity ease-in-out .3s;
+    margin-bottom: calc(var(--marginBottom) * -.11);
+    transition: margin-bottom .25s ease-out;
     transition-delay: .1s;
+}
+.content.main .exhibits .tile.nowBeingHeld .tags.listView .tag {
+    transition: none;
 }
 .content.main .exhibits .tile .tags::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
@@ -148,7 +189,6 @@
     padding: .1em .2em .1em .1em;
     position: relative;
     font-weight: bold;
-    /* Reverse the clip-path horizontally so the point is on the right */
     margin: .25em;
     border-radius: 5px;
     height: 1.5em;

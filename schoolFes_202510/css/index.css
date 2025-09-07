@@ -7,9 +7,6 @@ body {
 .content.top .topTitle svg {
     transform: translateY( calc(var(--scrollPx) * -1) );
 }
-.content.top .topTitle svg path {
-    transform: scale(1.5) translateX(4.5%);
-}
 
 .content.top .bottomBar {
     position: absolute;
