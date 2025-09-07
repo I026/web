@@ -55,16 +55,27 @@ const titleMap = {
 
 (() => { // style + loading screen
     const link_style = d.createElement("link");
-    const link_customStyle = d.createElement("link");
-
     link_style.rel = "stylesheet";
     link_style.href = "./css/style.css";
+    d.head.appendChild(link_style);
 
+    /* const link_customStyle = d.createElement("link");
     link_customStyle.rel = "stylesheet";
     link_customStyle.href = `./css/${HTMLFileName}.css`;
+    d.head.appendChild(link_customStyle); */
 
-    d.head.appendChild(link_style);
-    d.head.appendChild(link_customStyle);
+    fetch(`./css/${HTMLFileName}.css`)
+    .then(res => {
+        if (res.ok) {
+            const link_customStyle = d.createElement("link");
+            link_customStyle.rel = "stylesheet";
+            link_customStyle.href = `./css/${HTMLFileName}.css`;
+            d.head.appendChild(link_customStyle);
+        } else {
+            console.warn(`${HTMLFileName}.css は存在しません`);
+        }
+    })
+    .catch(() => console.warn(`${HTMLFileName}.css の取得に失敗しました`));
 
     // loading screen
     const loadingScreen = d.createElement("div");
