@@ -259,28 +259,32 @@ function marginBottomUpdate (isToClose) {
 }
 
 (() => {
-    let touchStartPos = [];
+    let touchStartPos = [0, 0];
     let currentPos = [];
-    let difference = [];
+    let difference = [0, 0];
 
     let sortListTransition = "";
-    let touchStart_marginBottom = 0;
-
+    const getMarginBottomPx = () => (
+        window.getComputedStyle(sortListArea).marginBottom.replace("px", "") * 1
+    );
+    let touchStart_marginBottom = getMarginBottomPx();
+    
     sortListArea.style.transition = "opacity .5s ease-in-out";
-
-    sortList_topBar.addEventListener("touchstart", (e) => {
-        sortListTransition = sortListArea.style.transition;
+    
+    sortListArea.addEventListener("touchstart", (e) => {
         sortListArea.style.transition = "none";
+        difference = [0, 0];
+        sortListTransition = sortListArea.style.transition;
         const touch = e.touches[0];
         touchStartPos = [touch.clientX, touch.clientY];
-        touchStart_marginBottom = window.getComputedStyle(sortListArea).marginBottom.replace("px", "") * 1;
+        touchStart_marginBottom = getMarginBottomPx();
         sortListArea.classList.remove("reduced");
     });
 
-    sortList_topBar.addEventListener("touchmove", (e) => {
+    sortListArea.addEventListener("touchmove", (e) => {
         const touch = e.touches[0];
         currentPos = [touch.clientX, touch.clientY];
-        difference = [touchStartPos[0] - currentPos[0], touchStartPos[1] - currentPos[1]]
+        difference = [touchStartPos[0] - currentPos[0], touchStartPos[1] - currentPos[1]];
 
         sortListArea.style.setProperty("--marginBottom", `${Math.min(touchStart_marginBottom + difference[1], 0)}px`);
 
@@ -289,14 +293,34 @@ function marginBottomUpdate (isToClose) {
         );
     });
 
-    function touchend () {
-        sortListArea.style.transition = `${sortListTransition}, margin-bottom .4s ease-out`;
-        marginBottomUpdate(
-            Math.abs(difference[1]) < 100 || Math.abs(difference[1]) == 0 ? touchStart_marginBottom === 0 : touchStart_marginBottom !== 0
-        );
+    marginBottomUpdate(false);
+
+    let lastTouchendTime = Date.now();
+
+    function touchend (e) {
+        console.log(Date.now() - lastTouchendTime);
+        if (Date.now() - lastTouchendTime < 50) return;
+        sortListArea.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}margin-bottom .4s ease-out`;
+        const isNowOpen = touchStart_marginBottom === 0;
+        console.log("isNowOpen : ", isNowOpen);
+        if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {
+            if (e?.target === sortList_topBar && Math.abs(difference[1]) === 0) { // topBarTap
+                marginBottomUpdate( !isNowOpen );
+            } else { // swipe
+                console.log("Math.abs(difference[1])", Math.abs(difference[1]));
+                const absDifference = Math.abs(difference[1]);
+                const threshold = 100;
+                marginBottomUpdate( isNowOpen ? absDifference < threshold : absDifference > threshold );
+            }
+        }
+        lastTouchendTime = Date.now();
     }
-    touchend();
-    sortList_topBar.addEventListener("touchend", touchend);
+    sortListArea.addEventListener("mouseup",  e => {
+        difference = [0, 0];
+        touchStart_marginBottom = getMarginBottomPx();
+        touchend(e);
+    });
+    sortListArea.addEventListener("touchend", e => touchend(e));
 })();
 
 sortListArea.appendChild(sortList_topBar);
