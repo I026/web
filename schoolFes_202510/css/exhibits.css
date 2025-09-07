@@ -170,7 +170,7 @@
     cursor: pointer;
     user-select: none;
     opacity: 1;
-    margin-bottom: min(calc(var(--marginBottom) * -.25), 5em);
+    /* margin-bottom: min(calc(var(--marginBottom) * -.25), 5em); */
     transition: margin-bottom .25s ease-out;
     transition-delay: .1s;
 }
