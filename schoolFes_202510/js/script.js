@@ -241,8 +241,9 @@ const topBar_filter = d.createElement("div");
             </g>
         </g>
         </svg>`],
-    ["", "デジタルパンフレット", "index"],
+    ["", "Home", "index"],
     ["", "企画一覧", "exhibits"],
+    ["", "歌詞", "index"],
 ].forEach(item => {
     const content = d.createElement("a");
     content.className = `content ${item[0]}`;
@@ -253,7 +254,12 @@ const topBar_filter = d.createElement("div");
     if (item[2]) {
         const underLine = d.createElement("div");
         underLine.className = "underLine";
-        content.href = getHref(item[2]);
+        const href = getHref(item[2]);
+        content.href = href;
+        if (window.location.href.split("/").pop() === href) {
+            content.style.pointerEvents = "none";
+            content.style.opacity = .5;
+        }
 
         content.appendChild(underLine);
     }
