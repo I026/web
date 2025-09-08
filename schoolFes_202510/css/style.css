@@ -102,7 +102,7 @@ svg path, svg rect {
     opacity: 0;
     stroke-dasharray: var(--pathLength);
     stroke-dashoffset: var(--pathLength);
-    animation: drawPath 2.5s ease-in-out both;
+    animation: drawPath 1.25s ease-in-out both;
     transform-origin: 50% 50%;
 }
 .content.top svg {
