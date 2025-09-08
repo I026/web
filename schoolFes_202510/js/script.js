@@ -281,6 +281,7 @@ topBar.querySelector(".menuOpen_button").addEventListener("click", () => {
         const href = getHref(item[2]);
         content.href = href;
         const fileName = window.location.href.split("/").pop();
+        console.log(fileName, href)
         if (fileName === "" ? "index.html" : fileName === href) {
             content.style.pointerEvents = "none";
             content.style.opacity = .5;
