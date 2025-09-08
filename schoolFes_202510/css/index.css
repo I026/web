@@ -9,6 +9,7 @@ body {
 }
 .content.top .topTitle svg path {
     transform: scale(1.5);
+    transform-origin: 35% 25%;
 }
 
 .content.top .bottomBar {

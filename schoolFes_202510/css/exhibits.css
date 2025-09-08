@@ -82,7 +82,6 @@
     width: 1.75em;
     pointer-events: none;
     transform-origin: 50% 50%;
-    transform: rotate(-45deg);
     position: relative;
     display: flex;
     justify-content: center;
@@ -90,30 +89,35 @@
     opacity .5s ease-in-out,
     transform .5s ease-in-out;
 }
-.content.main .exhibits .tile.sortList .topBar svg path {
-    transform: rotate(180deg);
-    transform-origin: 51.3% 54.4%;
+.content.main .exhibits .tile.sortList .topBar svg g {
+    transform-origin: 50% 50%;
+    transform: translateY(15%);
+}
+.content.main .exhibits .tile.sortList .topBar svg g path {
+    /* transform-origin: 51.3% 54.4%; */
     stroke-width: 60px;
     animation: none !important;
+    transform: rotate(-225deg) !important;
     transition:
     opacity .5s ease-in-out,
     stroke-dashoffset .5s ease-in-out;
 }
-.content.main .exhibits .tile.sortList .topBar svg path:not(.close) {
+.content.main .exhibits .tile.sortList .topBar svg g:not(.close) path {
     stroke-dashoffset: 0 !important;
     opacity: 1 !important;
 }
-.content.main .exhibits .tile.sortList .topBar svg path.close {
-    transform: rotate(0deg);
-    transform-origin: 50% 50%;
+.content.main .exhibits .tile.sortList .topBar svg g.close {
+    transform: translateY(-15%) rotate(180deg) !important;
+}
+.content.main .exhibits .tile.sortList .topBar svg g.close path {
     stroke-dashoffset: var(--pathLength) !important;
     opacity: 0 !important;
 }
-.content.main .exhibits .tile.sortList.opened .topBar svg path.close {
+.content.main .exhibits .tile.sortList.opened .topBar svg g.close path {
     stroke-dashoffset: 0 !important;
     opacity: 1 !important;
 }
-.content.main .exhibits .tile.sortList.opened .topBar svg path {
+.content.main .exhibits .tile.sortList.opened .topBar svg g path {
     stroke-dashoffset: var(--pathLength) !important;
     opacity: 0 !important;
 }
@@ -155,6 +159,9 @@
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
 }
+.content.main .exhibits .tile .tags::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
 .content.main .exhibits .tile .tags.listView {
     /* height: calc(100% - 16px); */
     top: 0;
@@ -171,17 +178,17 @@
     user-select: none;
     opacity: 1;
     /* margin-bottom: min(calc(var(--marginBottom) * -.25), 5em); */
-    transition: margin-bottom .25s ease-out;
+    transition:
+    margin-bottom .25s ease-out,
+    opacity .25s ease-out;
     transition-delay: .1s;
 }
 .content.main .exhibits .tile:not(.opened) .tags.listView .tag {
-    margin-bottom: 2.5em;
+    opacity: .25;
+    pointer-events: none;
 }
 .content.main .exhibits .tile.nowBeingHeld .tags.listView .tag {
     transition: none;
-}
-.content.main .exhibits .tile .tags::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
 }
 .content.main .exhibits .tag {
     cursor: default;

@@ -150,23 +150,38 @@ function setPathViewBox() {
     const svgs = document.querySelectorAll("svg");
 
     svgs.forEach(svg => {
+        svg.querySelectorAll("path").forEach(originalPath => {
+            const dAttr = originalPath.getAttribute("d");
+            const subPaths = dAttr.match(/M[^M]+/g); // Mで始まるサブパスを分割
+            if (subPaths && subPaths.length > 1) {
+                subPaths.forEach(subD => {
+                    const newPath = originalPath.cloneNode(false);
+                    newPath.setAttribute("d", subD.trim());
+                    originalPath.parentNode.insertBefore(newPath, originalPath);
+                });
+                originalPath.remove();
+            }
+        });
+
         const paths = svg.querySelectorAll("path");
-        
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
         // path の長さや stroke-dasharray 初期化
         paths.forEach((path, index) => {
-            const length = path.getTotalLength();
+            let length;
+            try {
+                length = path.getTotalLength();
+            } catch (e) {
+                return;
+            }
 
-            // strokeDasharray と offset を設定
-            path.style.strokeDasharray = length;
-            path.style.strokeDashoffset = length;
             path.style.opacity = 1;
 
             // CSS変数に長さをセット
             path.style.setProperty("--pathLength", length);
             
             // アニメーションを設定（indexを使って遅延）
-            path.style.animation = `drawPath 2s ease forwards`;
-            path.style.animationDelay = `${index * 0.1}s`;
+            path.style.animationDelay = `${index * 0.05}s`;
 
             if (path.parentElement.parentElement.classList.contains("checkBox")) {
                 setTimeout(() => {
@@ -174,15 +189,7 @@ function setPathViewBox() {
                 });
             }
 
-            // console.log(path, length);
-        });
-
-        if (paths.length === 0) return; // pathがない場合はスキップ
-
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-        // 各pathの境界を計算
-        paths.forEach(path => {
+            // 各pathの境界を計算
             const bbox = path.getBBox();
             minX = Math.min(minX, bbox.x);
             minY = Math.min(minY, bbox.y);
@@ -202,8 +209,6 @@ function setPathViewBox() {
         svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     });
 }
-
-window.addEventListener("DOMContentLoaded", setPathViewBox);
 
 (() => { // スムーズスクロール
     const scriptTag = d.createElement("script");
@@ -232,28 +237,34 @@ const topBar = d.createElement("div");
 const topBar_menus = d.createElement("div");
 const topBar_filter = d.createElement("div");
 
+topBar.innerHTML = `
+<svg xmlns="http://www.w3.org/2000/svg" class="menuOpen_button">
+    <g class="open">
+        <g transform="matrix(1.19666,0,0,0.837145,-80.4631,-110.329)">
+            <path style="transition-delay: 0s !important;"  d="M969.748,406.536L969.748,406.536L67.24,406.536Z"/>
+        </g>
+        <g transform="matrix(1.19666,0,0,0.837145,-80.4631,199.671)">
+            <path style="transition-delay: .1s !important;" d="M969.748,406.536L969.748,406.536L67.24,406.536Z"/>
+        </g>
+        <g transform="matrix(1.19666,0,0,0.837145,-80.4631,509.671)">
+            <path style="transition-delay: .2s !important;" d="M969.748,406.536L969.748,406.536L67.24,406.536Z"/>
+        </g>
+    </g>
+    <g class="close">
+        <g transform="matrix(0.84617,0.84617,-0.591951,0.591951,341.915,-139.383)">
+            <path style="opacity: 0; transition-delay: .1s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
+        </g>
+        <g transform="matrix(0.84617,-0.84617,0.591951,0.591951,-139.383,738.085)">
+            <path style="opacity: 0; transition-delay: 0s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
+        </g>
+    </g>
+</svg>`;
+
+topBar.querySelector(".menuOpen_button").addEventListener("click", () => {
+    topBars.classList.toggle("opened");
+});
+
 [
-    ["menuOpen_button", `<svg xmlns="http://www.w3.org/2000/svg">
-        <g class="open">
-            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,-110.329)">
-                <path style="transition-delay: 0s !important;"  d="M969.748,406.536L969.748,406.536L67.24,406.536Z"/>
-            </g>
-            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,199.671)">
-                <path style="transition-delay: .1s !important;" d="M969.748,406.536L969.748,406.536L67.24,406.536Z"/>
-            </g>
-            <g transform="matrix(1.19666,0,0,0.837145,-80.4631,509.671)">
-                <path style="transition-delay: .2s !important;" d="M969.748,406.536L969.748,406.536L67.24,406.536Z"/>
-            </g>
-        </g>
-        <g class="close">
-            <g transform="matrix(0.84617,0.84617,-0.591951,0.591951,341.915,-139.383)">
-                <path style="opacity: 0; transition-delay: .1s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
-            </g>
-            <g transform="matrix(0.84617,-0.84617,0.591951,0.591951,-139.383,738.085)">
-                <path style="opacity: 0; transition-delay: 0s !important;" d="M969.748,406.536 L67.24,406.536 L969.748,406.536 Z"/>
-            </g>
-        </g>
-        </svg>`],
     ["", "Home", "index"],
     ["", "企画一覧", "exhibits"],
     ["", "歌詞", "lyrics"],
@@ -276,15 +287,8 @@ const topBar_filter = d.createElement("div");
 
         content.appendChild(underLine);
     }
-
-    content.addEventListener("click", () => {
-        switch (item[0]) {
-            case "menuOpen_button":
-                topBars.classList.toggle("opened");
-                break;
-        }
-    });
 });
+
 
 topBars.className = "topBars";
 topBar_filter.addEventListener("click", (e) => {
@@ -393,3 +397,4 @@ function scrollProcess() {
 }
 scrollProcess();
 window.addEventListener("scroll", scrollProcess);
+window.addEventListener("DOMContentLoaded", setPathViewBox);

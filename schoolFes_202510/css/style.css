@@ -79,12 +79,12 @@ body {
 }
 svg {
     position: relative;
-    width: 100%;
+    /* width: 100%;
     height: 100%;
     padding: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: flex-start; */
 }
 @keyframes drawPath {
     from {
@@ -94,12 +94,14 @@ svg {
         stroke-dashoffset: 0;
     }
 }
-svg path {
+svg path, svg rect {
     position: absolute;
     fill: none;
     stroke: black;
-    stroke-width: 2;
+    stroke-width: 3;
     opacity: 0;
+    stroke-dasharray: var(--pathLength);
+    stroke-dashoffset: var(--pathLength);
     animation: drawPath 2.5s ease-in-out both;
     transform-origin: 50% 50%;
 }
@@ -153,11 +155,15 @@ svg path {
     width: calc(100vw - var(--topBarMargin) * 4);
     margin: var(--topBarMargin);
     height: 40px;
+    padding-left: 0;
+    padding-right: 0;
     border-radius: calc(40px - var(--topBarMargin));
     background-color: rgba(var(--base_backgroundColor), .1);
     cursor: default;
     align-items: center;
     position: relative;
+    display: block;
+    align-items: center;
     transition:
     height .5s ease-in-out,
     opacity .5s ease-in-out,
@@ -167,29 +173,35 @@ svg path {
     backdrop-filter .5s ease-in-out,
     --webkit-backdrop-filter .5s ease-in-out;
 }
-.topBars .topBar svg > g {
+.topBars .topBar svg.menuOpen_button {
+    position: absolute;
+    height: 2.5em;
+    width: 2.5em;
+    right: 20px;
+    z-index: 20;
+}
+.topBars .topBar svg.menuOpen_button > g {
     transform: translateY(-25%);
     width: 100%;
     height: 100%;
 }
-.topBars .topBar svg path {
+.topBars .topBar svg.menuOpen_button path {
     animation: none !important;
     stroke-width: 80px !important;
     stroke-dashoffset: 0 !important;
     transition:
     stroke-dashoffset 1s ease-in-out,
-    opacity .5s ease-in-out
-    !important;
+    opacity .5s ease-in-out;
 }
-.topBars.opened .topBar svg .open path {
+.topBars.opened .topBar svg.menuOpen_button .open path {
     stroke-dashoffset: var(--pathLength) !important;
     opacity: 0 !important;
 }
-.topBars.opened .topBar svg .close path {
+.topBars.opened .topBar svg.menuOpen_button .close path {
     stroke-dashoffset: 0 !important;
     opacity: 1 !important;
 }
-.topBars .topBar svg .close path {
+.topBars .topBar svg.menuOpen_button .close path {
     stroke-dashoffset: var(--pathLength) !important;
     opacity: 0 !important;
 }
@@ -197,12 +209,22 @@ svg path {
 .topBars .topBar .topBar_menus {
     height: 40px;
     display: flex;
+    white-space: nowrap;
+    position: relative;
+    overflow-x: scroll;
     justify-content: left;
-    display: flex;
     align-items: center;
     margin: 0;
     padding: 0;
+    padding-left : 20px;
+    padding-right: 20px;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
 }
+.topBars .topBar .topBar_menus::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
 .topBars.opened .topBar {
     height: calc(40vh - 40px) !important;
 }
@@ -345,15 +367,16 @@ svg path {
     bottom: var(--margin);
     padding: var(--margin);
 }
-.footers .footer .title {
-    display: flex;
-    align-items: center;
-}
 .footers .footer {
+    overflow: scroll;
     background-color: lightgray;
     width: 100%;
     height: 100%;
     padding: 20px;
+}
+.footers .footer .title {
+    display: flex;
+    align-items: center;
 }
 .footers .footer span.name {
     margin-top: 5px;

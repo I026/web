@@ -249,8 +249,12 @@ sortUpdate();
 const sortList_topBar = d.createElement("div");
 sortList_topBar.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg">
-                <path d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
-                <path class="close" d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
+                <g>
+                    <path d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
+                </g>
+                <g class="close">
+                    <path d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
+                </g>
             </svg>`;
 sortList_topBar.className = "topBar";
 
