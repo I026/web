@@ -34,19 +34,15 @@ body {
 }
 
 @keyframes arrow {
-    0% {
+    from {
         stroke-dashoffset: 1241.6280517578125;
         opacity: 0;
     }
-    30% {
+    50% {
         stroke-dashoffset: 0;
         opacity: .5;
     }
-    70% {
-        stroke-dashoffset: 0;
-        opacity: .5;
-    }
-    100% {
+    to {
         stroke-dashoffset: -1241.6280517578125;
         opacity: 0;
     }
