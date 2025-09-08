@@ -35,7 +35,7 @@ body {
 
 @keyframes arrow {
     from {
-        stroke-dashoffset: 1241.6280517578125;
+        stroke-dasharray: var(--pathLength);
         opacity: 0;
     }
     50% {
@@ -43,7 +43,7 @@ body {
         opacity: .5;
     }
     to {
-        stroke-dashoffset: -1241.6280517578125;
+        stroke-dashoffset: 0;
         opacity: 0;
     }
 }
