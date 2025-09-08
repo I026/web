@@ -21,22 +21,20 @@ body {
     justify-content: center;
     align-items: center;
 }
-.content.top .bottomBar .downArrow {
+.content.top .bottomBar {
     display: flex;
     justify-content: center;
     align-items: center;
-    transform: rotate(-45deg);
-    width: 100px;
-    height: 100px;
 }
-.content.top .bottomBar .downArrow svg {
+.content.top .bottomBar svg {
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100%;
 }
 
 @keyframes arrow {
-    from {
+    0% {
         stroke-dashoffset: 1241.6280517578125;
         opacity: 0;
     }
@@ -48,7 +46,7 @@ body {
         stroke-dashoffset: 0;
         opacity: .5;
     }
-    to {
+    100% {
         stroke-dashoffset: -1241.6280517578125;
         opacity: 0;
     }
