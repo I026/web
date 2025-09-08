@@ -280,7 +280,8 @@ topBar.querySelector(".menuOpen_button").addEventListener("click", () => {
         underLine.className = "underLine";
         const href = getHref(item[2]);
         content.href = href;
-        if (window.location.href.split("/").pop() === href) {
+        const fileName = window.location.href.split("/").pop();
+        if (fileName ? fileName : "index.html" === href) {
             content.style.pointerEvents = "none";
             content.style.opacity = .5;
         }
