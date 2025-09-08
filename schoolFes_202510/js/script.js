@@ -282,7 +282,7 @@ topBar.querySelector(".menuOpen_button").addEventListener("click", () => {
         content.href = href;
         const fileName = window.location.href.split("/").pop();
         console.log("fileName : " + fileName, " href : " + href);
-        if ((fileName == "" ? "./" : fileNam)e == href) {
+        if ((fileName == "" ? "./" : fileName) == href) {
             content.style.pointerEvents = "none";
             content.style.opacity = .5;
         }
