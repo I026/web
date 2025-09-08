@@ -185,8 +185,16 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     displayTagNames.map(subArr => subArr[0]).forEach(item => {
         tile.setAttribute(`tag_${item}`, "");
     });
-
     tags.classList.add("tags");
+
+    
+    tile.addEventListener("click", () => {
+        const allTiles = exhibitsArea.querySelectorAll(".tile");
+        allTiles.forEach(element => {
+            if (element !== tile) element.classList.remove("opened");
+        });
+        tile.classList.toggle("opened");
+    });
 
     tile.appendChild(names);
     tile.appendChild(description);

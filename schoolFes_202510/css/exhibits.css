@@ -28,6 +28,14 @@
     font-size: 1.2em;
     position: relative;
     overflow: hidden;
+    transition: height .5s ease-in-out;
+}
+.content.main .exhibits .tile.opened {
+    height: min(60vh, 600px);
+}
+
+.content.main .exhibits .tile .description {
+    top: 3em;
 }
 
 .content.main .exhibits .tile .names {
