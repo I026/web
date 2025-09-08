@@ -282,6 +282,11 @@ function marginBottomUpdate (isToClose) {
     );
     let touchStart_marginBottom = getMarginBottomPx();
     
+    sortList_topBar.querySelector("svg path").style.strokeDashoffset = "var(--pathLength)";
+    setTimeout(() => {
+        sortList_topBar.querySelector("svg path").style.strokeDashoffset = "";
+    }, 50);
+
     sortListArea.addEventListener("touchstart", (e) => {
         sortListArea.classList.add("nowBeingHeld");
         sortListArea.style.transition = "none";

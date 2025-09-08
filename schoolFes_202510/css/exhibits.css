@@ -98,27 +98,25 @@
     stroke-width: 60px;
     animation: none !important;
     transform: rotate(-225deg) !important;
+    stroke-dashoffset: 0;
+    opacity: 1 !important;
     transition:
     opacity .5s ease-in-out,
     stroke-dashoffset .5s ease-in-out;
-}
-.content.main .exhibits .tile.sortList .topBar svg g:not(.close) path {
-    stroke-dashoffset: 0 !important;
-    opacity: 1 !important;
 }
 .content.main .exhibits .tile.sortList .topBar svg g.close {
     transform: translateY(-15%) rotate(180deg) !important;
 }
 .content.main .exhibits .tile.sortList .topBar svg g.close path {
-    stroke-dashoffset: var(--pathLength) !important;
+    stroke-dashoffset: var(--pathLength);
     opacity: 0 !important;
 }
 .content.main .exhibits .tile.sortList.opened .topBar svg g.close path {
-    stroke-dashoffset: 0 !important;
+    stroke-dashoffset: 0;
     opacity: 1 !important;
 }
 .content.main .exhibits .tile.sortList.opened .topBar svg g path {
-    stroke-dashoffset: var(--pathLength) !important;
+    stroke-dashoffset: var(--pathLength);
     opacity: 0 !important;
 }
 
