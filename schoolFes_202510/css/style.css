@@ -341,6 +341,9 @@ svg path, svg rect {
     opacity: 1;
     background-color: lightgray;
 }
+.checkBox svg {
+    transform: translateY(-20%);
+}
 .checkBox svg path {
     transform: scale(1.25) translate(1%, -1%);
     stroke: black;

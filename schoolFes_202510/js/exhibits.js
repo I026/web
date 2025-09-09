@@ -154,6 +154,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     const tile = d.createElement("div");
     const names = d.createElement("div");
     const description = d.createElement("div");
+    const locationMap = d.createElement("div");
     const tags = d.createElement("div");
 
     tile.style.animation = "tag_show .5s both";
@@ -165,6 +166,8 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     
     description.innerHTML = `<span>${getExhibits(i)[1].description}</span>`;
     description.classList.add("description");
+
+    locationMap.className = "locationMap";
 
     let displayTagNames = [];
     const usedTags = new Set();
@@ -198,6 +201,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
 
     tile.appendChild(names);
     tile.appendChild(description);
+    tile.appendChild(locationMap);
     tile.appendChild(tags);
     exhibitsArea.appendChild(tile);
 }
@@ -254,18 +258,69 @@ function sortUpdate () {
 
 sortUpdate();
 
+const exhibitsBottomBar = d.createElement("div");
 const sortList_topBar = d.createElement("div");
-sortList_topBar.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg">
-                <g>
-                    <path d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
-                </g>
-                <g class="close">
-                    <path d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
-                </g>
-            </svg>`;
-sortList_topBar.className = "topBar";
 
+(() => {
+    const sortList_tabs = d.createElement("div");
+    sortList_topBar.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg">
+                    <g>
+                        <path d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
+                    </g>
+                    <g class="close">
+                        <path d="M228.451,230.092L228.451,850.906L849.265,850.906"/>
+                    </g>
+                </svg>`;
+    sortList_topBar.className = "topBar";
+
+    sortList_tabs.className = "tabs";
+
+    function tabSelectedUpdate (tab) {
+        sortList_tabs.querySelectorAll(".tab").forEach(tab => {
+            tab.classList.remove("selected");
+        });
+
+        tab.classList.add("selected");
+    }
+
+    [
+        "絞り込み",
+        "地図",
+    ].forEach((item, index) => {
+        const tab = d.createElement("div");
+
+        tab.className = "tab";
+        tab.innerHTML = item;
+
+        function tabClicked () {
+            tabSelectedUpdate(tab);
+            exhibitsBottomBar.scrollTo({
+                top: 0,
+                left: index * exhibitsBottomBar.scrollWidth,
+                behavior: "smooth"
+            });
+        }
+
+        tab.addEventListener("click", tabClicked);
+
+        sortList_tabs.appendChild(tab);
+    });
+
+    exhibitsBottomBar.addEventListener("scroll", () => {
+        const tab = sortList_tabs.querySelectorAll(".tab");
+        if (Math.round(exhibitsBottomBar.scrollLeft) % sortList_tabs.scrollWidth === 0) {
+            tabSelectedUpdate(tab[Math.round(exhibitsBottomBar.scrollLeft / sortList_tabs.scrollWidth)]);
+        }
+    });
+
+    sortListArea.appendChild(sortList_topBar);
+    sortListArea.appendChild(sortList_tabs);
+
+    exhibitsBottomBar.className = "content";
+    sortListArea.appendChild(exhibitsBottomBar);
+
+})();
 
 function marginBottomUpdate (isToClose) {
     if (isToClose) {
@@ -346,11 +401,11 @@ function marginBottomUpdate (isToClose) {
     sortListArea.addEventListener("touchend", e => touchend(e));
 })();
 
-sortListArea.appendChild(sortList_topBar);
+const listView = d.createElement("div");
+listView.className = "tags listView";
+exhibitsBottomBar.appendChild(listView);
 
-const tags = d.createElement("div");
-tags.className = "tags listView";
-sortListArea.appendChild(tags);
+// ↓exhibitsBottomBar contents
 Object.keys(tagOrder).forEach(tag => {
     const newTag = d.createElement("span");
     newTag.className = "tag";
@@ -372,7 +427,7 @@ Object.keys(tagOrder).forEach(tag => {
         newTag.appendChild(checkBox);
         setPathViewBox();
     }
-    tags.appendChild(newTag);
+    listView.appendChild(newTag);
 
     if (tagOrder[tag].isButton) {
         newTag.classList.add("checkedBox");
@@ -411,7 +466,7 @@ Object.keys(tagOrder).forEach(tag => {
         } else {
             newTag.classList.toggle("checkedBox");
             if (newTag.getAttribute("isMultSel")) {
-                tags.querySelectorAll(`.tag[group='${newTag.getAttribute("group")}'][isMultSel='false']`).forEach(tag => {
+                listView.querySelectorAll(`.tag[group='${newTag.getAttribute("group")}'][isMultSel='false']`).forEach(tag => {
                     if (tag !== newTag) {
                         tag.classList.remove("checkedBox");
                     }
@@ -425,6 +480,13 @@ Object.keys(tagOrder).forEach(tag => {
         tagClicked();
     });
 });
+
+const mapsView = d.createElement("div");
+mapsView.className = "tags mapsView";
+exhibitsBottomBar.appendChild(mapsView);
+
+//↑exhibitsBottomBar contents
+
 
 let lastScrollTime = Date.now();
 let lastScrollPx;
