@@ -284,11 +284,10 @@ function marginBottomUpdate (isToOpen = exhibitsBottomBar.classList.contains("op
 
 const bottomBar_contents = d.createElement("div");
 const sortList_topBar = d.createElement("div");
+const sortList_tabs = d.createElement("div");
 
 (() => {
     bottomBar_contents.className = "content";
-
-    const sortList_tabs = d.createElement("div");
     sortList_topBar.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg">
                     <g>
@@ -559,7 +558,8 @@ const sortList_topBar = d.createElement("div");
         const holdStartThreshold = 50;
         if (
             Math.abs(touchStartPos[1] - currentPos[1]) > holdStartThreshold &&
-            Math.abs(touchStartPos[0] - currentPos[0]) < holdStartThreshold
+            Math.abs(touchStartPos[0] - currentPos[0]) < holdStartThreshold &&
+            ([sortList_topBar, ...sortList_tabs.querySelectorAll(".tab")].includes(e.target) || !!exhibitsBottomBar.querySelector(".content > div.nowShow:not(.mapsView)"))
         ) isHolded = true;
 
         difference = [touchStartPos[0] - currentPos[0], touchStartPos[1] - currentPos[1]];
