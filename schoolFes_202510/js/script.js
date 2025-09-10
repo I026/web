@@ -140,6 +140,7 @@ const titleMap = {
 (() => { // js
     const script_customJS = d.createElement("script");
     
+    script_customJS.type = "module";
     script_customJS.src = `./js/${HTMLFileName}.js`;
 
     d.head.appendChild(script_customJS);

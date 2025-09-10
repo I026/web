@@ -17,6 +17,7 @@ body {
     transition: opacity .5s ease-in-out;
     color: rgb(var(--base_color));
     background-color: rgb(var(--base_backgroundColor));
+    overflow-x: hidden;
 }
 .content.top {
     height: 50vh;

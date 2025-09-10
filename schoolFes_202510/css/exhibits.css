@@ -62,7 +62,7 @@
     bottom: 10px;
     left: 0;
     z-index: 10;
-    overflow: auto;
+    overflow: hidden;
     transition: opacity .5s ease-in-out;
     /* 
     --reducePx: calc(50vh + 10px);
@@ -215,12 +215,21 @@
     scroll-snap-align: start;
     flex-shrink: 0;
     top: 0;
-    min-width: 100%;
+    width: 100%;
     height: min-content;
+    display: flex;
     flex-wrap: wrap;
+    white-space: normal;
     align-content: flex-start;
     position: relative;
+    overflow: hidden;
     /* white-space: normal; */
+}
+.content.main .exhibits .tile .content > .mapsView {
+    min-height: 80vh;
+}
+.content.main .exhibits .tile .content > div canvas {
+    position: absolute;
 }
 .content.main .exhibits .tile .tags.listView .tag {
     cursor: pointer;

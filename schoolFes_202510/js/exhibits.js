@@ -1,3 +1,7 @@
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+
 const exhibitsBottomBar = d.querySelector(".exhibits .sortList");
 const exhibitsArea = d.querySelector(".exhibits .list");
 
@@ -268,7 +272,7 @@ function getBarOptionsHeight () {
 
 function marginBottomUpdate (isToOpen = exhibitsBottomBar.classList.contains("opened")) {
     if (isToOpen) {
-        const areaHeight = getBarOptionsHeight() + exhibitsBottomBar.querySelector(".content > div.nowShow").offsetHeight + 3;
+        const areaHeight = getBarOptionsHeight() + exhibitsBottomBar.querySelector(".content > div.nowShow").offsetHeight;
 
         exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${areaHeight}px`);
         exhibitsBottomBar.classList.add("opened");
@@ -435,23 +439,87 @@ const sortList_topBar = d.createElement("div");
 
     // mapsView
     const mapsView = d.createElement("div");
-    mapsView.className = "tags mapsView";
+    mapsView.className = "mapsView";
     bottomBar_contents.appendChild(mapsView);
 
     (() => {
-        /* const scene = new THREE.Scene();
+        const scene = new THREE.Scene();
+        scene.background = null; // 背景色
 
         const camera = new THREE.PerspectiveCamera(
-        75, 
-        window.innerWidth / window.innerHeight, 
-        0.1, 
-        1000
+            65, 
+            window.innerWidth / window.innerHeight, 
+            0.1,
+            1000
         );
-        camera.position.z = 5;
+        camera.position.set(0, 1.5, 3);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement); */
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth * .5, window.innerHeight * 0.5);
+
+        // 描画領域を mapsView に追加
+        mapsView.appendChild(renderer.domElement);
+
+        // 照明
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(1, 1, 1);
+        scene.add(light);
+
+        // 環境光
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+        // 3Dモデル読み込み
+        const loader = new GLTFLoader();
+        let model; // モデルを外で保持
+        loader.load(
+            '../medias/3ds/sc.glb',
+            (gltf) => {
+                model = gltf.scene;
+                model.position.set(0, 0, 0);
+                scene.add(model);
+
+                // モデルが読み込まれたら OrbitControls の注視点をモデル中心に設定
+                controls.target.set(model.position.x, model.position.y, model.position.z);
+                controls.update();
+            },
+            (xhr) => {
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            },
+            (error) => {
+                console.error('モデル読み込みエラー', error);
+            }
+        );
+
+        // OrbitControls 初期化
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; // 慣性スクロール
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 1;
+        controls.maxDistance = 10;
+        controls.maxPolarAngle = Math.PI / 2; // カメラが地面の下に回り込まないよう制限
+
+        // 描画ループ
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // enableDamping を使う場合は毎フレーム更新
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // ウィンドウリサイズ対応
+        function onWindowResize() {
+            const width = mapsView.clientWidth;
+            const height = mapsView.clientHeight;
+
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(width, height);
+        }
+
+        window.addEventListener('resize', onWindowResize);
+        onWindowResize(); // 初期表示時にも呼ぶ
     })();
 })();
 
