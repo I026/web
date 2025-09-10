@@ -63,7 +63,7 @@
     left: 0;
     z-index: 10;
     overflow: hidden;
-    transition: opacity .5s ease-in-out;
+    transition: opacity .5s ease-in-out, height .5s ease-in-out;
     /* 
     --reducePx: calc(50vh + 10px);
     --currentHeight: clamp(
@@ -212,7 +212,7 @@
 }
 .content.main .exhibits .tile .content > div {
     /* height: calc(100% - 16px); */
-    /* scroll-snap-align: start; */
+    scroll-snap-align: start;
     flex-shrink: 0;
     top: 0;
     width: 100%;
@@ -223,6 +223,7 @@
     align-content: flex-start;
     position: relative;
     overflow: hidden;
+    padding-bottom: 10px;
     /* white-space: normal; */
 }
 .content.main .exhibits .tile .content > .mapsView {

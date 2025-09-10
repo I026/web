@@ -301,7 +301,7 @@ const sortList_tabs = d.createElement("div");
 
     sortList_tabs.className = "tabs";
 
-    function tabSelectedUpdate (tabIndex) {
+    function tabClassUpdate (tabIndex) {
         const tabs = sortList_tabs.querySelectorAll(".tab");
         tabs.forEach(tab => {
             tab.classList.remove("selected");
@@ -317,7 +317,7 @@ const sortList_tabs = d.createElement("div");
     }
 
     function tabClicked (tabIndex) {
-        tabSelectedUpdate(tabIndex);
+        tabClassUpdate(tabIndex);
         bottomBar_contents.scrollTo({
             top: 0,
             left: tabIndex * bottomBar_contents.scrollWidth,
@@ -344,34 +344,30 @@ const sortList_tabs = d.createElement("div");
         });
     });
 
-    let isBarTouchNow = false;
+    let lastScrollRatio = 0;
+    let isBarTouchNow = false
 
-    /* bottomBar_contents.addEventListener("scroll", () => {
-        const scrollRatio = bottomBar_contents.scrollLeft / sortList_tabs.scrollWidth;
-        const tabIndex = Math.round(scrollRatio);
-        if (!isBarTouchNow && scrollRatio % 1 === 0) {
+    bottomBar_contents.addEventListener("scroll", () => {
+        const getScrollRatio = () => bottomBar_contents.scrollLeft / sortList_tabs.scrollWidth;
+        const tabIndex = Math.round(getScrollRatio());
+        console.log(lastScrollRatio, getScrollRatio())
+        if (!isBarTouchNow && getScrollRatio() % 1 === 0) {
             tabClicked(tabIndex);
         }
-    }); */
-
-    const getScrollRatio = () => bottomBar_contents.scrollLeft / sortList_tabs.scrollWidth;
-
-    let touchStartScrollRatio = 0;
+        tabClassUpdate(tabIndex);
+        barHeightUpdate();
+    });
 
     bottomBar_contents.addEventListener("touchstart", () => {
         isBarTouchNow = true;
-        touchStartScrollRatio = getScrollRatio();
     });
 
     bottomBar_contents.addEventListener("touchend", () => {
         isBarTouchNow = false;
-        const tabIndex = Math.round(getScrollRatio());
-        tabClicked(tabIndex);
     });
 
     exhibitsBottomBar.appendChild(sortList_topBar);
     exhibitsBottomBar.appendChild(sortList_tabs);
-
     exhibitsBottomBar.appendChild(bottomBar_contents);
 })();
 
@@ -465,23 +461,30 @@ const sortList_tabs = d.createElement("div");
         const scene = new THREE.Scene();
         scene.background = null; // 背景色
 
-        const camera = new THREE.PerspectiveCamera(
-            65, 
-            window.innerWidth / window.innerHeight, 
-            0.1,
-            1000
+        const aspect = window.innerWidth / window.innerHeight;
+        const cameraSize = 1; // 表示範囲の大きさ（好みで調整）
+
+        const camera = new THREE.OrthographicCamera(
+            -cameraSize * aspect,  // left
+            cameraSize * aspect,   // right
+            cameraSize,            // top
+            -cameraSize,           // bottom
+            0.1,                   // near
+            1000                   // far
         );
-        camera.position.set(0, 1.5, 3);
+        camera.position.set(-1.5, 1, 1.5);
+        camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth * .5, window.innerHeight * 0.5);
+        renderer.setPixelRatio(window.devicePixelRatio); // ここを追加
+        renderer.setSize(window.innerWidth * 0.5, window.innerHeight * 0.5);
 
         // 描画領域を mapsView に追加
         mapsView.appendChild(renderer.domElement);
 
         // 照明
         const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(1, 1, 1);
+        light.position.set(.5, .5, .5);
         scene.add(light);
 
         // 環境光
@@ -518,6 +521,22 @@ const sortList_tabs = d.createElement("div");
         controls.maxDistance = 10;
         controls.maxPolarAngle = Math.PI / 2; // カメラが地面の下に回り込まないよう制限
 
+        // パン操作時にモデルから離れすぎないように制限
+        controls.addEventListener('change', () => {
+            const maxDistance = 1; // モデル中心からの最大距離
+
+            // 注視点を範囲内に制限
+            controls.target.clamp(
+                new THREE.Vector3(-maxDistance, -Infinity, -maxDistance),
+                new THREE.Vector3(maxDistance, Infinity, maxDistance)
+            );
+
+            // カメラも注視点に合わせて補正
+            const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
+            offset.clampLength(controls.minDistance, controls.maxDistance);
+            camera.position.copy(controls.target).add(offset);
+        });
+
         // 描画ループ
         function animate() {
             requestAnimationFrame(animate);
@@ -528,13 +547,17 @@ const sortList_tabs = d.createElement("div");
 
         // ウィンドウリサイズ対応
         function onWindowResize() {
-            const width = mapsView.clientWidth;
-            const height = mapsView.clientHeight;
+            const aspect = mapsView.clientWidth / mapsView.clientHeight;
 
-            camera.aspect = width / height;
+            camera.left = -cameraSize * aspect;
+            camera.right = cameraSize * aspect;
+            camera.top = cameraSize;
+            camera.bottom = -cameraSize;
             camera.updateProjectionMatrix();
 
-            renderer.setSize(width, height);
+            renderer.setSize(mapsView.clientWidth, mapsView.clientHeight);
+
+            barHeightUpdate();
         }
 
         window.addEventListener('resize', onWindowResize);
@@ -546,8 +569,6 @@ const sortList_tabs = d.createElement("div");
     let touchStartPos = [0, 0];
     let currentPos = [];
     let difference = [0, 0];
-
-    exhibitsBottomBar.style.transition = "opacity .5s ease-in-out";
 
     let sortListTransition = exhibitsBottomBar.style.transition;
     const getMarginBottomPx = () => (
@@ -564,7 +585,6 @@ const sortList_tabs = d.createElement("div");
 
     exhibitsBottomBar.addEventListener("touchstart", (e) => {
         exhibitsBottomBar.classList.add("nowBeingHeld");
-        exhibitsBottomBar.style.transition = "none";
         difference = [0, 0];
         const touch = e.touches[0];
         touchStartPos = [touch.clientX, touch.clientY];
@@ -595,7 +615,7 @@ const sortList_tabs = d.createElement("div");
     function touchend (e) {
         exhibitsBottomBar.classList.remove("nowBeingHeld");
         if (Date.now() - lastTouchendTime < 50) return;
-        exhibitsBottomBar.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}height .4s ease-out`;
+        // exhibitsBottomBar.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}height .4s ease-out`;
         const isNowOpen = exhibitsBottomBar.classList.contains("opened");
         console.log("isNowOpen : ", isNowOpen);
         if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {
@@ -616,9 +636,6 @@ const sortList_tabs = d.createElement("div");
         touchend(e);
     });
     exhibitsBottomBar.addEventListener("touchend", e => touchend(e));
-    window.addEventListener("resize", () => {
-        barHeightUpdate();
-    });
 })();
 
 
