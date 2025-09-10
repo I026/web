@@ -1,4 +1,4 @@
-const sortListArea = d.querySelector(".exhibits .sortList");
+const exhibitsBottomBar = d.querySelector(".exhibits .sortList");
 const exhibitsArea = d.querySelector(".exhibits .list");
 
 const getClassName = (school, input_grade, input_class) => (
@@ -209,7 +209,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
 function sortUpdate () {
     let conditions = [];
     (() => {
-        const checkedTags = sortListArea.querySelectorAll(".tag.checkedBox:not([isButton])");
+        const checkedTags = exhibitsBottomBar.querySelectorAll(".tag.checkedBox:not([isButton])");
         checkedTags.forEach(element => {
             conditions.push(element.getAttribute("tag"));
         });
@@ -258,10 +258,32 @@ function sortUpdate () {
 
 sortUpdate();
 
-const exhibitsBottomBar = d.createElement("div");
+function getBarOptionsHeight () {
+    let barOptionsHeight = 0;
+    exhibitsBottomBar.querySelectorAll(':scope > *:not(.content)').forEach(element => {
+        barOptionsHeight += element.offsetHeight
+    });
+    return barOptionsHeight;
+}
+
+function marginBottomUpdate (isToOpen = exhibitsBottomBar.classList.contains("opened")) {
+    if (isToOpen) {
+        const areaHeight = getBarOptionsHeight() + exhibitsBottomBar.querySelector(".content > div.nowShow").offsetHeight + 3;
+
+        exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${areaHeight}px`);
+        exhibitsBottomBar.classList.add("opened");
+    } else {
+        exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${getBarOptionsHeight()}px`);
+        exhibitsBottomBar.classList.remove("opened");
+    }
+}
+
+const bottomBar_contents = d.createElement("div");
 const sortList_topBar = d.createElement("div");
 
 (() => {
+    bottomBar_contents.className = "content";
+
     const sortList_tabs = d.createElement("div");
     sortList_topBar.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg">
@@ -295,81 +317,187 @@ const sortList_topBar = d.createElement("div");
 
         function tabClicked () {
             tabSelectedUpdate(tab);
-            exhibitsBottomBar.scrollTo({
+            const contents = exhibitsBottomBar.querySelectorAll(".content > div");
+            contents.forEach(content => {
+                content.classList.remove("nowShow");
+            });
+            contents[index].classList.add("nowShow");
+            bottomBar_contents.scrollTo({
                 top: 0,
-                left: index * exhibitsBottomBar.scrollWidth,
+                left: index * bottomBar_contents.scrollWidth,
                 behavior: "smooth"
             });
+            marginBottomUpdate(true);
         }
 
         tab.addEventListener("click", tabClicked);
 
         sortList_tabs.appendChild(tab);
+
+        setTimeout(() => {
+            if (index === 0) tabClicked();
+        });
     });
 
-    exhibitsBottomBar.addEventListener("scroll", () => {
+    bottomBar_contents.addEventListener("scroll", () => {
         const tab = sortList_tabs.querySelectorAll(".tab");
-        if (Math.round(exhibitsBottomBar.scrollLeft) % sortList_tabs.scrollWidth === 0) {
-            tabSelectedUpdate(tab[Math.round(exhibitsBottomBar.scrollLeft / sortList_tabs.scrollWidth)]);
+        if (Math.round(bottomBar_contents.scrollLeft) % sortList_tabs.scrollWidth === 0) {
+            tabSelectedUpdate(tab[Math.round(bottomBar_contents.scrollLeft / sortList_tabs.scrollWidth)]);
         }
     });
 
-    sortListArea.appendChild(sortList_topBar);
-    sortListArea.appendChild(sortList_tabs);
+    exhibitsBottomBar.appendChild(sortList_topBar);
+    exhibitsBottomBar.appendChild(sortList_tabs);
 
-    exhibitsBottomBar.className = "content";
-    sortListArea.appendChild(exhibitsBottomBar);
-
+    exhibitsBottomBar.appendChild(bottomBar_contents);
 })();
 
-function marginBottomUpdate (isToClose) {
-    if (isToClose) {
-        sortListArea.style.setProperty("--marginBottom", 0);
-        sortListArea.classList.add("opened");
-    } else {
-        sortListArea.style.setProperty("--marginBottom", "min(calc(-60vh + 130px), 0px)");
-        sortListArea.classList.remove("opened");
-    }
-}
+(() => { // exhibitsBottomBar contents
+    // listView
+    const listView = d.createElement("div");
+    listView.className = "tags listView";
+    bottomBar_contents.appendChild(listView);
+
+    Object.keys(tagOrder).forEach(tag => {
+        const newTag = d.createElement("span");
+        newTag.className = "tag";
+        // newTag.className = "tag checkedBox";
+        newTag.style.backgroundColor = tagOrder[tag].themeColor;
+        newTag.textContent = tagOrder[tag].displayName;
+        newTag.setAttribute("tag", tag);
+        if (tagOrder[tag].group) {
+            const groupKey = Object.keys(tagGroups).find(key => tagGroups[key] === tagOrder[tag].group);
+            newTag.setAttribute("group", groupKey);
+        }
+        if (tagOrder[tag].group) newTag.setAttribute("isMultSel", tagOrder[tag].group.isMultSel);
+        if (tagOrder[tag].isButton) newTag.setAttribute("isButton", "");
+
+        function generateCheckBox () {
+            const checkBox = d.createElement("div");
+            checkBox.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M239.48,469.289 L416.256,646.066 L840.52,221.802"/></svg>`;
+            checkBox.className = "checkBox";
+            newTag.appendChild(checkBox);
+            setPathViewBox();
+        }
+        listView.appendChild(newTag);
+
+        if (tagOrder[tag].isButton) {
+            newTag.classList.add("checkedBox");
+        } else {
+            generateCheckBox();
+        }
+
+        const get_isButton = () => tagOrder[tag].isButton;
+
+        function updateResetButton (pushed = false) {
+            const resetButton = exhibitsBottomBar.querySelector(".tags.listView .tag[tag='resetButton']");
+            const tagElements = exhibitsBottomBar.querySelectorAll(".tags.listView .tag:not([isButton=''])");
+            const tag_isCheckeds = [];
+            tagElements.forEach(tag => {
+                tag_isCheckeds.push(tag.classList.contains("checkedBox"));
+            });
+
+            // console.log(tag_isCheckeds);
+            const isAllSelected = tag_isCheckeds.every(item => item === false);
+            if (isAllSelected) { // すべてのタグが選ばれていない
+                resetButton.classList.remove("checkedBox");
+            } else {
+                if (pushed) {
+                    tagElements.forEach(tag => {
+                        tag.classList.remove("checkedBox");
+                    });
+                }
+                resetButton.classList.add("checkedBox");
+            }
+        }
+        updateResetButton();
+
+        function tagClicked () {
+            if (get_isButton()) {
+                updateResetButton(true);
+            } else {
+                newTag.classList.toggle("checkedBox");
+                if (newTag.getAttribute("isMultSel")) {
+                    listView.querySelectorAll(`.tag[group='${newTag.getAttribute("group")}'][isMultSel='false']`).forEach(tag => {
+                        if (tag !== newTag) {
+                            tag.classList.remove("checkedBox");
+                        }
+                    });
+                }
+            }
+            updateResetButton();
+            sortUpdate();
+        }
+        newTag.addEventListener("click", (e) => {
+            tagClicked();
+        });
+    });
+
+    // mapsView
+    const mapsView = d.createElement("div");
+    mapsView.className = "tags mapsView";
+    bottomBar_contents.appendChild(mapsView);
+
+    (() => {
+        /* const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(
+        75, 
+        window.innerWidth / window.innerHeight, 
+        0.1, 
+        1000
+        );
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement); */
+    })();
+})();
 
 (() => {
     let touchStartPos = [0, 0];
     let currentPos = [];
     let difference = [0, 0];
 
-    sortListArea.style.transition = "opacity .5s ease-in-out";
+    exhibitsBottomBar.style.transition = "opacity .5s ease-in-out";
 
-    let sortListTransition = sortListArea.style.transition;
+    let sortListTransition = exhibitsBottomBar.style.transition;
     const getMarginBottomPx = () => (
-        window.getComputedStyle(sortListArea).marginBottom.replace("px", "") * 1
+        window.getComputedStyle(exhibitsBottomBar).height.replace("px", "") * 1
     );
-    let touchStart_marginBottom = getMarginBottomPx();
+    let touchStart_height = getMarginBottomPx();
     
     sortList_topBar.querySelector("svg path").style.strokeDashoffset = "var(--pathLength)";
     setTimeout(() => {
         sortList_topBar.querySelector("svg path").style.strokeDashoffset = "";
     }, 50);
 
-    sortListArea.addEventListener("touchstart", (e) => {
-        sortListArea.classList.add("nowBeingHeld");
-        sortListArea.style.transition = "none";
+    let isHolded = false;
+
+    exhibitsBottomBar.addEventListener("touchstart", (e) => {
+        exhibitsBottomBar.classList.add("nowBeingHeld");
+        exhibitsBottomBar.style.transition = "none";
         difference = [0, 0];
         const touch = e.touches[0];
         touchStartPos = [touch.clientX, touch.clientY];
-        touchStart_marginBottom = getMarginBottomPx();
-        sortListArea.classList.remove("reduced");
+        touchStart_height = getMarginBottomPx();
+        exhibitsBottomBar.classList.remove("reduced");
     });
 
-    sortListArea.addEventListener("touchmove", (e) => {
+    exhibitsBottomBar.addEventListener("touchmove", (e) => {
         const touch = e.touches[0];
         currentPos = [touch.clientX, touch.clientY];
+        const holdStartThreshold = 50;
+        if (
+            Math.abs(touchStartPos[1] - currentPos[1]) > holdStartThreshold &&
+            Math.abs(touchStartPos[0] - currentPos[0]) < holdStartThreshold
+        ) isHolded = true;
+
         difference = [touchStartPos[0] - currentPos[0], touchStartPos[1] - currentPos[1]];
-
-        sortListArea.style.setProperty("--marginBottom", `${Math.min( touchStart_marginBottom + difference[1], 0 )}px`);
-
-        console.log(
-            Math.min(touchStart_marginBottom + difference[1], 0) * -.15
-        );
+        if (isHolded) {
+            exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${touchStart_height + difference[1] + (difference[1] < 0 ? holdStartThreshold : -holdStartThreshold)}px`);
+        }
     });
 
     marginBottomUpdate(false);
@@ -377,115 +505,30 @@ function marginBottomUpdate (isToClose) {
     let lastTouchendTime = Date.now();
 
     function touchend (e) {
-        sortListArea.classList.remove("nowBeingHeld");
+        exhibitsBottomBar.classList.remove("nowBeingHeld");
         if (Date.now() - lastTouchendTime < 50) return;
-        sortListArea.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}margin-bottom .4s ease-out`;
-        const isNowOpen = touchStart_marginBottom === 0;
+        exhibitsBottomBar.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}height .4s ease-out`;
+        const isNowOpen = exhibitsBottomBar.classList.contains("opened");
         console.log("isNowOpen : ", isNowOpen);
         if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {
             if (e?.target === sortList_topBar && Math.abs(difference[1]) === 0) { // topBarTap
                 marginBottomUpdate( !isNowOpen );
-            } else { // swipe
+            } else if (isHolded) { // swipe
                 console.log("Math.abs(difference[1])", Math.abs(difference[1]));
                 const threshold = 100;
                 marginBottomUpdate( isNowOpen ? difference[1] * -1 < threshold : difference[1] > threshold );
             }
         }
+        isHolded = false;
         lastTouchendTime = Date.now();
     }
-    sortListArea.addEventListener("mouseup",  e => {
+    exhibitsBottomBar.addEventListener("mouseup",  e => {
         difference = [0, 0];
-        touchStart_marginBottom = getMarginBottomPx();
+        touchStart_height = getMarginBottomPx();
         touchend(e);
     });
-    sortListArea.addEventListener("touchend", e => touchend(e));
+    exhibitsBottomBar.addEventListener("touchend", e => touchend(e));
 })();
-
-const listView = d.createElement("div");
-listView.className = "tags listView";
-exhibitsBottomBar.appendChild(listView);
-
-// ↓exhibitsBottomBar contents
-Object.keys(tagOrder).forEach(tag => {
-    const newTag = d.createElement("span");
-    newTag.className = "tag";
-    // newTag.className = "tag checkedBox";
-    newTag.style.backgroundColor = tagOrder[tag].themeColor;
-    newTag.textContent = tagOrder[tag].displayName;
-    newTag.setAttribute("tag", tag);
-    if (tagOrder[tag].group) {
-        const groupKey = Object.keys(tagGroups).find(key => tagGroups[key] === tagOrder[tag].group);
-        newTag.setAttribute("group", groupKey);
-    }
-    if (tagOrder[tag].group) newTag.setAttribute("isMultSel", tagOrder[tag].group.isMultSel);
-    if (tagOrder[tag].isButton) newTag.setAttribute("isButton", "");
-
-    function generateCheckBox () {
-        const checkBox = d.createElement("div");
-        checkBox.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M239.48,469.289 L416.256,646.066 L840.52,221.802"/></svg>`;
-        checkBox.className = "checkBox";
-        newTag.appendChild(checkBox);
-        setPathViewBox();
-    }
-    listView.appendChild(newTag);
-
-    if (tagOrder[tag].isButton) {
-        newTag.classList.add("checkedBox");
-    } else {
-        generateCheckBox();
-    }
-
-    const get_isButton = () => tagOrder[tag].isButton;
-
-    function updateResetButton (pushed = false) {
-        const resetButton = sortListArea.querySelector(".tags.listView .tag[tag='resetButton']");
-        const tagElements = sortListArea.querySelectorAll(".tags.listView .tag:not([isButton=''])");
-        const tag_isCheckeds = [];
-        tagElements.forEach(tag => {
-            tag_isCheckeds.push(tag.classList.contains("checkedBox"));
-        });
-
-        // console.log(tag_isCheckeds);
-        const isAllSelected = tag_isCheckeds.every(item => item === false);
-        if (isAllSelected) { // すべてのタグが選ばれていない
-            resetButton.classList.remove("checkedBox");
-        } else {
-            if (pushed) {
-                tagElements.forEach(tag => {
-                    tag.classList.remove("checkedBox");
-                });
-            }
-            resetButton.classList.add("checkedBox");
-        }
-    }
-    updateResetButton();
-
-    function tagClicked () {
-        if (get_isButton()) {
-            updateResetButton(true);
-        } else {
-            newTag.classList.toggle("checkedBox");
-            if (newTag.getAttribute("isMultSel")) {
-                listView.querySelectorAll(`.tag[group='${newTag.getAttribute("group")}'][isMultSel='false']`).forEach(tag => {
-                    if (tag !== newTag) {
-                        tag.classList.remove("checkedBox");
-                    }
-                });
-            }
-        }
-        updateResetButton();
-        sortUpdate();
-    }
-    newTag.addEventListener("click", (e) => {
-        tagClicked();
-    });
-});
-
-const mapsView = d.createElement("div");
-mapsView.className = "tags mapsView";
-exhibitsBottomBar.appendChild(mapsView);
-
-//↑exhibitsBottomBar contents
 
 
 let lastScrollTime = Date.now();
@@ -495,11 +538,11 @@ window.addEventListener("scroll", () => { // sortListAreaHeight
     const scrollRatio = window.scrollY / window.innerHeight;
 
     if (d.documentElement.scrollHeight < window.innerHeight + window.scrollY + 100) {
-        sortListArea.style.opacity = 0;
-        sortListArea.style.pointerEvents = "none";
+        exhibitsBottomBar.style.opacity = 0;
+        exhibitsBottomBar.style.pointerEvents = "none";
     } else {
-        sortListArea.style.opacity = 1;
-        sortListArea.style.pointerEvents = "auto";
+        exhibitsBottomBar.style.opacity = 1;
+        exhibitsBottomBar.style.pointerEvents = "auto";
     }
 
     // if (Math.abs(lastScrollPx - window.scrollY) > 200) marginBottomUpdate(false);
@@ -510,9 +553,9 @@ window.addEventListener("scroll", () => { // sortListAreaHeight
 });
 
 (() => {
-    const element = sortListArea.querySelector(".tags.listView");
+    const element = exhibitsBottomBar.querySelector(".tags.listView");
     function process () {
-        sortListArea.classList.remove("reduced");
+        exhibitsBottomBar.classList.remove("reduced");
     }
     element.addEventListener("click", process);
 })();

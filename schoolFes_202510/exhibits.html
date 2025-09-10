@@ -2,6 +2,28 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <script type="module">
+        // Three.js本体
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
+
+        // 追加モジュール
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/controls/OrbitControls.js';
+
+        // シーン作成例
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // アニメーションループ
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
 </head>
 <body style="opacity: 0;">
     <div class="top content">
@@ -16,10 +38,9 @@
     </div>
     <div class="main content">
         <div class="exhibits">
-            <div class="tile sortList"></div>
+            <div class="tile sortList exhibitsBottomBar"></div>
             <div class="list"></div>
         </div>
     </div>
-
     <script src="./js/script.js"></script>
 </body>
