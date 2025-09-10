@@ -616,6 +616,9 @@ const sortList_tabs = d.createElement("div");
         touchend(e);
     });
     exhibitsBottomBar.addEventListener("touchend", e => touchend(e));
+    window.addEventListener("resize", () => {
+        barHeightUpdate();
+    });
 })();
 
 
