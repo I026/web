@@ -270,7 +270,7 @@ function getBarOptionsHeight () {
     return barOptionsHeight;
 }
 
-function marginBottomUpdate (isToOpen = exhibitsBottomBar.classList.contains("opened")) {
+function barHeightUpdate (isToOpen = exhibitsBottomBar.classList.contains("opened")) {
     if (isToOpen) {
         const areaHeight = getBarOptionsHeight() + exhibitsBottomBar.querySelector(".content > div.nowShow").offsetHeight;
 
@@ -301,12 +301,29 @@ const sortList_tabs = d.createElement("div");
 
     sortList_tabs.className = "tabs";
 
-    function tabSelectedUpdate (tab) {
-        sortList_tabs.querySelectorAll(".tab").forEach(tab => {
+    function tabSelectedUpdate (tabIndex) {
+        const tabs = sortList_tabs.querySelectorAll(".tab");
+        tabs.forEach(tab => {
             tab.classList.remove("selected");
         });
+        tabs[tabIndex].classList.add("selected");
 
-        tab.classList.add("selected");
+        const contents = exhibitsBottomBar.querySelectorAll(".content > div");
+        contents.forEach(content => {
+            content.classList.remove("nowShow");
+        });
+        contents[tabIndex].classList.add("nowShow");
+
+    }
+
+    function tabClicked (tabIndex) {
+        tabSelectedUpdate(tabIndex);
+        bottomBar_contents.scrollTo({
+            top: 0,
+            left: tabIndex * bottomBar_contents.scrollWidth,
+            behavior: "smooth"
+        });
+        barHeightUpdate(true);
     }
 
     [
@@ -318,35 +335,38 @@ const sortList_tabs = d.createElement("div");
         tab.className = "tab";
         tab.innerHTML = item;
 
-        function tabClicked () {
-            tabSelectedUpdate(tab);
-            const contents = exhibitsBottomBar.querySelectorAll(".content > div");
-            contents.forEach(content => {
-                content.classList.remove("nowShow");
-            });
-            contents[index].classList.add("nowShow");
-            bottomBar_contents.scrollTo({
-                top: 0,
-                left: index * bottomBar_contents.scrollWidth,
-                behavior: "smooth"
-            });
-            marginBottomUpdate(true);
-        }
-
-        tab.addEventListener("click", tabClicked);
+        tab.addEventListener("click", () => tabClicked(index));
 
         sortList_tabs.appendChild(tab);
 
-        setTimeout(() => {
-            if (index === 0) tabClicked();
+        if (index === 0) setTimeout(() => {
+            tabClicked(index);
         });
     });
 
-    bottomBar_contents.addEventListener("scroll", () => {
-        const tab = sortList_tabs.querySelectorAll(".tab");
-        if (Math.round(bottomBar_contents.scrollLeft) % sortList_tabs.scrollWidth === 0) {
-            tabSelectedUpdate(tab[Math.round(bottomBar_contents.scrollLeft / sortList_tabs.scrollWidth)]);
+    let isBarTouchNow = false;
+
+    /* bottomBar_contents.addEventListener("scroll", () => {
+        const scrollRatio = bottomBar_contents.scrollLeft / sortList_tabs.scrollWidth;
+        const tabIndex = Math.round(scrollRatio);
+        if (!isBarTouchNow && scrollRatio % 1 === 0) {
+            tabClicked(tabIndex);
         }
+    }); */
+
+    const getScrollRatio = () => bottomBar_contents.scrollLeft / sortList_tabs.scrollWidth;
+
+    let touchStartScrollRatio = 0;
+
+    bottomBar_contents.addEventListener("touchstart", () => {
+        isBarTouchNow = true;
+        touchStartScrollRatio = getScrollRatio();
+    });
+
+    bottomBar_contents.addEventListener("touchend", () => {
+        isBarTouchNow = false;
+        const tabIndex = Math.round(getScrollRatio());
+        tabClicked(tabIndex);
     });
 
     exhibitsBottomBar.appendChild(sortList_topBar);
@@ -568,7 +588,7 @@ const sortList_tabs = d.createElement("div");
         }
     });
 
-    marginBottomUpdate(false);
+    barHeightUpdate(false);
 
     let lastTouchendTime = Date.now();
 
@@ -580,11 +600,11 @@ const sortList_tabs = d.createElement("div");
         console.log("isNowOpen : ", isNowOpen);
         if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {
             if (e?.target === sortList_topBar && Math.abs(difference[1]) === 0) { // topBarTap
-                marginBottomUpdate( !isNowOpen );
+                barHeightUpdate( !isNowOpen );
             } else if (isHolded) { // swipe
                 console.log("Math.abs(difference[1])", Math.abs(difference[1]));
                 const threshold = 100;
-                marginBottomUpdate( isNowOpen ? difference[1] * -1 < threshold : difference[1] > threshold );
+                barHeightUpdate( isNowOpen ? difference[1] * -1 < threshold : difference[1] > threshold );
             }
         }
         isHolded = false;

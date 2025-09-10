@@ -212,7 +212,7 @@
 }
 .content.main .exhibits .tile .content > div {
     /* height: calc(100% - 16px); */
-    scroll-snap-align: start;
+    /* scroll-snap-align: start; */
     flex-shrink: 0;
     top: 0;
     width: 100%;
