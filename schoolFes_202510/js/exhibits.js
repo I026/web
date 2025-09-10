@@ -472,7 +472,7 @@ const sortList_topBar = d.createElement("div");
         const loader = new GLTFLoader();
         let model; // モデルを外で保持
         loader.load(
-            '../medias/3ds/sc.glb',
+            'medias/3ds/sc.glb',
             (gltf) => {
                 model = gltf.scene;
                 model.position.set(0, 0, 0);
