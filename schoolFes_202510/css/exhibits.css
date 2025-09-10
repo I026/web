@@ -226,7 +226,7 @@
     /* white-space: normal; */
 }
 .content.main .exhibits .tile .content > .mapsView {
-    min-height: 80vh;
+    min-height: calc(80vh - 100px);
 }
 .content.main .exhibits .tile .content > div canvas {
     position: absolute;
