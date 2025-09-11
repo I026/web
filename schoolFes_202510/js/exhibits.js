@@ -627,7 +627,7 @@ const sortList_tabs = d.createElement("div");
                             deviceHeading = 360 - event.alpha; // 時計回りに修正
                         }
 
-                        updateCameraAngle(360 - deviceHeading);
+                        updateCameraAngle(-deviceHeading);
                     }
 
                     if (typeof DeviceOrientationEvent.requestPermission === "function") {
