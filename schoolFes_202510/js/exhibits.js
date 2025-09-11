@@ -616,7 +616,7 @@ const sortList_tabs = d.createElement("div");
 
                 let deviceorientationHandler;
 
-                (() => {
+                function directionSynchronization () {
                     let deviceHeading;
                     deviceorientationHandler = (event) => {
                         // iOS Safari (webkitCompassHeading)
@@ -642,7 +642,7 @@ const sortList_tabs = d.createElement("div");
                         // Androidや古いiOS
                         window.addEventListener("deviceorientation", deviceorientationHandler);
                     }
-                })();
+                };
 
                 (() => {
                     const generateTouches = (e) => e ? [e?.clientX || e.touches[0]?.clientX, e?.clientY || e.touches[0]?.clientY] : [null, null];
@@ -676,6 +676,9 @@ const sortList_tabs = d.createElement("div");
                     function barTouchEnd (e) {
                         const touches = generateTouches(e);
                         isNowBarTouch = false;
+                        setTimeout(() => {
+                            directionSynchronization();
+                        }, 2000);
                     }
 
                     barTouchStart();
