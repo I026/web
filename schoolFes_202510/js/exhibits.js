@@ -523,7 +523,7 @@ const sortList_tabs = d.createElement("div");
 
         let cameraDistance = 5; // モデル中心からの距離
         let cameraHeight = 10;    // 高さ（Y座標）
-        let cameraDeg = 0;     // 左右角度（度単位）
+        let cameraDeg = 180;     // 左右角度（度単位）
 
         let modelParts;
 
@@ -611,6 +611,36 @@ const sortList_tabs = d.createElement("div");
                 windowResize();
                 window.addEventListener("resize", windowResize);
 
+
+                (() => {
+                    let deviceHeading;
+                    function handleOrientation(event) {
+                        // iOS Safari (webkitCompassHeading)
+                        if (event.webkitCompassHeading !== undefined) {
+                            deviceHeading = event.webkitCompassHeading; // 北が0°
+                        } else {
+                            // Androidなど (alpha: デバイスが向いている方向 0°=北)
+                            deviceHeading = 360 - event.alpha; // 時計回りに修正
+                        }
+
+                        deviceHeading = deviceHeading.toFixed(2); // 小数点2桁
+                        updateCameraAngle(deviceHeading);
+                    }
+
+                    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+                        DeviceOrientationEvent.requestPermission()
+                        .then(response => {
+                            if (response === "granted") {
+                                window.addEventListener("deviceorientation", handleOrientation);
+                            }
+                        })
+                        .catch(console.error);
+                    } else {
+                        // Androidや古いiOS
+                        window.addEventListener("deviceorientation", handleOrientation);
+                    }
+                })();
+
                 (() => {
                     const generateTouches = (e) => e ? [e?.clientX || e.touches[0]?.clientX, e?.clientY || e.touches[0]?.clientY] : [null, null];
 
@@ -634,7 +664,7 @@ const sortList_tabs = d.createElement("div");
 
                         if (isNowBarTouch) {
                             updateCameraAngle(
-                                firstCameraDeg
+                                firstCameraDeg + differences[0] * -.1
                             );
                         }
                     }
@@ -655,6 +685,33 @@ const sortList_tabs = d.createElement("div");
                     window.addEventListener("touchend", barTouchEnd);
                     window.addEventListener("mouseup", barTouchEnd);
                 })();
+
+                // パン操作時にモデルから離れすぎないように制限
+                controls.addEventListener("change", () => {
+                    const maxDistance = 1; // モデル中心からの最大距離
+
+                    // 注視点を範囲内に制限
+                    controls.target.clamp(
+                        new THREE.Vector3(-maxDistance, -Infinity, -maxDistance),
+                        new THREE.Vector3(maxDistance, Infinity, maxDistance)
+                    );
+
+                    // カメラも注視点に合わせて補正
+                    const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
+                    offset.clampLength(controls.minDistance, controls.maxDistance);
+                    camera.position.copy(controls.target).add(offset);
+
+                    // カメラの前方向ベクトルを取得
+                    const cameraDirection = new THREE.Vector3();
+                    camera.getWorldDirection(cameraDirection);
+
+                    // 方角を度で取得したい場合（北=+Z, 東=+X と仮定）
+                    const radToDeg = 180 / Math.PI;
+                    const cD = Math.atan2(cameraDirection.x, cameraDirection.z) * radToDeg + 180;
+                    cameraDeg = cD;
+
+                    compass.style.transform = `rotate(${cameraDeg}deg)`;
+                });
             },
             (xhr) => {
                 console.log((xhr.loaded / xhr.total * 100) + '% loaded');
@@ -685,33 +742,6 @@ const sortList_tabs = d.createElement("div");
         controls.minDistance = 2;
         controls.maxDistance = 10;
         controls.maxPolarAngle = Math.PI / 2; // カメラが地面の下に回り込まないよう制限
-
-        // パン操作時にモデルから離れすぎないように制限
-        controls.addEventListener("change", () => {
-            const maxDistance = 1; // モデル中心からの最大距離
-
-            // 注視点を範囲内に制限
-            controls.target.clamp(
-                new THREE.Vector3(-maxDistance, -Infinity, -maxDistance),
-                new THREE.Vector3(maxDistance, Infinity, maxDistance)
-            );
-
-            // カメラも注視点に合わせて補正
-            const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
-            offset.clampLength(controls.minDistance, controls.maxDistance);
-            camera.position.copy(controls.target).add(offset);
-
-            // カメラの前方向ベクトルを取得
-            const cameraDirection = new THREE.Vector3();
-            camera.getWorldDirection(cameraDirection);
-
-            // 方角を度で取得したい場合（北=+Z, 東=+X と仮定）
-            const radToDeg = 180 / Math.PI;
-            const cD = Math.atan2(cameraDirection.x, cameraDirection.z) * radToDeg + 180;
-            cameraDeg = cD;
-
-            compass.style.transform = `rotate(${cameraDeg}deg)`;
-        });
 
         const locations = [
                 "J1-1",
@@ -772,22 +802,6 @@ const sortList_tabs = d.createElement("div");
                 "Music_Laboratory",
                 "Library",
             ];
-
-
-
-        function updateLabelsPosition() {
-            Object.values(labels).forEach(({ element, part }) => {
-                const vector = new THREE.Vector3();
-                vector.setFromMatrixPosition(part.matrixWorld);
-                vector.project(camera);
-
-                const widthHalf = window.innerWidth / 2;
-                const heightHalf = window.innerHeight / 2;
-
-                element.style.left = (vector.x * widthHalf + widthHalf) + "px";
-                element.style.top = (-vector.y * heightHalf + heightHalf) + "px";
-            });
-        }
 
         function updateCameraAngle(angleDeg) {
             cameraDeg = angleDeg;
