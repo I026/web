@@ -668,11 +668,13 @@ const sortList_tabs = d.createElement("div");
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true; // 慣性スクロール
         controls.enableRotate = true;
+        controls.enableZoom = true;
+        controls.enablePan = true;
         controls.dampingFactor = 0.05;
         controls.screenSpacePanning = true;
         controls.touches = {
             ONE: THREE.TOUCH.ROTATE,
-            TWO: THREE.TOUCH.PAN
+            TWO: THREE.TOUCH.DOLLY_PAN
         };
         controls.mouseButtons = {
             LEFT: THREE.MOUSE.ROTATE,
