@@ -63,7 +63,7 @@
     left: 0;
     z-index: 10;
     overflow: hidden;
-    transition: opacity .5s ease-in-out, height .5s ease-in-out;
+    transition: opacity .5s ease-in-out;
     /* 
     --reducePx: calc(50vh + 10px);
     --currentHeight: clamp(
@@ -226,9 +226,25 @@
     padding-bottom: 10px;
     /* white-space: normal; */
 }
+
 .content.main .exhibits .tile .content > .mapsView {
     min-height: calc(80vh - 100px);
 }
+.content.main .exhibits .tile .content .compass {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    height: 50px;
+    width: 50px;
+    border-radius: 50px;
+    background-color: rgba(211, 211, 211, .25);
+    backdrop-filter: blur(10px);
+    --webkit-backdrop-filter: blur(10px);
+}
+
 .content.main .exhibits .tile .content > div canvas {
     position: absolute;
 }

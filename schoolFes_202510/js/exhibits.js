@@ -272,7 +272,8 @@ function getBarOptionsHeight () {
 
 function barHeightUpdate (isToOpen = exhibitsBottomBar.classList.contains("opened")) {
     if (isToOpen) {
-        const areaHeight = getBarOptionsHeight() + exhibitsBottomBar.querySelector(".content > div.nowShow").offsetHeight;
+        const nowShow = exhibitsBottomBar.querySelector(".content > div.nowShow");
+        const areaHeight = getBarOptionsHeight() + nowShow?.offsetHeight;
 
         exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${areaHeight}px`);
         exhibitsBottomBar.classList.add("opened");
@@ -313,16 +314,15 @@ const sortList_tabs = d.createElement("div");
             content.classList.remove("nowShow");
         });
         contents[tabIndex].classList.add("nowShow");
-
     }
 
     function tabClicked (tabIndex) {
-        tabClassUpdate(tabIndex);
         bottomBar_contents.scrollTo({
             top: 0,
             left: tabIndex * bottomBar_contents.scrollWidth,
             behavior: "smooth"
         });
+        tabClassUpdate(tabIndex);
         barHeightUpdate(true);
     }
 
@@ -344,19 +344,21 @@ const sortList_tabs = d.createElement("div");
         });
     });
 
-    let lastScrollRatio = 0;
     let isBarTouchNow = false
 
-    bottomBar_contents.addEventListener("scroll", () => {
-        const getScrollRatio = () => bottomBar_contents.scrollLeft / sortList_tabs.scrollWidth;
+    function scroll () {
+        const getScrollRatio = () => {
+            const scrollRatio = bottomBar_contents.scrollLeft / sortList_tabs.scrollWidth;
+            return Number.isNaN(scrollRatio) ? 0 : scrollRatio;
+        }
         const tabIndex = Math.round(getScrollRatio());
-        console.log(lastScrollRatio, getScrollRatio())
         if (!isBarTouchNow && getScrollRatio() % 1 === 0) {
             tabClicked(tabIndex);
         }
-        tabClassUpdate(tabIndex);
         barHeightUpdate();
-    });
+    }
+
+    bottomBar_contents.addEventListener("scroll", scroll);
 
     bottomBar_contents.addEventListener("touchstart", () => {
         isBarTouchNow = true;
@@ -452,12 +454,17 @@ const sortList_tabs = d.createElement("div");
         });
     });
 
-    // mapsView
-    const mapsView = d.createElement("div");
-    mapsView.className = "mapsView";
-    bottomBar_contents.appendChild(mapsView);
+    (() => { // mapsView
+        const mapsView = d.createElement("div");
+        const compass = d.createElement("div");
+        
+        mapsView.className = "mapsView";
+        compass.className = "compass";
+        
+        compass.innerHTML = `<img src="medias/images/compass.svg" />`
 
-    (() => {
+        bottomBar_contents.appendChild(mapsView);
+
         const scene = new THREE.Scene();
         scene.background = null; // 背景色
 
@@ -472,19 +479,41 @@ const sortList_tabs = d.createElement("div");
             0.1,                   // near
             1000                   // far
         );
-        camera.position.set(-1.5, 1, 1.5);
+        camera.position.set(1.5, 3, -3);
         camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setPixelRatio(window.devicePixelRatio); // ここを追加
+        renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth * 0.5, window.innerHeight * 0.5);
 
         // 描画領域を mapsView に追加
         mapsView.appendChild(renderer.domElement);
 
         // 照明
+        const latitude = 35.86059681776511;
+        const longitude = 139.26886482318102;
+        const now = new Date();
+        
+        // 太陽の位置を取得
         const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(.5, .5, .5);
+        setInterval(() => {
+            const sunPos = SunCalc.getPosition(now, latitude, longitude);
+            const distance = 10; // 光源までの距離
+            const altitude = sunPos.altitude; // 高度
+            const azimuth = sunPos.azimuth;   // 方位角（北=0）
+
+            // 球座標 → デカルト座標変換
+            const x = Math.max(distance * Math.cos(altitude) * Math.sin(azimuth), 1);
+            const y = Math.max(distance * Math.sin(altitude), 1);
+            const z = Math.max(distance * Math.cos(altitude) * Math.cos(azimuth), 1);
+
+            light.position.set(x, y, z);
+            light.lookAt(0, 0, 0); // 原点を照らす
+
+            const maxIntensity = 2.5;
+            const minIntensity = .5;
+            light.intensity = Math.max(minIntensity, Math.sin(sunPos.altitude) * maxIntensity);
+        }, 10000);
         scene.add(light);
 
         // 環境光
@@ -498,6 +527,7 @@ const sortList_tabs = d.createElement("div");
             (gltf) => {
                 model = gltf.scene;
                 model.position.set(0, 0, 0);
+                model.rotation.y = THREE.MathUtils.degToRad(-45);
                 scene.add(model);
 
                 // モデルが読み込まれたら OrbitControls の注視点をモデル中心に設定
@@ -515,14 +545,27 @@ const sortList_tabs = d.createElement("div");
         // OrbitControls 初期化
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true; // 慣性スクロール
+        controls.enableRotate = true;
         controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
+        controls.screenSpacePanning = true;
+        controls.touches = {
+            ONE: THREE.TOUCH.PAN,
+            TWO: THREE.TOUCH.NONE
+        };
+        controls.mouseButtons = {
+            LEFT: THREE.MOUSE.PAN,
+            MIDDLE: THREE.MOUSE.NONE,
+            RIGHT: THREE.MOUSE.NONE
+        };
+
         controls.minDistance = 1;
         controls.maxDistance = 10;
         controls.maxPolarAngle = Math.PI / 2; // カメラが地面の下に回り込まないよう制限
 
+        let cameraAngle;
+
         // パン操作時にモデルから離れすぎないように制限
-        controls.addEventListener('change', () => {
+        controls.addEventListener("change", () => {
             const maxDistance = 1; // モデル中心からの最大距離
 
             // 注視点を範囲内に制限
@@ -535,6 +578,15 @@ const sortList_tabs = d.createElement("div");
             const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
             offset.clampLength(controls.minDistance, controls.maxDistance);
             camera.position.copy(controls.target).add(offset);
+
+            // カメラの前方向ベクトルを取得
+            const cameraDirection = new THREE.Vector3();
+            camera.getWorldDirection(cameraDirection);
+
+            // 方角を度で取得したい場合（北=+Z, 東=+X と仮定）
+            const radToDeg = 180 / Math.PI;
+            cameraAngle = Math.atan2(cameraDirection.x, cameraDirection.z) * radToDeg;
+            compass.style.transform = `rotate(${cameraAngle}deg)`;
         });
 
         // 描画ループ
@@ -560,8 +612,10 @@ const sortList_tabs = d.createElement("div");
             barHeightUpdate();
         }
 
-        window.addEventListener('resize', onWindowResize);
+        window.addEventListener("resize", onWindowResize);
         onWindowResize(); // 初期表示時にも呼ぶ
+
+        mapsView.appendChild(compass);
     })();
 })();
 
@@ -570,6 +624,7 @@ const sortList_tabs = d.createElement("div");
     let currentPos = [];
     let difference = [0, 0];
 
+    exhibitsBottomBar.style.transition = "opacity .4s ease-in-out";
     let sortListTransition = exhibitsBottomBar.style.transition;
     const getMarginBottomPx = () => (
         window.getComputedStyle(exhibitsBottomBar).height.replace("px", "") * 1
@@ -585,6 +640,7 @@ const sortList_tabs = d.createElement("div");
 
     exhibitsBottomBar.addEventListener("touchstart", (e) => {
         exhibitsBottomBar.classList.add("nowBeingHeld");
+        exhibitsBottomBar.style.transition = "none";
         difference = [0, 0];
         const touch = e.touches[0];
         touchStartPos = [touch.clientX, touch.clientY];
@@ -615,12 +671,12 @@ const sortList_tabs = d.createElement("div");
     function touchend (e) {
         exhibitsBottomBar.classList.remove("nowBeingHeld");
         if (Date.now() - lastTouchendTime < 50) return;
-        // exhibitsBottomBar.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}height .4s ease-out`;
+        exhibitsBottomBar.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}height .4s ease-out`;
         const isNowOpen = exhibitsBottomBar.classList.contains("opened");
         console.log("isNowOpen : ", isNowOpen);
         if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {
             if (e?.target === sortList_topBar && Math.abs(difference[1]) === 0) { // topBarTap
-                barHeightUpdate( !isNowOpen );
+                barHeightUpdate();
             } else if (isHolded) { // swipe
                 console.log("Math.abs(difference[1])", Math.abs(difference[1]));
                 const threshold = 100;
