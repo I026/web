@@ -510,14 +510,12 @@ const sortList_tabs = d.createElement("div");
             light.position.set(x, y, z);
             light.lookAt(0, 0, 0); // 原点を照らす
 
-            const maxIntensity = 2.5;
+            const maxIntensity = 5;
             const minIntensity = 1;
             light.intensity = Math.max(minIntensity, Math.sin(sunPos.altitude) * maxIntensity);            
         }
         matchSun();
-        setInterval(() => {
-            matchSun();
-        }, 1000);
+        setInterval(matchSun, 1000);
         scene.add(light);
 
         // 環境光
@@ -526,6 +524,8 @@ const sortList_tabs = d.createElement("div");
         let cameraDistance = 5; // モデル中心からの距離
         let cameraHeight = 10;    // 高さ（Y座標）
         let cameraDeg = 0;     // 左右角度（度単位）
+
+        let modelParts;
 
         // 3Dモデル読み込み
         const loader = new GLTFLoader();
@@ -541,6 +541,75 @@ const sortList_tabs = d.createElement("div");
                 // モデルが読み込まれたら OrbitControls の注視点をモデル中心に設定
                 controls.target.set(model.position.x, model.position.y, model.position.z);
                 controls.update();
+
+                // パーツを一括で取得
+                modelParts = {};
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        modelParts[child.name] = child;
+                    }
+                });
+                console.log("パーツ一覧:", modelParts);
+
+                function truncateText(text, length = 4) {
+                    if (typeof text !== "string") return "";
+                    return text.length > length ? text.slice(0, 4) + "..." : text;
+                }
+
+                const labels = {};
+                Object.keys(modelParts).forEach((partName) => {
+                    const part = modelParts[partName];
+
+                    const label = document.createElement("div");
+                    label.textContent = ["J", "H"].some(char => partName.includes(char)) ? truncateText(partName) : ""; // パーツ名を表示
+                    label.className = "mapsLabel";
+                    mapsView.appendChild(label);
+
+                    labels[partName] = { element: label, part: part };
+                });
+
+                function updateLabelsPosition() {
+                    const rect = renderer.domElement.getBoundingClientRect();
+
+                    Object.values(labels).forEach(({ element, part }) => {
+                        const vector = new THREE.Vector3();
+                        vector.setFromMatrixPosition(part.matrixWorld);
+                        vector.project(camera);
+
+                        const widthHalf = rect.width / 2;
+                        const heightHalf = rect.height / 2;
+
+                        element.style.left = (vector.x * widthHalf + widthHalf) + "px";
+                        element.style.top = (-vector.y * heightHalf + heightHalf) + "px";
+
+                        // カメラからの距離を取得して z-index を設定
+                        const distance = camera.position.distanceTo(part.getWorldPosition(new THREE.Vector3()));
+                        element.style.opacity = Math.max((10.5 - distance) * 10, .25);
+                        element.style.zIndex = Math.floor(1000 - distance); // 手前ほど大きく
+                    });
+                }
+
+                // --- 描画ループ ---
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene, camera);
+                    updateLabelsPosition();
+                }
+                animate();
+
+                function windowResize () {
+                    const aspect = mapsView.clientWidth / mapsView.clientHeight;
+                    camera.left = -cameraSize * aspect;
+                    camera.right = cameraSize * aspect;
+                    camera.top = cameraSize;
+                    camera.bottom = -cameraSize;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(mapsView.clientWidth, mapsView.clientHeight);
+                }
+
+                windowResize();
+                window.addEventListener("resize", windowResize);
 
                 (() => {
                     const generateTouches = (e) => e ? [e?.clientX || e.touches[0]?.clientX, e?.clientY || e.touches[0]?.clientY] : [null, null];
@@ -565,7 +634,7 @@ const sortList_tabs = d.createElement("div");
 
                         if (isNowBarTouch) {
                             updateCameraAngle(
-                                firstCameraDeg + differences[0] * -.25
+                                firstCameraDeg
                             );
                         }
                     }
@@ -602,12 +671,12 @@ const sortList_tabs = d.createElement("div");
         controls.dampingFactor = 0.05;
         controls.screenSpacePanning = true;
         controls.touches = {
-            ONE: THREE.TOUCH.PAN,
-            TWO: THREE.TOUCH.ROTATE
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: THREE.TOUCH.PAN
         };
         controls.mouseButtons = {
-            LEFT: THREE.MOUSE.PAN,
-            MIDDLE: THREE.MOUSE.ROTATE,
+            LEFT: THREE.MOUSE.ROTATE,
+            MIDDLE: THREE.MOUSE.PAN,
             RIGHT: THREE.MOUSE.NONE
         };
 
@@ -642,31 +711,81 @@ const sortList_tabs = d.createElement("div");
             compass.style.transform = `rotate(${cameraDeg}deg)`;
         });
 
-        // 描画ループ
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update(); // enableDamping を使う場合は毎フレーム更新
-            renderer.render(scene, camera);
+        const locations = [
+                "J1-1",
+                "J1-2",
+                "J1-3",
+                "J2-1",
+                "J2-2",
+                "J2-3",
+                "J3-1",
+                "J3-2",
+                "J3-3",
+                "H1-1",
+                "H1-2",
+                "H1-3",
+                "H1-4",
+                "H1-5",
+                "H1-6",
+                "H1-7",
+                "H2-1",
+                "H2-2",
+                "H2-3",
+                "H2-4",
+                "H2-5",
+                "H2-6",
+                "H2-7",
+                "H3-1",
+                "H3-2",
+                "H3-3",
+                "H3-4",
+                "H3-5",
+                "H3-6",
+                "H3-7",
+                "WC",
+                "WC001",
+                "WC002",
+                "Corridor",
+                "Entrance",
+                "Science_A",
+                "Science_B",
+                "Science_C",
+                "Science_D",
+                "Science_Preparation",
+                "Music_Large",
+                "Gym_Backyard",
+                "Gym",
+                "Gym_Entrance",
+                "Gym_Roof",
+                "Multipurpose",
+                "Music_Small",
+                "English_Laboratory",
+                "SocialStudies_Laboratory",
+                "Life_Laboratory",
+                "Cooking",
+                "Math_Laboratory",
+                "Computers",
+                "Music_2",
+                "Music_3",
+                "Music_Laboratory",
+                "Library",
+            ];
+
+
+
+        function updateLabelsPosition() {
+            Object.values(labels).forEach(({ element, part }) => {
+                const vector = new THREE.Vector3();
+                vector.setFromMatrixPosition(part.matrixWorld);
+                vector.project(camera);
+
+                const widthHalf = window.innerWidth / 2;
+                const heightHalf = window.innerHeight / 2;
+
+                element.style.left = (vector.x * widthHalf + widthHalf) + "px";
+                element.style.top = (-vector.y * heightHalf + heightHalf) + "px";
+            });
         }
-        animate();
-
-        // ウィンドウリサイズ対応
-        function onWindowResize() {
-            const aspect = mapsView.clientWidth / mapsView.clientHeight;
-
-            camera.left = -cameraSize * aspect;
-            camera.right = cameraSize * aspect;
-            camera.top = cameraSize;
-            camera.bottom = -cameraSize;
-            camera.updateProjectionMatrix();
-
-            renderer.setSize(mapsView.clientWidth, mapsView.clientHeight);
-
-            barHeightUpdate();
-        }
-
-        window.addEventListener("resize", onWindowResize);
-        onWindowResize(); // 初期表示時にも呼ぶ
 
         function updateCameraAngle(angleDeg) {
             cameraDeg = angleDeg;
