@@ -521,9 +521,12 @@ const sortList_tabs = d.createElement("div");
         // 環境光
         scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-        let cameraDistance = 5; // モデル中心からの距離
+        let cameraDistance = 10; // モデル中心からの距離
         let cameraHeight = 10;    // 高さ（Y座標）
         let cameraDeg = 180;     // 左右角度（度単位）
+
+        camera.position.set(0, cameraHeight, cameraDistance);
+        camera.lookAt(0, 0, 0);
 
         let modelParts;
 
@@ -584,12 +587,12 @@ const sortList_tabs = d.createElement("div");
 
                         // カメラからの距離を取得して z-index を設定
                         const distance = camera.position.distanceTo(part.getWorldPosition(new THREE.Vector3()));
-                        element.style.opacity = Math.max((10.5 - distance) * 10, .25);
+                        element.style.opacity = Math.max((10.5 - distance) * 10, .5);
                         element.style.zIndex = Math.floor(1000 - distance); // 手前ほど大きく
                     });
                 }
 
-                // --- 描画ループ ---
+                // 描画ループ
                 function animate() {
                     requestAnimationFrame(animate);
                     controls.update();
@@ -611,10 +614,11 @@ const sortList_tabs = d.createElement("div");
                 windowResize();
                 window.addEventListener("resize", windowResize);
 
+                let deviceorientationHandler;
 
                 (() => {
                     let deviceHeading;
-                    function handleOrientation(event) {
+                    deviceorientationHandler = (event) => {
                         // iOS Safari (webkitCompassHeading)
                         if (event.webkitCompassHeading !== undefined) {
                             deviceHeading = event.webkitCompassHeading; // 北が0°
@@ -623,7 +627,6 @@ const sortList_tabs = d.createElement("div");
                             deviceHeading = 360 - event.alpha; // 時計回りに修正
                         }
 
-                        deviceHeading = deviceHeading.toFixed(2); // 小数点2桁
                         updateCameraAngle(deviceHeading);
                     }
 
@@ -631,13 +634,13 @@ const sortList_tabs = d.createElement("div");
                         DeviceOrientationEvent.requestPermission()
                         .then(response => {
                             if (response === "granted") {
-                                window.addEventListener("deviceorientation", handleOrientation);
+                                window.addEventListener("deviceorientation", deviceorientationHandler);
                             }
                         })
                         .catch(console.error);
                     } else {
                         // Androidや古いiOS
-                        window.addEventListener("deviceorientation", handleOrientation);
+                        window.addEventListener("deviceorientation", deviceorientationHandler);
                     }
                 })();
 
@@ -653,6 +656,7 @@ const sortList_tabs = d.createElement("div");
                         isNowBarTouch = true;
                         firstCameraDeg = cameraDeg;
                         firstTouches = touches;
+                        window.removeEventListener("deviceorientation", deviceorientationHandler);
                     }
 
                     function barTouchMove (e) {
@@ -810,11 +814,18 @@ const sortList_tabs = d.createElement("div");
             // モデル中心を注視
             const target = model.position;
 
-            camera.position.x = target.x + cameraDistance * Math.sin(angleRad);
-            camera.position.z = target.z + cameraDistance * Math.cos(angleRad);
-            camera.position.y = target.y + cameraHeight;
+            // 現在の高さ（上下方向）は維持
+            const currentY = camera.position.y;
 
-            camera.lookAt(target);
+            // 現在の距離を維持
+            const distance = camera.position.distanceTo(new THREE.Vector3(target.x, currentY, target.z));
+
+            // 左右方向だけを変更
+            camera.position.x = target.x + distance * Math.sin(angleRad);
+            camera.position.z = target.z + distance * Math.cos(angleRad);
+            camera.position.y = currentY; // 上下位置は触らない
+
+            // 注視点は変更しない（controlsが管理）
             controls.update();
         }
 
