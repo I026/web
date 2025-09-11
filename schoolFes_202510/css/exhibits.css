@@ -244,6 +244,16 @@
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
 }
+.content.main .exhibits .tile .content .compassBar {
+    position: absolute;
+    width: 100%;
+    height: 80px;
+    bottom: 0;
+    user-select: none;
+    background-color: rgba(211, 211, 211, .25);
+    backdrop-filter: blur(10px);
+    --webkit-backdrop-filter: blur(10px);
+}
 
 .content.main .exhibits .tile .content > div canvas {
     position: absolute;

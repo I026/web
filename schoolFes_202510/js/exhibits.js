@@ -456,21 +456,23 @@ const sortList_tabs = d.createElement("div");
 
     (() => { // mapsView
         const mapsView = d.createElement("div");
+        bottomBar_contents.appendChild(mapsView);
+        const compassBar = d.createElement("div");
         const compass = d.createElement("div");
         
         mapsView.className = "mapsView";
+        compassBar.className = "compassBar";
         compass.className = "compass";
         
-        compass.innerHTML = `<img src="medias/images/compass.svg" />`
-
-        bottomBar_contents.appendChild(mapsView);
+        compass.innerHTML = `<img src="medias/images/compass.svg"/>`
 
         const scene = new THREE.Scene();
         scene.background = null; // 背景色
 
         const aspect = window.innerWidth / window.innerHeight;
-        const cameraSize = 1; // 表示範囲の大きさ（好みで調整）
+        const cameraSize = 1.2; // 表示範囲の大きさ（好みで調整）
 
+        // カメラ
         const camera = new THREE.OrthographicCamera(
             -cameraSize * aspect,  // left
             cameraSize * aspect,   // right
@@ -479,8 +481,6 @@ const sortList_tabs = d.createElement("div");
             0.1,                   // near
             1000                   // far
         );
-        camera.position.set(1.5, 3, -3);
-        camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -496,34 +496,42 @@ const sortList_tabs = d.createElement("div");
         
         // 太陽の位置を取得
         const light = new THREE.DirectionalLight(0xffffff, 1);
-        setInterval(() => {
+        function matchSun () {
             const sunPos = SunCalc.getPosition(now, latitude, longitude);
             const distance = 10; // 光源までの距離
             const altitude = sunPos.altitude; // 高度
             const azimuth = sunPos.azimuth;   // 方位角（北=0）
 
             // 球座標 → デカルト座標変換
-            const x = Math.max(distance * Math.cos(altitude) * Math.sin(azimuth), 1);
-            const y = Math.max(distance * Math.sin(altitude), 1);
-            const z = Math.max(distance * Math.cos(altitude) * Math.cos(azimuth), 1);
+            const x = Math.max(distance * Math.cos(altitude) * Math.sin(azimuth), 2);
+            const y = Math.max(distance * Math.sin(altitude), 2);
+            const z = Math.max(distance * Math.cos(altitude) * Math.cos(azimuth), 2);
 
             light.position.set(x, y, z);
             light.lookAt(0, 0, 0); // 原点を照らす
 
             const maxIntensity = 2.5;
-            const minIntensity = .5;
-            light.intensity = Math.max(minIntensity, Math.sin(sunPos.altitude) * maxIntensity);
-        }, 10000);
+            const minIntensity = 1;
+            light.intensity = Math.max(minIntensity, Math.sin(sunPos.altitude) * maxIntensity);            
+        }
+        matchSun();
+        setInterval(() => {
+            matchSun();
+        }, 1000);
         scene.add(light);
 
         // 環境光
         scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
+        let cameraDistance = 5; // モデル中心からの距離
+        let cameraHeight = 10;    // 高さ（Y座標）
+        let cameraDeg = 0;     // 左右角度（度単位）
+
         // 3Dモデル読み込み
         const loader = new GLTFLoader();
         let model; // モデルを外で保持
         loader.load(
-            'medias/3ds/sc.glb',
+            "medias/3ds/sc.glb",
             (gltf) => {
                 model = gltf.scene;
                 model.position.set(0, 0, 0);
@@ -533,6 +541,51 @@ const sortList_tabs = d.createElement("div");
                 // モデルが読み込まれたら OrbitControls の注視点をモデル中心に設定
                 controls.target.set(model.position.x, model.position.y, model.position.z);
                 controls.update();
+
+                (() => {
+                    const generateTouches = (e) => e ? [e?.clientX || e.touches[0]?.clientX, e?.clientY || e.touches[0]?.clientY] : [null, null];
+
+                    let isNowBarTouch = false;
+                    let firstCameraDeg = cameraDeg;
+                    let firstTouches = [];
+
+                    function barTouchStart (e) {
+                        const touches = generateTouches(e);
+                        isNowBarTouch = true;
+                        firstCameraDeg = cameraDeg;
+                        firstTouches = touches;
+                    }
+
+                    function barTouchMove (e) {
+                        const touches = generateTouches(e);
+                        const differences = [
+                            touches[0] - firstTouches[0],
+                            touches[1] - firstTouches[1]
+                        ];
+
+                        if (isNowBarTouch) {
+                            updateCameraAngle(
+                                firstCameraDeg + differences[0] * -.25
+                            );
+                        }
+                    }
+
+                    function barTouchEnd (e) {
+                        const touches = generateTouches(e);
+                        isNowBarTouch = false;
+                    }
+
+                    barTouchStart();
+                    barTouchMove();
+                    barTouchEnd();
+
+                    compassBar.addEventListener("touchstart", barTouchStart);
+                    compassBar.addEventListener("mousedown", barTouchStart);
+                    window.addEventListener("touchmove", barTouchMove);
+                    window.addEventListener("mousemove", barTouchMove);
+                    window.addEventListener("touchend", barTouchEnd);
+                    window.addEventListener("mouseup", barTouchEnd);
+                })();
             },
             (xhr) => {
                 console.log((xhr.loaded / xhr.total * 100) + '% loaded');
@@ -550,19 +603,17 @@ const sortList_tabs = d.createElement("div");
         controls.screenSpacePanning = true;
         controls.touches = {
             ONE: THREE.TOUCH.PAN,
-            TWO: THREE.TOUCH.NONE
+            TWO: THREE.TOUCH.ROTATE
         };
         controls.mouseButtons = {
             LEFT: THREE.MOUSE.PAN,
-            MIDDLE: THREE.MOUSE.NONE,
+            MIDDLE: THREE.MOUSE.ROTATE,
             RIGHT: THREE.MOUSE.NONE
         };
 
-        controls.minDistance = 1;
+        controls.minDistance = 2;
         controls.maxDistance = 10;
         controls.maxPolarAngle = Math.PI / 2; // カメラが地面の下に回り込まないよう制限
-
-        let cameraAngle;
 
         // パン操作時にモデルから離れすぎないように制限
         controls.addEventListener("change", () => {
@@ -585,8 +636,10 @@ const sortList_tabs = d.createElement("div");
 
             // 方角を度で取得したい場合（北=+Z, 東=+X と仮定）
             const radToDeg = 180 / Math.PI;
-            cameraAngle = Math.atan2(cameraDirection.x, cameraDirection.z) * radToDeg;
-            compass.style.transform = `rotate(${cameraAngle}deg)`;
+            const cD = Math.atan2(cameraDirection.x, cameraDirection.z) * radToDeg + 180;
+            cameraDeg = cD;
+
+            compass.style.transform = `rotate(${cameraDeg}deg)`;
         });
 
         // 描画ループ
@@ -615,7 +668,23 @@ const sortList_tabs = d.createElement("div");
         window.addEventListener("resize", onWindowResize);
         onWindowResize(); // 初期表示時にも呼ぶ
 
-        mapsView.appendChild(compass);
+        function updateCameraAngle(angleDeg) {
+            cameraDeg = angleDeg;
+            const angleRad = THREE.MathUtils.degToRad(cameraDeg);
+
+            // モデル中心を注視
+            const target = model.position;
+
+            camera.position.x = target.x + cameraDistance * Math.sin(angleRad);
+            camera.position.z = target.z + cameraDistance * Math.cos(angleRad);
+            camera.position.y = target.y + cameraHeight;
+
+            camera.lookAt(target);
+            controls.update();
+        }
+
+        mapsView.appendChild(compassBar);
+        compassBar.appendChild(compass);
     })();
 })();
 
@@ -676,7 +745,7 @@ const sortList_tabs = d.createElement("div");
         console.log("isNowOpen : ", isNowOpen);
         if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {
             if (e?.target === sortList_topBar && Math.abs(difference[1]) === 0) { // topBarTap
-                barHeightUpdate();
+                barHeightUpdate( !isNowOpen);
             } else if (isHolded) { // swipe
                 console.log("Math.abs(difference[1])", Math.abs(difference[1]));
                 const threshold = 100;
