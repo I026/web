@@ -708,7 +708,7 @@ let loadModel;
 
                     let deviceorientationHandler;
 
-                    function directionSynchronization () {
+                    function directionMatch () {
                         let deviceHeading;
                         deviceorientationHandler = (event) => {
                             if (event.webkitCompassHeading !== undefined) {
@@ -737,9 +737,15 @@ let loadModel;
                             window.addEventListener("deviceorientation", deviceorientationHandler);
                         }
                     };
-                    directionSynchronization();
+                    directionMatch();
 
-                    compass.addEventListener("click", directionSynchronization);
+                    compass.addEventListener("click", directionMatch);
+
+                    function removeDirectionMatch () {
+                        window.removeEventListener("deviceorientation", deviceorientationHandler);
+                    }
+                    mapsView.addEventListener("touchstart", removeDirectionMatch);
+                    mapsView.addEventListener("mousedown", removeDirectionMatch);
 
                     (() => {
                         const generateTouches = (e) => e ? [e?.clientX || e.touches[0]?.clientX, e?.clientY || e.touches[0]?.clientY] : [null, null];
@@ -1123,8 +1129,6 @@ window.addEventListener("scroll", () => { // sortListAreaHeight
     }
 
     // if (Math.abs(lastScrollPx - window.scrollY) > 200) marginBottomUpdate(false);
-
-    console.log(Date.now() - lastScrollTime + " ms差")
     if (Date.now() - lastScrollTime > 20) lastScrollPx = window.scrollY;
     lastScrollTime = Date.now();
 });
