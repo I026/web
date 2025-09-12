@@ -211,7 +211,7 @@ function setPathViewBox() {
     });
 }
 
-(() => { // スムーズスクロール
+(() => { // スムーズスクロール (停止中)
     const scriptTag = d.createElement("script");
     scriptTag.src = "https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js";
     d.head.appendChild(scriptTag);
@@ -226,7 +226,7 @@ function setPathViewBox() {
         }
         requestAnimationFrame(raf);
     };
-})();
+});
 
 const isLocalFile = window.location.protocol === "file:";
 

@@ -209,12 +209,16 @@ const tagOrder = {
     },
 };
 
-function openTile (targetTile) {
+function openTile (targetTile, isToOpen = !targetTile.classList.contains("opened")) {
     const allTiles = exhibitsArea.querySelectorAll(".tile");
     allTiles.forEach(element => {
         if (element !== targetTile) element.classList.remove("opened");
     });
-    targetTile.classList.toggle("opened");
+    if (isToOpen) {
+        targetTile.classList.add("opened");
+    } else {
+        targetTile.classList.remove("opened");
+    }
 }
 
 for (let i = 0; i < exhibitsLength; i += 1) {
@@ -248,6 +252,12 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     let displayTagNames = [];
     const usedTags = new Set();
 
+    exhibitsArea.addEventListener("click", e => {
+        const tile = e.target.closest(".tile");
+        if (!tile) return;
+        openTile(tile);
+    });
+
     Object.keys(tagOrder).forEach((tag) => {
         if (!getExhibits(i)[1].tag.includes(tag) || usedTags.has(tag)) return;
         usedTags.add(tag);
@@ -265,10 +275,6 @@ for (let i = 0; i < exhibitsLength; i += 1) {
         tile.setAttribute(`tag_${item}`, "");
     });
     tags.classList.add("tags");
-
-    tile.addEventListener("click", () => {
-        openTile(tile);
-    });
 
     tile.appendChild(names);
     tile.appendChild(description);
@@ -523,9 +529,8 @@ let loadModel;
             updateResetButton();
             sortUpdate();
         }
-        newTag.addEventListener("click", (e) => {
-            tagClicked();
-        });
+
+        newTag.addEventListener("click", tagClicked);
     });
 
     (() => { // mapsView
@@ -562,8 +567,8 @@ let loadModel;
             1000                   // far
         );
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setPixelRatio(window.devicePixelRatio);
+        const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+        renderer.setPixelRatio(window.devicePixelRatio * .9);
 
         // 描画領域を mapsView に追加
         mapsView.appendChild(renderer.domElement);
@@ -651,18 +656,25 @@ let loadModel;
                             label.className = "mapsLabel";
                             label.setAttribute("exhibits", partName);
                             labelsArea.appendChild(label);
-                            label.addEventListener("click", () => {
+                            function labelTouch () {
                                 const tile = exhibitsArea.querySelector(`.tile[exhibits=${partName}]`);
 
                                 function scrollToAndThen(targetY, callback) {
-                                    const tolerance = 0; // 誤差許容値
+                                    const executionTime = Date.now();
+                                    const tolerance = 2; // 少し余裕を持たせる
                                     const checkScroll = () => {
-                                        if (Math.abs(window.scrollY - targetY) <= tolerance) {
+                                        const currentY = window.scrollY;
+                                        const maxY = d.body.scrollHeight - window.innerHeight;
+                                        if (
+                                            Math.abs(currentY - Math.min(targetY, maxY)) <= tolerance ||
+                                            Date.now() - executionTime > 1000
+                                        ) {
                                             callback();
                                         } else {
                                             requestAnimationFrame(checkScroll);
                                         }
                                     };
+
                                     window.scrollTo({ top: targetY, behavior: "smooth" });
                                     checkScroll();
                                 }
@@ -673,13 +685,10 @@ let loadModel;
                                     exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
                                         tileItem.style.transition = "none";
                                     });
+
                                     const rect = targetTile.getBoundingClientRect();
                                     const scrollTop = window.scrollY || document.documentElement.scrollTop;
                                     const targetY = rect.top + scrollTop - 120;
-                                    window.scrollTo({
-                                        top: targetY,
-                                        behavior: "smooth"
-                                    });
                                     scrollToAndThen(targetY, () => {
                                         exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
                                             tileItem.style.transition = existingTransition;
@@ -687,9 +696,58 @@ let loadModel;
                                     });
                                 }
                                 barHeightUpdate(false);
-                                openTile(tile);
+                                openTile(tile, true);
                                 scrollTo(tile);
-                            });
+                            }
+                            (() => {
+                                function isOverlap(el, x, y) {
+                                    const rect = el.getBoundingClientRect();
+                                    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+                                }
+
+                                // document 全体でタッチやマウスの開始・終了イベントを監視
+                                let touchStart = [];
+                                function handleEvent(x, y) {
+                                    Object.values(labels).forEach(({ element }) => {
+                                        if (isOverlap(element, touchStart[0], touchStart[1]) && isOverlap(element, x, y)) {
+                                            element._labelTouch?.();
+                                        }
+                                    });
+                                }
+
+                                document.addEventListener("mousedown", (e) => touchStart = [e.clientX, e.clientY]);
+                                document.addEventListener("mouseup", (e) => handleEvent(e.clientX, e.clientY));
+
+                                document.addEventListener("touchstart", (e) => {
+                                    const touch = e.touches[0];
+                                    touchStart = [touch.clientX, touch.clientY];
+                                });
+                                document.addEventListener("touchend", (e) => {
+                                    const touch = e.changedTouches[0];
+                                    handleEvent(touch.clientX, touch.clientY);
+                                });
+
+                                // 元の labelTouch をラベルオブジェクトに紐づけて保持
+                                Object.keys(modelParts).forEach((partName) => {
+                                    const part = modelParts[partName];
+                                    const label = labels[partName]?.element;
+                                    if (label) {
+                                        function labelTouch () {
+                                            const tile = exhibitsArea.querySelector(`.tile[exhibits=${partName}]`);
+                                            barHeightUpdate(false);
+                                            openTile(tile, true);
+                                            // 必要に応じてスクロール処理も
+                                            const rect = tile.getBoundingClientRect();
+                                            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                                            const targetY = rect.top + scrollTop - 120;
+                                            window.scrollTo({ top: targetY, behavior: "smooth" });
+                                        }
+
+                                        // ラベルに関数を保持しておく
+                                        label._labelTouch = labelTouch;
+                                    }
+                                });
+                            })();
                         }
 
                         labels[partName] = { element: label, part: part };
@@ -725,9 +783,9 @@ let loadModel;
                             const isBlocked = !(intersects.length > 0 && intersects[0].object !== part);
                             element.style.opacity = isBlocked ? 0 : gsap.getProperty(part.material, "opacity"); */
 
-                            const opacity = gsap.getProperty(part.material, "opacity");
+                            // const opacity = gsap.getProperty(part.material, "opacity");
+                            const opacity = part.visible ? 1 : 0;
                             element.style.opacity = opacity;
-                            element.style.pointerEvents = opacity === 1 ? "auto" : "none";
                             element.style.zIndex = Math.floor(1000 - distance); // 手前ほど大きく
                             element.style.fontSize = Math.min(Math.max(camera.zoom * (distance * .85), .6), 100) + "px";
                         });
@@ -762,34 +820,8 @@ let loadModel;
                             if (event.webkitCompassHeading !== undefined) {
                                 deviceHeading = event.webkitCompassHeading; // iOS Safari
                             } else {
-                                // Magnetometer を使って常に北基準で角度を取得
-                                navigator.permissions.query({ name: "magnetometer" }).then(result => console.log(result.state));
-                                if ("Magnetometer" in window) {
-                                    try {
-                                        const magnetometer = new Magnetometer({ frequency: 60 });
-
-                                        magnetometer.addEventListener("reading", () => {
-                                            const x = magnetometer.x;
-                                            const y = magnetometer.y;
-
-                                            // atan2 で方角を計算（北=0°、時計回りが正）
-                                            let heading = Math.atan2(y, x) * (180 / Math.PI);
-                                            if (heading < 0) heading += 360; // 0～360°に正規化
-
-                                            deviceHeading = heading;
-
-                                            console.log("deviceHeading (Magnetometer) : ", deviceHeading);
-                                        });
-
-                                        magnetometer.start();
-                                    } catch (error) {
-                                        console.error("Magnetometer not available:", error);
-                                        return;
-                                    }
-                                } else {
-                                    // センサーが存在しない場合は処理しない
-                                    return;
-                                }
+                                // センサーが存在しない場合は処理しない
+                                return;
                             }
 
                             console.log("deviceHeading : ", deviceHeading);
@@ -866,8 +898,12 @@ let loadModel;
                         window.addEventListener("mouseup", barTouchEnd);
                     })();
 
+                    let lastLabelUpdate = 0;
+
                     // パン操作時にモデルから離れすぎないように制限
                     controls.addEventListener("change", () => {
+                        const now = Date.now();
+
                         const maxDistance = 1; // モデル中心からの最大距離
 
                         // 注視点を範囲内に制限
@@ -892,7 +928,10 @@ let loadModel;
 
                         compass.style.transform = `rotate(${cameraDeg}deg)`;
 
-                        updateLabelsPosition();
+                        if (now - lastLabelUpdate > 15) {
+                            updateLabelsPosition();
+                            lastLabelUpdate = now;
+                        }
                     });
                 },
                 (xhr) => {
@@ -1017,6 +1056,69 @@ let loadModel;
             H3_7: {
                 floor: 3
             },
+            Corridor_1001: {
+                floor: 1
+            },
+            Corridor_1002: {
+                floor: 1
+            },
+            Corridor_1003: {
+                floor: 1
+            },
+            Corridor_1004: {
+                floor: 1
+            },
+            Corridor_2001: {
+                floor: 2
+            },
+            Corridor_2002: {
+                floor: 2
+            },
+            Corridor_2003: {
+                floor: 2
+            },
+            Corridor_2004: {
+                floor: 2
+            },
+            Corridor_3001: {
+                floor: 3
+            },
+            Corridor_3002: {
+                floor: 3
+            },
+            Corridor_3003: {
+                floor: 3
+            },
+            Corridor_3004: {
+                floor: 3
+            },
+            Multipurpose: {
+                floor: 1
+            },
+            Music_Large: {
+                floor: 2
+            },
+            Music_Large: {
+                floor: 2
+            },
+            Science_A: {
+                floor: 1
+            },
+            Science_B: {
+                floor: 1
+            },
+            Science_C: {
+                floor: 1
+            },
+            Science_D: {
+                floor: 1
+            },
+            Science_Preparation: {
+                floor: 1
+            },
+            WC_1: {
+                floor: 1
+            },
         };
 
         function updateCameraAngle(angleDeg) {
@@ -1088,13 +1190,7 @@ let loadModel;
                     // const isPartActive = exhibits[part.name] ? activeFloors.includes(exhibits[part.name]?.location.floor) : true;
                     const isPartActive = locations[part.name]?.floor ? activeFloors.includes(locations[part.name].floor) : true;
 
-                    // 透明度を変更
-                    gsap.to(part.material, {
-                        opacity: isPartActive ? 1 : 0,
-                        duration: 0.5,
-                        onComplete: () => { part.visible = isPartActive; }
-                    });
-                    part.visible = true;
+                    part.visible = isPartActive;
                 });
             });
             

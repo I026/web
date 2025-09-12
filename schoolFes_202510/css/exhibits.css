@@ -236,11 +236,13 @@
     color: white;
     font-size: 1em;
     white-space: nowrap;
+    pointer-events: none;
     user-select: none;
     background-color: rgba(128, 128, 128, .8);
     padding: 2px;
     border-radius: 100vh;
-    transition: opacity .5s ease-out;
+    transition:
+    opacity .5s ease-out;
 }
 
 .content.main .exhibits .tile .content .compass {
