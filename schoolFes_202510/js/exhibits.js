@@ -523,7 +523,7 @@ const sortList_tabs = d.createElement("div");
 
         let cameraDistance = 10; // モデル中心からの距離
         let cameraHeight = 10;    // 高さ（Y座標）
-        let cameraDeg = 180;     // 左右角度（度単位）
+        let cameraDeg = 0;     // 左右角度（度単位）
 
         camera.position.set(0, cameraHeight, cameraDistance);
         camera.lookAt(0, 0, 0);
@@ -538,7 +538,7 @@ const sortList_tabs = d.createElement("div");
             (gltf) => {
                 model = gltf.scene;
                 model.position.set(0, 0, 0);
-                model.rotation.y = THREE.MathUtils.degToRad(-45);
+                model.rotation.y = THREE.MathUtils.degToRad(180 - 45);
                 scene.add(model);
 
                 // モデルが読み込まれたら OrbitControls の注視点をモデル中心に設定
@@ -619,16 +619,18 @@ const sortList_tabs = d.createElement("div");
                 function directionSynchronization () {
                     let deviceHeading;
                     deviceorientationHandler = (event) => {
-                        // iOS Safari (webkitCompassHeading)
                         if (event.webkitCompassHeading !== undefined) {
-                            deviceHeading = event.webkitCompassHeading; // 北が0°
+                            deviceHeading = event.webkitCompassHeading; // iOS Safari
+                        } else if (event.alpha !== null) {
+                            deviceHeading = 360 - event.alpha; // Android
                         } else {
-                            // Androidなど (alpha: デバイスが向いている方向 0°=北)
-                            deviceHeading = 360 - event.alpha; // 時計回りに修正
+                            // センサーが存在しない場合は処理しない
+                            return;
                         }
 
+                        console.log("deviceHeading : ", deviceHeading);
                         updateCameraAngle(deviceHeading);
-                    }
+                    };
 
                     if (typeof DeviceOrientationEvent.requestPermission === "function") {
                         DeviceOrientationEvent.requestPermission()
