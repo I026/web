@@ -737,6 +737,9 @@ let loadModel;
                             window.addEventListener("deviceorientation", deviceorientationHandler);
                         }
                     };
+                    directionSynchronization();
+
+                    compass.addEventListener("click", directionSynchronization);
 
                     (() => {
                         const generateTouches = (e) => e ? [e?.clientX || e.touches[0]?.clientX, e?.clientY || e.touches[0]?.clientY] : [null, null];
@@ -770,9 +773,7 @@ let loadModel;
                         function barTouchEnd (e) {
                             const touches = generateTouches(e);
                             isNowBarTouch = false;
-                            setTimeout(() => {
-                                directionSynchronization();
-                            }, 2000);
+                            // directionSynchronization();
                         }
 
                         barTouchStart();
