@@ -208,6 +208,15 @@ const tagOrder = {
         group: tagGroups.grade
     },
 };
+
+function openTile (targetTile) {
+    const allTiles = exhibitsArea.querySelectorAll(".tile");
+    allTiles.forEach(element => {
+        if (element !== targetTile) element.classList.remove("opened");
+    });
+    targetTile.classList.toggle("opened");
+}
+
 for (let i = 0; i < exhibitsLength; i += 1) {
     const tile = d.createElement("div");
     const names = d.createElement("div");
@@ -217,6 +226,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
 
     tile.style.animation = "tag_show .5s both";
     tile.style.animationDelay = `${i * 0.1}s`;
+    tile.setAttribute("exhibits", getExhibits(i)[0]);
     tile.className = "tile";
 
     names.innerHTML = `${getExhibits(i)[1].name}<span class="subText">場所 : ${
@@ -256,13 +266,8 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     });
     tags.classList.add("tags");
 
-    
     tile.addEventListener("click", () => {
-        const allTiles = exhibitsArea.querySelectorAll(".tile");
-        allTiles.forEach(element => {
-            if (element !== tile) element.classList.remove("opened");
-        });
-        tile.classList.toggle("opened");
+        openTile(tile);
     });
 
     tile.appendChild(names);
@@ -644,7 +649,47 @@ let loadModel;
                         if (exhibits[partName]?.name) {
                             label.textContent = exhibits[partName].name;
                             label.className = "mapsLabel";
+                            label.setAttribute("exhibits", partName);
                             labelsArea.appendChild(label);
+                            label.addEventListener("click", () => {
+                                const tile = exhibitsArea.querySelector(`.tile[exhibits=${partName}]`);
+
+                                function scrollToAndThen(targetY, callback) {
+                                    const tolerance = 0; // 誤差許容値
+                                    const checkScroll = () => {
+                                        if (Math.abs(window.scrollY - targetY) <= tolerance) {
+                                            callback();
+                                        } else {
+                                            requestAnimationFrame(checkScroll);
+                                        }
+                                    };
+                                    window.scrollTo({ top: targetY, behavior: "smooth" });
+                                    checkScroll();
+                                }
+                                
+                                function scrollTo(targetTile) {
+                                    if (!targetTile) return;
+                                    const existingTransition = tile.style.transition;
+                                    exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
+                                        tileItem.style.transition = "none";
+                                    });
+                                    const rect = targetTile.getBoundingClientRect();
+                                    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                                    const targetY = rect.top + scrollTop - 120;
+                                    window.scrollTo({
+                                        top: targetY,
+                                        behavior: "smooth"
+                                    });
+                                    scrollToAndThen(targetY, () => {
+                                        exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
+                                            tileItem.style.transition = existingTransition;
+                                        });
+                                    });
+                                }
+                                barHeightUpdate(false);
+                                openTile(tile);
+                                scrollTo(tile);
+                            });
                         }
 
                         labels[partName] = { element: label, part: part };
@@ -680,7 +725,9 @@ let loadModel;
                             const isBlocked = !(intersects.length > 0 && intersects[0].object !== part);
                             element.style.opacity = isBlocked ? 0 : gsap.getProperty(part.material, "opacity"); */
 
-                            element.style.opacity = gsap.getProperty(part.material, "opacity");
+                            const opacity = gsap.getProperty(part.material, "opacity");
+                            element.style.opacity = opacity;
+                            element.style.pointerEvents = opacity === 1 ? "auto" : "none";
                             element.style.zIndex = Math.floor(1000 - distance); // 手前ほど大きく
                             element.style.fontSize = Math.min(Math.max(camera.zoom * (distance * .85), .6), 100) + "px";
                         });
@@ -716,6 +763,7 @@ let loadModel;
                                 deviceHeading = event.webkitCompassHeading; // iOS Safari
                             } else {
                                 // Magnetometer を使って常に北基準で角度を取得
+                                navigator.permissions.query({ name: "magnetometer" }).then(result => console.log(result.state));
                                 if ("Magnetometer" in window) {
                                     try {
                                         const magnetometer = new Magnetometer({ frequency: 60 });
