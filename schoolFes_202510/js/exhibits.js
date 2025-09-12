@@ -721,7 +721,7 @@ let loadModel;
                             }
 
                             console.log("deviceHeading : ", deviceHeading);
-                            updateCameraAngle(deviceHeading);
+                            updateCameraAngle(-deviceHeading);
                         };
 
                         if (typeof DeviceOrientationEvent.requestPermission === "function") {
