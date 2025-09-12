@@ -259,6 +259,10 @@
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
 }
+.content.main .exhibits .tile .content .compass img {
+    width: 100%;
+    height: 100%;
+}
 .content.main .exhibits .tile .content .compassBar {
     position: absolute;
     width: 100%;
