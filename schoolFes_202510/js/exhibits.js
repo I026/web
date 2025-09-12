@@ -11,8 +11,11 @@ const getClassName = (school, input_grade, input_class) => (
 const exhibits = {
     J1_1: {
         name: "(テスト文)",
-        location: getClassName("J", 1, 1),
         description: "(テスト文)",
+        location: {
+            name: "",
+            floor: 1
+        },
         tag: [
             "byClass",
             "J1",
@@ -20,8 +23,11 @@ const exhibits = {
     },
     J1_2: {
         name: "(テスト文)",
-        location: getClassName("J", 1, 2),
         description: "(テスト文)",
+        location: {
+            name: "",
+            floor: 1
+        },
         tag: [
             "byClass",
             "J1",
@@ -29,8 +35,11 @@ const exhibits = {
     },
     J1_3: {
         name: "(テスト文)",
-        location: getClassName("J", 1, 3),
         description: "(テスト文)",
+        location: {
+            name: "",
+            floor: 1
+        },
         tag: [
             "byClass",
             "J1",
@@ -38,8 +47,11 @@ const exhibits = {
     },
     J2_1: {
         name: "お化け屋敷",
-        location: getClassName("J", 2, 1),
         description: "怖いお化けが出る屋敷",
+        location: {
+            name: "",
+            floor: 2
+        },
         tag: [
             "byClass",
             "J2",
@@ -48,8 +60,11 @@ const exhibits = {
     },
     J2_2: {
         name: "サービスエリア",
-        location: getClassName("J", 2, 2),
         description: "(テスト文)",
+        location: {
+            name: "",
+            floor: 2
+        },
         tag: [
             "byClass",
             "J2",
@@ -60,12 +75,51 @@ const exhibits = {
     },
     J2_3: {
         name: "SASUKE",
-        location: getClassName("J", 2, 3),
         description: "(テスト文)",
+        location: {
+            name: "",
+            floor: 2
+        },
         tag: [
             "byClass",
             "J2",
             "attractions",
+        ],
+    },
+    J3_1: {
+        name: "(テスト文)",
+        description: "(テスト文)",
+        location: {
+            name: "",
+            floor: 3
+        },
+        tag: [
+            "byClass",
+            "J3",
+        ],
+    },
+    J3_2: {
+        name: "(テスト文)",
+        description: "(テスト文)",
+        location: {
+            name: "",
+            floor: 3
+        },
+        tag: [
+            "byClass",
+            "J3",
+        ],
+    },
+    J3_3: {
+        name: "(テスト文)",
+        description: "(テスト文)",
+        location: {
+            name: "",
+            floor: 3
+        },
+        tag: [
+            "byClass",
+            "J3",
         ],
     },
 }
@@ -165,7 +219,15 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     tile.style.animationDelay = `${i * 0.1}s`;
     tile.className = "tile";
 
-    names.innerHTML = `${getExhibits(i)[1].name}<span class="subText">場所 : ${getExhibits(i)[1].location}</span>`;
+    names.innerHTML = `${getExhibits(i)[1].name}<span class="subText">場所 : ${
+        !getExhibits(i)[1]?.location?.name || getExhibits(i)[1].location.name === "" ?
+        getClassName(
+            getExhibits(i)[0].split("_")[0].split("")[0],
+            getExhibits(i)[0].split("_")[0].split("")[1],
+            getExhibits(i)[0].split("_")[1]
+        ) :
+        getExhibits(i)[1].location.name
+    }</span>`;
     names.classList.add("names");
     
     description.innerHTML = `<span>${getExhibits(i)[1].description}</span>`;
@@ -456,9 +518,15 @@ const sortList_tabs = d.createElement("div");
 
     (() => { // mapsView
         const mapsView = d.createElement("div");
+        const labelsArea = d.createElement("div");
         bottomBar_contents.appendChild(mapsView);
         const compassBar = d.createElement("div");
         const compass = d.createElement("div");
+        
+        const buttons = d.createElement("div");
+
+        const buttons_floors = d.createElement("div");
+        buttons_floors.className = "buttons_floors";
         
         mapsView.className = "mapsView";
         compassBar.className = "compassBar";
@@ -484,7 +552,6 @@ const sortList_tabs = d.createElement("div");
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.setSize(window.innerWidth * 0.5, window.innerHeight * 0.5);
 
         // 描画領域を mapsView に追加
         mapsView.appendChild(renderer.domElement);
@@ -564,9 +631,12 @@ const sortList_tabs = d.createElement("div");
                     const part = modelParts[partName];
 
                     const label = document.createElement("div");
-                    label.textContent = ["J", "H"].some(char => partName.includes(char)) ? truncateText(partName) : ""; // パーツ名を表示
-                    label.className = "mapsLabel";
-                    mapsView.appendChild(label);
+                    getExhibits();
+                    if (exhibits[partName]?.name) {
+                        label.textContent = exhibits[partName].name;
+                        label.className = "mapsLabel";
+                        labelsArea.appendChild(label);
+                    }
 
                     labels[partName] = { element: label, part: part };
                 });
@@ -576,19 +646,25 @@ const sortList_tabs = d.createElement("div");
 
                     Object.values(labels).forEach(({ element, part }) => {
                         const vector = new THREE.Vector3();
-                        vector.setFromMatrixPosition(part.matrixWorld);
+                        if (part.geometry) {
+                            part.geometry.computeBoundingBox();
+                            part.geometry.boundingBox.getCenter(vector);
+                            part.localToWorld(vector);
+                        }
                         vector.project(camera);
 
                         const widthHalf = rect.width / 2;
                         const heightHalf = rect.height / 2;
 
-                        element.style.left = (vector.x * widthHalf + widthHalf) + "px";
-                        element.style.top = (-vector.y * heightHalf + heightHalf) + "px";
+                        element.style.left = (vector.x * widthHalf + widthHalf - element.offsetWidth / 2) + "px";
+                        element.style.top = (-vector.y * heightHalf + heightHalf - element.offsetHeight / 2) + "px";
 
                         // カメラからの距離を取得して z-index を設定
                         const distance = camera.position.distanceTo(part.getWorldPosition(new THREE.Vector3()));
                         element.style.opacity = Math.max((10.5 - distance) * 10, .5);
                         element.style.zIndex = Math.floor(1000 - distance); // 手前ほど大きく
+                        element.style.fontSize = Math.min(Math.max(camera.zoom * (12 - distance) * 4, 5), 100) + "px";
+                        // if (element.textContent === "お化け屋敷") console.log(distance);
                     });
                 }
 
@@ -834,8 +910,68 @@ const sortList_tabs = d.createElement("div");
             controls.update();
         }
 
+        const floors = {
+            f1: {
+                name: "1階"
+            },
+            f2: {
+                name: "2階"
+            },
+            f3: {
+                name: "3階"
+            },
+        };
+
+        Object.values(floors).forEach((floor, index) => {
+            const button = d.createElement("div");
+            
+            button.textContent = floor.name;
+            button.setAttribute("floor", Object.keys(floors)[index]);
+            button.className = "button";
+
+            button.addEventListener("click", () => {
+                const allButtons = buttons_floors.querySelectorAll(".button");
+
+                const isOnlyValid = !button.classList.contains("invalid") &&
+                    [...allButtons].every(b => b === button || b.classList.contains("invalid"));
+
+                if (isOnlyValid) {
+                    allButtons.forEach(el => el.classList.remove("invalid"));
+                } else {
+                    allButtons.forEach(el => {
+                        el.classList.remove("invalid");
+                        if (el !== button) el.classList.add("invalid");
+                    });
+                }
+
+                // アクティブフロアを配列で取得
+                const activeFloors = [...buttons_floors.querySelectorAll(".button")]
+                    .filter(btn => !btn.classList.contains("invalid"))
+                    .map(btn => btn.getAttribute("floor").replaceAll("f", "") * 1);
+
+                Object.values(modelParts).forEach(part => {
+                    if (!part.material.transparent) part.material.transparent = true;
+
+                    // パーツがどのフロアに属するかを判定
+                    const isPartActive = activeFloors.includes(exhibits[part.name]?.location.floor);
+
+                    // 透明度を変更
+                    gsap.to(part.material, {
+                        opacity: isPartActive ? 1 : 0,
+                        duration: 0.5
+                    });
+                });
+            });
+            
+            buttons_floors.appendChild(button);
+        });
+
         mapsView.appendChild(compassBar);
+        mapsView.appendChild(labelsArea);
+        mapsView.appendChild(buttons_floors);
         compassBar.appendChild(compass);
+
+        mapsView.appendChild(buttons);
     })();
 })();
 
