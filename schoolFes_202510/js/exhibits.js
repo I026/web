@@ -668,9 +668,9 @@ let loadModel;
                             element.style.left = (vector.x * widthHalf + widthHalf - element.offsetWidth / 2) + "px";
                             element.style.top = (-vector.y * heightHalf + heightHalf - element.offsetHeight / 2) + "px";
 
-                            // カメラからの距離を取得して z-index を設定
                             const distance = camera.position.distanceTo(part.getWorldPosition(new THREE.Vector3()));
-                            // カメラからパーツ中心に向けてレイキャスト
+
+                            /* // カメラからパーツ中心に向けてレイキャスト
                             const raycaster = new THREE.Raycaster(camera.position, vector.clone().sub(camera.position).normalize());
 
                             // シーン全体から交差判定（自分自身も含む）
@@ -678,10 +678,11 @@ let loadModel;
 
                             // 一番近いオブジェクトが自分自身かどうか確認
                             const isBlocked = !(intersects.length > 0 && intersects[0].object !== part);
+                            element.style.opacity = isBlocked ? 0 : gsap.getProperty(part.material, "opacity"); */
 
-                            element.style.opacity = isBlocked ? 0 : gsap.getProperty(part.material, "opacity");
+                            element.style.opacity = gsap.getProperty(part.material, "opacity");
                             element.style.zIndex = Math.floor(1000 - distance); // 手前ほど大きく
-                            element.style.fontSize = Math.min(Math.max(camera.zoom * (distance * .05), .6), 10) + "vw";
+                            element.style.fontSize = Math.min(Math.max(camera.zoom * (distance * .5), .6), 10) + "px";
                         });
                     }
 
@@ -714,7 +715,30 @@ let loadModel;
                             if (event.webkitCompassHeading !== undefined) {
                                 deviceHeading = event.webkitCompassHeading; // iOS Safari
                             } else if (event.alpha !== null) {
-                                deviceHeading = 360 - event.alpha; // Android
+                                // Magnetometer を使って常に北基準で角度を取得
+                                if ("Magnetometer" in window) {
+                                    try {
+                                        const magnetometer = new Magnetometer({ frequency: 60 });
+
+                                        magnetometer.addEventListener('reading', () => {
+                                            const x = magnetometer.x;
+                                            const y = magnetometer.y;
+
+                                            // atan2 で方角を計算（北=0°、時計回りが正）
+                                            let heading = Math.atan2(y, x) * (180 / Math.PI);
+                                            if (heading < 0) heading += 360; // 0～360°に正規化
+
+                                            deviceHeading = heading;
+
+                                            console.log("deviceHeading (Magnetometer) : ", deviceHeading);
+                                            updateCameraAngle(-deviceHeading);
+                                        });
+
+                                        magnetometer.start();
+                                    } catch (error) {
+                                        console.error("Magnetometer not available:", error);
+                                    }
+                                }
                             } else {
                                 // センサーが存在しない場合は処理しない
                                 return;
