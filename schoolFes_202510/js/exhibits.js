@@ -682,7 +682,7 @@ let loadModel;
 
                             element.style.opacity = gsap.getProperty(part.material, "opacity");
                             element.style.zIndex = Math.floor(1000 - distance); // 手前ほど大きく
-                            element.style.fontSize = Math.min(Math.max(camera.zoom * (distance * .5), .6), 10) + "px";
+                            element.style.fontSize = Math.min(Math.max(camera.zoom * (distance * .85), .6), 100) + "px";
                         });
                     }
 
