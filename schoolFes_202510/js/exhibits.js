@@ -714,13 +714,13 @@ let loadModel;
                         deviceorientationHandler = (event) => {
                             if (event.webkitCompassHeading !== undefined) {
                                 deviceHeading = event.webkitCompassHeading; // iOS Safari
-                            } else if (event.alpha !== null) {
+                            } else {
                                 // Magnetometer を使って常に北基準で角度を取得
                                 if ("Magnetometer" in window) {
                                     try {
                                         const magnetometer = new Magnetometer({ frequency: 60 });
 
-                                        magnetometer.addEventListener('reading', () => {
+                                        magnetometer.addEventListener("reading", () => {
                                             const x = magnetometer.x;
                                             const y = magnetometer.y;
 
@@ -731,17 +731,17 @@ let loadModel;
                                             deviceHeading = heading;
 
                                             console.log("deviceHeading (Magnetometer) : ", deviceHeading);
-                                            updateCameraAngle(-deviceHeading);
                                         });
 
                                         magnetometer.start();
                                     } catch (error) {
                                         console.error("Magnetometer not available:", error);
+                                        return;
                                     }
+                                } else {
+                                    // センサーが存在しない場合は処理しない
+                                    return;
                                 }
-                            } else {
-                                // センサーが存在しない場合は処理しない
-                                return;
                             }
 
                             console.log("deviceHeading : ", deviceHeading);
