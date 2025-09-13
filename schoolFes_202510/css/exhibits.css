@@ -231,16 +231,16 @@
 .content.main .exhibits .tile .content > .mapsView {
     min-height: calc(80vh - 100px);
 }
-.content.main .exhibits .tile .content .mapsView .mapsLabel {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
     position: absolute;
     color: white;
     font-size: 1em;
-    white-space: nowrap;
     pointer-events: none;
+    white-space: nowrap;
     user-select: none;
-    background-color: rgba(128, 128, 128, .8);
+    background-color: rgba(128, 128, 128, .9);
     padding: 2px;
-    border-radius: 100vh;
+    border-radius: .5em;
     transition:
     opacity .5s ease-out;
 }

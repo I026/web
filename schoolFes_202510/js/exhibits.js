@@ -1,6 +1,14 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
+import { gsap } from "https://cdn.jsdelivr.net/npm/gsap@3.12.2/index.js";
+
+/* import { Line2 } from "three/examples/jsm/lines/Line2.js";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"; */
 
 const exhibitsBottomBar = d.querySelector(".exhibits .sortList");
 const exhibitsArea = d.querySelector(".exhibits .list");
@@ -546,6 +554,7 @@ let loadModel;
         buttons_floors.className = "buttons_floors";
         
         mapsView.className = "mapsView";
+        labelsArea.className = "labelsArea";
         compassBar.className = "compassBar";
         compass.className = "compass";
         
@@ -618,6 +627,9 @@ let loadModel;
         const loader = new GLTFLoader();
         let model; // モデルを外で保持
         
+        const getFloor = (name) => name.split("F")[1]?.split("_")[0] * 1;
+        const getFmtedObjName = (name) => name.replace("F" + getFloor(name) + "_", "");
+
         loadModel = () => {
             loader.load(
                 "medias/3ds/sc.glb",
@@ -640,6 +652,32 @@ let loadModel;
                     });
                     console.log("パーツ一覧:", modelParts);
 
+                    // エッジ線を追加（親レベルのメッシュのみ、子メッシュの内部構造は無視）
+                    Object.values(modelParts).forEach((mesh) => {
+                        if (mesh.isMesh && mesh.parent && mesh.parent.type === "Group") {
+                            const edges = new THREE.EdgesGeometry(mesh.geometry, 15); // 境界角度閾値
+                            const line = new THREE.LineSegments(
+                                edges,
+                                new THREE.LineBasicMaterial({
+                                    color: "lightgray",
+                                    linewidth: 1,
+                                    transparent: true,
+                                    opacity: 1
+                                })
+                            );
+
+                            mesh.add(line);
+
+                            // ★ エッジラインを userData に保存
+                            mesh.userData.edgeLine = line;
+
+                            // 必要に応じて面のオフセットも
+                            mesh.material.polygonOffset = true;
+                            mesh.material.polygonOffsetFactor = 1;
+                            mesh.material.polygonOffsetUnits = 1;
+                        }
+                    });
+
                     function truncateText(text, length = 4) {
                         if (typeof text !== "string") return "";
                         return text.length > length ? text.slice(0, 4) + "..." : text;
@@ -648,110 +686,103 @@ let loadModel;
                     const labels = {};
                     Object.keys(modelParts).forEach((partName) => {
                         const part = modelParts[partName];
-
                         const label = document.createElement("div");
+
+                        // part.material.color.set("lightgreen");
+
                         getExhibits();
-                        if (exhibits[partName]?.name) {
-                            label.textContent = exhibits[partName].name;
+
+                        if (exhibits[getFmtedObjName(partName)]?.name) {
+                            label.textContent = exhibits[getFmtedObjName(partName)].name;
                             label.className = "mapsLabel";
                             label.setAttribute("exhibits", partName);
                             labelsArea.appendChild(label);
-                            function labelTouch () {
-                                const tile = exhibitsArea.querySelector(`.tile[exhibits=${partName}]`);
-
-                                function scrollToAndThen(targetY, callback) {
-                                    const executionTime = Date.now();
-                                    const tolerance = 2; // 少し余裕を持たせる
-                                    const checkScroll = () => {
-                                        const currentY = window.scrollY;
-                                        const maxY = d.body.scrollHeight - window.innerHeight;
-                                        if (
-                                            Math.abs(currentY - Math.min(targetY, maxY)) <= tolerance ||
-                                            Date.now() - executionTime > 1000
-                                        ) {
-                                            callback();
-                                        } else {
-                                            requestAnimationFrame(checkScroll);
-                                        }
-                                    };
-
-                                    window.scrollTo({ top: targetY, behavior: "smooth" });
-                                    checkScroll();
-                                }
-                                
-                                function scrollTo(targetTile) {
-                                    if (!targetTile) return;
-                                    const existingTransition = tile.style.transition;
-                                    exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
-                                        tileItem.style.transition = "none";
-                                    });
-
-                                    const rect = targetTile.getBoundingClientRect();
-                                    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-                                    const targetY = rect.top + scrollTop - 120;
-                                    scrollToAndThen(targetY, () => {
-                                        exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
-                                            tileItem.style.transition = existingTransition;
-                                        });
-                                    });
-                                }
-                                barHeightUpdate(false);
-                                openTile(tile, true);
-                                scrollTo(tile);
-                            }
-                            (() => {
-                                function isOverlap(el, x, y) {
-                                    const rect = el.getBoundingClientRect();
-                                    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-                                }
-
-                                // document 全体でタッチやマウスの開始・終了イベントを監視
-                                let touchStart = [];
-                                function handleEvent(x, y) {
-                                    Object.values(labels).forEach(({ element }) => {
-                                        if (isOverlap(element, touchStart[0], touchStart[1]) && isOverlap(element, x, y)) {
-                                            element._labelTouch?.();
-                                        }
-                                    });
-                                }
-
-                                document.addEventListener("mousedown", (e) => touchStart = [e.clientX, e.clientY]);
-                                document.addEventListener("mouseup", (e) => handleEvent(e.clientX, e.clientY));
-
-                                document.addEventListener("touchstart", (e) => {
-                                    const touch = e.touches[0];
-                                    touchStart = [touch.clientX, touch.clientY];
-                                });
-                                document.addEventListener("touchend", (e) => {
-                                    const touch = e.changedTouches[0];
-                                    handleEvent(touch.clientX, touch.clientY);
-                                });
-
-                                // 元の labelTouch をラベルオブジェクトに紐づけて保持
-                                Object.keys(modelParts).forEach((partName) => {
-                                    const part = modelParts[partName];
-                                    const label = labels[partName]?.element;
-                                    if (label) {
-                                        function labelTouch () {
-                                            const tile = exhibitsArea.querySelector(`.tile[exhibits=${partName}]`);
-                                            barHeightUpdate(false);
-                                            openTile(tile, true);
-                                            // 必要に応じてスクロール処理も
-                                            const rect = tile.getBoundingClientRect();
-                                            const scrollTop = window.scrollY || document.documentElement.scrollTop;
-                                            const targetY = rect.top + scrollTop - 120;
-                                            window.scrollTo({ top: targetY, behavior: "smooth" });
-                                        }
-
-                                        // ラベルに関数を保持しておく
-                                        label._labelTouch = labelTouch;
-                                    }
-                                });
-                            })();
                         }
 
                         labels[partName] = { element: label, part: part };
                     });
+
+                    (() => {
+                        function isOverlap(el, x, y) {
+                            const rect = el.getBoundingClientRect();
+                            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+                        }
+
+                        function scrollToAndThen(targetY, callback) {
+                            const executionTime = Date.now();
+                            const tolerance = 2; // 少し余裕を持たせる
+                            const checkScroll = () => {
+                                const currentY = window.scrollY;
+                                const maxY = d.body.scrollHeight - window.innerHeight;
+                                if (
+                                    Math.abs(currentY - Math.min(targetY, maxY)) <= tolerance ||
+                                    Date.now() - executionTime > 1000
+                                ) {
+                                    callback();
+                                } else {
+                                    requestAnimationFrame(checkScroll);
+                                }
+                            };
+
+                            window.scrollTo({ top: targetY, behavior: "smooth" });
+                            checkScroll();
+                        }
+                        
+                        function scrollTo(targetTile) {
+                            if (!targetTile) return;
+                            const existingTransition = targetTile.style.transition;
+                            exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
+                                tileItem.style.transition = "none";
+                            });
+                            const rect = targetTile.getBoundingClientRect();
+                            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                            const targetY = rect.top + scrollTop - 120;
+                            scrollToAndThen(targetY, () => {
+                                exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
+                                    tileItem.style.transition = existingTransition;
+                                });
+                            });
+                        }
+
+                        // document 全体でタッチやマウスの開始・終了イベントを監視
+                        let touchStart = [];
+                        function handleEvent(x, y) {
+                            Object.values(labels).forEach(({ element }) => {
+                                if (
+                                    isOverlap(element, touchStart[0], touchStart[1]) &&
+                                    Math.abs(x - touchStart[0]) < 5 && Math.abs(y - touchStart[1]) < 5
+                                ) {
+                                    Object.keys(modelParts).forEach((partName) => {
+                                        const part = modelParts[partName];
+                                        const label = labels[partName]?.element;
+                                        const tile = exhibitsArea.querySelector(`.tile[exhibits=${getFmtedObjName(partName)}]`);
+                                        if (tile && label && label === element) {
+                                            barHeightUpdate(false);
+                                            openTile(tile, true);
+                                            scrollTo(tile);
+                                            // 必要に応じてスクロール処理も
+                                            /* const rect = tile.getBoundingClientRect();
+                                            const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                                            const targetY = rect.top + scrollTop - 120;
+                                            window.scrollTo({ top: targetY, behavior: "smooth" }); */
+                                        }
+                                    });
+                                }
+                            });
+                        }
+
+                        document.addEventListener("mousedown", (e) => touchStart = [e.clientX, e.clientY]);
+                        document.addEventListener("mouseup", (e) => handleEvent(e.clientX, e.clientY));
+
+                        document.addEventListener("touchstart", (e) => {
+                            const touch = e.touches[0];
+                            touchStart = [touch.clientX, touch.clientY];
+                        });
+                        document.addEventListener("touchend", (e) => {
+                            const touch = e.changedTouches[0];
+                            handleEvent(touch.clientX, touch.clientY);
+                        });
+                    })();
 
                     function updateLabelsPosition() {
                         const rect = renderer.domElement.getBoundingClientRect();
@@ -783,8 +814,7 @@ let loadModel;
                             const isBlocked = !(intersects.length > 0 && intersects[0].object !== part);
                             element.style.opacity = isBlocked ? 0 : gsap.getProperty(part.material, "opacity"); */
 
-                            // const opacity = gsap.getProperty(part.material, "opacity");
-                            const opacity = part.visible ? 1 : 0;
+                            const opacity = gsap.getProperty(part.material, "opacity");
                             element.style.opacity = opacity;
                             element.style.zIndex = Math.floor(1000 - distance); // 手前ほど大きく
                             element.style.fontSize = Math.min(Math.max(camera.zoom * (distance * .85), .6), 100) + "px";
@@ -928,7 +958,7 @@ let loadModel;
 
                         compass.style.transform = `rotate(${cameraDeg}deg)`;
 
-                        if (now - lastLabelUpdate > 15) {
+                        if (now - lastLabelUpdate > 5) {
                             updateLabelsPosition();
                             lastLabelUpdate = now;
                         }
@@ -942,6 +972,17 @@ let loadModel;
                 }
             );
         };
+
+        function setEdgeStyle(mesh, {
+            color = "lightgray",
+            opacity = 1,
+        } = {}) {
+            if (mesh.userData.edgeLine) {
+                const edgeMat = mesh.userData.edgeLine.material;
+                edgeMat.color.set(color);
+                edgeMat.opacity = opacity;
+            }
+        }
 
         // OrbitControls 初期化
         const controls = new OrbitControls(camera, renderer.domElement);
@@ -1183,14 +1224,40 @@ let loadModel;
                     .map(btn => btn.getAttribute("floor").replaceAll("f", "") * 1);
 
                 Object.values(modelParts).forEach(part => {
-                    if (!part.material.transparent) part.material.transparent = true;
-                    part.material.side = THREE.DoubleSide;
+                    const isPartActive = (
+                        // locations[part.name]?.floor ? activeFloors.includes(locations[part.name].floor) : true
+                        getFloor(part.name) ? activeFloors.includes(getFloor(part.name)) : true &&
+                        !(!isOnlyValid && (
+                            part.name.includes("Roof") ||
+                            part.name.includes("Curve") ||
+                            part.name.includes("Roof")
+                        ))
+                    );
+
+                    if (Array.isArray(part.material)) {
+                        part.material = part.material.map(mat => mat.clone());
+                        part.material.forEach(mat => {
+                            mat.transparent = true;
+                            mat.depthWrite = isPartActive;
+                        });
+                    } else {
+                        part.material = part.material.clone();
+                        part.material.transparent = true;
+                        part.material.depthWrite = isPartActive;
+                    }
 
                     // パーツがどのフロアに属するかを判定
                     // const isPartActive = exhibits[part.name] ? activeFloors.includes(exhibits[part.name]?.location.floor) : true;
-                    const isPartActive = locations[part.name]?.floor ? activeFloors.includes(locations[part.name].floor) : true;
 
-                    part.visible = isPartActive;
+                    // part.visible = isPartActive;
+                    gsap.to(part.material, {
+                        duration: 0.5,
+                        opacity: isPartActive ? 1 : .05,
+                        ease: "power2.inOut"
+                    });
+                    setEdgeStyle(part, {
+                        opacity: isPartActive ? 1 : .05
+                    });
                 });
             });
             
