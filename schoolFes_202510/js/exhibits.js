@@ -13,6 +13,11 @@ import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"; */
 const exhibitsBottomBar = d.querySelector(".exhibits .sortList");
 const exhibitsArea = d.querySelector(".exhibits .list");
 
+exhibitsBottomBar.addEventListener("wheel", e => {
+    e.preventDefault();
+    e.stopPropagation();
+}, { passive: false });
+
 const getClassName = (school, input_grade, input_class) => (
     `${school == "H" || input_class > 3 ? "高校" : "中学"} ${input_grade}年${input_class}組`
 )
@@ -21,8 +26,7 @@ const exhibits = {
         name: "(テスト文)",
         description: "(テスト文)",
         location: {
-            name: "",
-            floor: 1
+            name: ""
         },
         tag: [
             "byClass",
@@ -33,8 +37,7 @@ const exhibits = {
         name: "(テスト文)",
         description: "(テスト文)",
         location: {
-            name: "",
-            floor: 1
+            name: ""
         },
         tag: [
             "byClass",
@@ -45,8 +48,7 @@ const exhibits = {
         name: "(テスト文)",
         description: "(テスト文)",
         location: {
-            name: "",
-            floor: 1
+            name: ""
         },
         tag: [
             "byClass",
@@ -57,8 +59,7 @@ const exhibits = {
         name: "お化け屋敷",
         description: "怖いお化けが出る屋敷",
         location: {
-            name: "",
-            floor: 2
+            name: ""
         },
         tag: [
             "byClass",
@@ -70,8 +71,7 @@ const exhibits = {
         name: "サービスエリア",
         description: "(テスト文)",
         location: {
-            name: "",
-            floor: 2
+            name: ""
         },
         tag: [
             "byClass",
@@ -85,8 +85,7 @@ const exhibits = {
         name: "SASUKE",
         description: "(テスト文)",
         location: {
-            name: "",
-            floor: 2
+            name: ""
         },
         tag: [
             "byClass",
@@ -99,7 +98,7 @@ const exhibits = {
         description: "(テスト文)",
         location: {
             name: "",
-            floor: 3
+            map: "J3_1"
         },
         tag: [
             "byClass",
@@ -110,8 +109,7 @@ const exhibits = {
         name: "(テスト文)",
         description: "(テスト文)",
         location: {
-            name: "",
-            floor: 3
+            name: ""
         },
         tag: [
             "byClass",
@@ -122,8 +120,7 @@ const exhibits = {
         name: "(テスト文)",
         description: "(テスト文)",
         location: {
-            name: "",
-            floor: 3
+            name: ""
         },
         tag: [
             "byClass",
@@ -357,7 +354,7 @@ function barHeightUpdate (isToOpen = exhibitsBottomBar.classList.contains("opene
         const nowShow = exhibitsBottomBar.querySelector(".content > div.nowShow");
         const areaHeight = getBarOptionsHeight() + nowShow?.offsetHeight;
 
-        exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${areaHeight}px`);
+        exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${Math.min(areaHeight, window.innerHeight - 100)}px`);
         exhibitsBottomBar.classList.add("opened");
     } else {
         exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${getBarOptionsHeight()}px`);
@@ -559,7 +556,7 @@ let loadModel;
         compassBar.className = "compassBar";
         compass.className = "compass";
         
-        compass.innerHTML = `<img src="medias/images/compass.svg"/>`
+        compass.innerHTML = '<img src="medias/images/compass.svg"/>';
 
         const scene = new THREE.Scene();
         scene.background = null; // 背景色
@@ -679,52 +676,12 @@ let loadModel;
                         }
                     });
 
-                    function truncateText(text, length = 4) {
+                    function truncateText(text, length = 9) {
                         if (typeof text !== "string") return "";
-                        return text.length > length ? text.slice(0, 4) + "..." : text;
+                        return text.length > length ? text.slice(0, 4) + ".." : text;
                     }
 
-                    const labels = {};
-                    Object.keys(modelParts).forEach((partName) => {
-                        const part = modelParts[partName];
-                        const label = document.createElement("div");
-
-                        // part.material.color.set("lightgreen");
-
-                        getExhibits();
-
-                        if (exhibits[getFmtedObjName(partName)]?.name) {
-                            label.className = "mapsLabel";
-                            label.setAttribute("exhibits", partName);
-
-                            const title = d.createElement("span");
-                            const description = d.createElement("span");
-                            const location = d.createElement("span");
-                            
-                            title.textContent = exhibits[getFmtedObjName(partName)].name;
-                            title.className = "title";
-
-                            description.textContent = exhibits[getFmtedObjName(partName)].description;
-                            description.className = "description";
-                            
-                            location.textContent = exhibits[getFmtedObjName(partName)].location.name;
-                            location.className = "location";
-
-                            label.appendChild(title);
-                            label.appendChild(location);
-                            label.appendChild(description);
-                            labelsArea.appendChild(label);
-                        }
-
-                        labels[partName] = { element: label, part: part };
-                    });
-
-                    (() => {
-                        function isOverlap(el, x, y) {
-                            const rect = el.getBoundingClientRect();
-                            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-                        }
-
+                    function scrollToTile(targetTile) {
                         function scrollToAndThen(targetY, callback) {
                             const executionTime = Date.now();
                             const tolerance = 2; // 少し余裕を持たせる
@@ -744,59 +701,173 @@ let loadModel;
                             window.scrollTo({ top: targetY, behavior: "smooth" });
                             checkScroll();
                         }
-                        
-                        function scrollTo(targetTile) {
-                            if (!targetTile) return;
-                            const existingTransition = targetTile.style.transition;
+
+                        if (!targetTile) return;
+                        const existingTransition = targetTile.style.transition;
+                        exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
+                            tileItem.style.transition = "none";
+                        });
+                        const rect = targetTile.getBoundingClientRect();
+                        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                        const targetY = rect.top + scrollTop - 120;
+                        scrollToAndThen(targetY, () => {
                             exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
-                                tileItem.style.transition = "none";
+                                tileItem.style.transition = existingTransition;
                             });
-                            const rect = targetTile.getBoundingClientRect();
-                            const scrollTop = window.scrollY || document.documentElement.scrollTop;
-                            const targetY = rect.top + scrollTop - 120;
-                            scrollToAndThen(targetY, () => {
-                                exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
-                                    tileItem.style.transition = existingTransition;
+                        });
+                    }
+
+                    const mapPointIcon = '<img src="medias/images/mapPoint.svg"/>';
+
+                    const locations = {
+                        F1_J1_1: exhibits.J1_1,
+                        F1_J1_2: exhibits.J1_2,
+                        F1_J1_3: exhibits.J1_3,
+                        F2_J2_1: exhibits.J2_1,
+                        F2_J2_2: exhibits.J2_2,
+                        F2_J2_3: exhibits.J2_3,
+                        F3_J3_1: exhibits.J3_1,
+                        F3_J3_2: exhibits.J3_2,
+                        F3_J3_3: exhibits.J3_3,
+                        F1_Entrance_Arch: {
+                            name: "入口"
+                        },
+                        F1_Gym_Entrance: {
+                            name: mapPointIcon,
+                            description: "体育館"
+                        },
+                        F1_Art: {
+                            name: mapPointIcon,
+                            description: "美術棟"
+                        },
+                    };
+
+                    const labels = {};
+                    Object.keys(modelParts).forEach((partName) => {
+                        const part = modelParts[partName];
+                        const label = document.createElement("div");
+
+                        // part.material.color.set("lightgreen");
+
+                        if (partName.includes("WC")) {
+                            locations[partName] = {
+                                name: '<img src="medias/images/wc.svg"/>',
+                                description: `トイレ ${getFloor(partName)}階`
+                            }
+                        }
+                        
+                        getExhibits();
+
+                        // if (exhibits[partName]?.name) {
+                        console.log(partName, locations[partName]);
+                        if (locations[partName]) {
+                            label.className = "mapsLabel";
+                            label.setAttribute("exhibits", partName);
+
+                            const isHTMLTag = locations[partName].name.includes("<");
+
+                            const titleText = isHTMLTag ? locations[partName].name : truncateText(locations[partName].name);
+                            const descriptionText = locations[partName]?.description;
+                            const locationText = locations[partName]?.location?.name;
+                            const detailTile = exhibitsArea.querySelector(`.tile[exhibits=${getFmtedObjName(partName)}]`);
+
+                            if (titleText) {
+                                console.log("titleText : ", titleText);
+                                const title = d.createElement("span");
+                                title.innerHTML = titleText;
+                                title.className = "title";
+                                label.appendChild(title);
+                                if (isHTMLTag) label.style.padding = 0;
+                            }
+
+                            if (descriptionText) {
+                                const description = d.createElement("span");
+                                description.textContent = descriptionText;
+                                description.className = "description";
+                                label.appendChild(description);
+                            }
+                            
+                            if (locationText) {
+                                const location = d.createElement("span");
+                                location.textContent = locationText;
+                                location.className = "location";
+                                label.appendChild(location);
+                            }
+                            
+                            if (detailTile) {
+                                const detail = d.createElement("div");
+                                detail.textContent = "詳細";
+                                detail.className = "detail button";
+                                detail.addEventListener("click", e => {
+                                    e.preventDefault();
+                                    label.classList.remove("opened");
+                                    barHeightUpdate(false);
+                                    openTile(detailTile, true);
+                                    scrollToTile(detailTile);
                                 });
-                            });
+                                label.appendChild(detail);
+                            }
+
+                            labelsArea.appendChild(label);
+                        }
+
+                        labels[partName] = { element: label, part: part };
+                    });
+
+                    (() => {
+                        function isOverlap(el, x, y) {
+                            const rect = el.getBoundingClientRect();
+                            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
                         }
 
                         // document 全体でタッチやマウスの開始・終了イベントを監視
                         let touchStart = [];
+                        let lastHandleEventAt;
                         function handleEvent(x, y) {
-                            Object.values(labels).forEach(({ element }) => {
-                                if (
-                                    isOverlap(element, touchStart[0], touchStart[1]) &&
-                                    Math.abs(x - touchStart[0]) < 5 && Math.abs(y - touchStart[1]) < 5 &&
-                                    element.getAttribute("isPressable") === "true"
-                                ) {
-                                    Object.keys(modelParts).forEach((partName) => {
-                                        function addLabelTransition (transitionDuration = .5) {
-                                            label.style.setProperty("--duration", `${transitionDuration}s`)
-                                            label.classList.add("addTransition");
-                                            setTimeout(() => {
-                                                label.classList.remove("addTransition");
-                                            }, transitionDuration * 1000);
-                                        }
+                            if (Date.now() - lastHandleEventAt < 100) return;
+                            
+                            const candidateLabels = [];
 
-                                        const part = modelParts[partName];
-                                        const label = labels[partName]?.element;
-                                        const tile = exhibitsArea.querySelector(`.tile[exhibits=${getFmtedObjName(partName)}]`);
-                                        if (tile && label && label === element) {
-                                            label.classList.toggle("opened");
-                                            // barHeightUpdate(false);
-                                            // openTile(tile, true);
-                                            // scrollTo(tile);
-                                            addLabelTransition();
-                                        } else {
-                                            if (label.classList.contains("opened")) {
-                                                addLabelTransition();
-                                                label.classList.remove("opened");
-                                            }
-                                        }
-                                    });
+                            function addLabelTransition (label, transitionDuration = .5) {
+                                label.style.setProperty("--duration", `${transitionDuration}s`)
+                                label.classList.add("addTransition");
+                                setTimeout(() => {
+                                    label.classList.remove("addTransition");
+                                }, (transitionDuration + .3) * 1000);
+                            }
+
+                            Object.values(labels).forEach(labelObj => {
+                                const labelElement = labelObj.element;
+                                if (
+                                    isOverlap(labelElement, touchStart[0], touchStart[1]) &&
+                                    Math.abs(x - touchStart[0]) < 5 &&
+                                    Math.abs(y - touchStart[1]) < 5 &&
+                                    labelElement.getAttribute("isPressable") === "true"
+                                ) {
+                                    candidateLabels.push(labelElement);
                                 }
                             });
+
+                            const topLabel = candidateLabels
+                                .sort((a, b) => 
+                                    (parseFloat(getComputedStyle(b).getPropertyValue("--zIndex")) || 0) -
+                                    (parseFloat(getComputedStyle(a).getPropertyValue("--zIndex")) || 0)
+                                )[0] || null;
+
+                            Object.values(labels).forEach(labelObj => {
+                                const labelElement = labelObj.element;
+
+                                if (labelElement.classList.contains("opened") && labelElement !== topLabel) {
+                                    addLabelTransition(labelElement);
+                                    labelElement.classList.remove("opened");
+                                }
+                            });
+
+                            if (topLabel) {
+                                addLabelTransition(topLabel);
+                                topLabel.classList.toggle("opened");
+                            }
+                            lastHandleEventAt = Date.now();
                         }
 
                         document.addEventListener("mousedown", (e) => touchStart = [e.clientX, e.clientY]);
@@ -829,8 +900,10 @@ let loadModel;
                             const widthHalf = rect.width / 2;
                             const heightHalf = rect.height / 2;
 
-                            const opacity = gsap.getProperty(part.material, "opacity") === 1 ? 1 : 0;
-                            element.setAttribute("isPressable", opacity === 1);
+                            const opacity = (
+                                gsap.getProperty(part.material, "opacity") === 1
+                            ) ? 1 : 0;
+                            element.setAttribute("isPressable", opacity === 1 && Array.from(element.children).length !== 1);
                             element.style.opacity = opacity;
 
                             if (element.getAttribute("isPressable") === "true" || element.style.opacity !== 0) {
@@ -842,18 +915,27 @@ let loadModel;
                                 const distance = camera.position.distanceTo(part.getWorldPosition(new THREE.Vector3()));
 
                                 element.style.setProperty("--zIndex",  Math.floor(10000 - distance * 10));
-                                element.style.setProperty("--fontSize",  truncate(Math.min(Math.max(camera.zoom * (distance * .85), .6), 100)) + "px");
+                                element.style.setProperty("--fontSize",  truncate(
+                                    Math.min(
+                                        Math.max(
+                                            camera.zoom * (distance * .9) * (Math.min(window.innerWidth, 500) * .002),
+                                        1)
+                                    , 15)
+                                ) + "px");
 
                                 const childWidths  = [];
+                                let wholeHeight = 0;
                                 Array.from(element.children).forEach(child => {
                                     childWidths.push(child.getBoundingClientRect().width);
+                                    wholeHeight = Math.max(child.offsetTop + child.offsetHeight, wholeHeight);
                                 });
-                                const wholeWidth  = Math.max(...childWidths);
+                                const wholeWidth  = Math.max(...childWidths) + 4;
                                 element.style.setProperty("--wholeWidth",  wholeWidth + "px");
+                                element.style.setProperty("--wholeHeight",  wholeHeight + "px");
 
                                 const title = element.querySelector("span.title");
                                 if (title) {
-                                    const titleWidth =  title.scrollWidth;
+                                    const titleWidth = title.offsetWidth;
                                     const titleHeight = title.getBoundingClientRect().height;
                                     element.style.setProperty("--titleWidth",  titleWidth + "px");
                                     element.style.setProperty("--titleHeight", titleHeight + "px");
@@ -869,19 +951,6 @@ let loadModel;
                         renderer.render(scene, camera);
                     }
                     animate();
-
-                    function windowResize () {
-                        const aspect = mapsView.clientWidth / mapsView.clientHeight;
-                        camera.left = -cameraSize * aspect;
-                        camera.right = cameraSize * aspect;
-                        camera.top = cameraSize;
-                        camera.bottom = -cameraSize;
-                        camera.updateProjectionMatrix();
-                        renderer.setSize(mapsView.clientWidth, mapsView.clientHeight);
-                    }
-
-                    windowResize();
-                    window.addEventListener("resize", windowResize);
 
                     let deviceorientationHandler;
 
@@ -922,7 +991,7 @@ let loadModel;
                     mapsView.addEventListener("touchstart", removeDirectionMatch);
                     mapsView.addEventListener("mousedown", removeDirectionMatch);
 
-                    (() => {
+                    (() => { // 無効化済み
                         const generateTouches = (e) => e ? [e?.clientX || e.touches[0]?.clientX, e?.clientY || e.touches[0]?.clientY] : [null, null];
 
                         let isNowBarTouch = false;
@@ -967,7 +1036,7 @@ let loadModel;
                         window.addEventListener("mousemove", barTouchMove);
                         window.addEventListener("touchend", barTouchEnd);
                         window.addEventListener("mouseup", barTouchEnd);
-                    })();
+                    });
 
                     let lastLabelUpdate = 0;
 
@@ -1014,6 +1083,20 @@ let loadModel;
             );
         };
 
+        function windowResize () {
+            const aspect = mapsView.clientWidth / mapsView.clientHeight;
+            camera.left = -cameraSize * aspect;
+            camera.right = cameraSize * aspect;
+            camera.top = cameraSize;
+            camera.bottom = -cameraSize;
+            camera.updateProjectionMatrix();
+            renderer.setSize(mapsView.clientWidth, mapsView.clientHeight);
+            barHeightUpdate();
+        }
+
+        windowResize();
+        window.addEventListener("resize", windowResize);
+
         function setEdgeStyle(mesh, {
             color = "lightgray",
             opacity = 1,
@@ -1046,162 +1129,6 @@ let loadModel;
         controls.minDistance = 2;
         controls.maxDistance = 10;
         controls.maxPolarAngle = Math.PI / 2; // カメラが地面の下に回り込まないよう制限
-
-        const locations = {
-            J1_1: {
-                floor: 1
-            },
-            J1_2: {
-                floor: 1
-            },
-            J1_3: {
-                floor: 1
-            },
-            J2_1: {
-                floor: 2
-            },
-            J2_2: {
-                floor: 2
-            },
-            J2_3: {
-                floor: 2
-            },
-            J3_1: {
-                floor: 3
-            },
-            J3_2: {
-                floor: 3
-            },
-            J3_3: {
-                floor: 3
-            },
-            H1_1: {
-                floor: 1
-            },
-            H1_2: {
-                floor: 1
-            },
-            H1_3: {
-                floor: 1
-            },
-            H1_4: {
-                floor: 1
-            },
-            H1_5: {
-                floor: 1
-            },
-            H1_6: {
-                floor: 1
-            },
-            H1_7: {
-                floor: 1
-            },
-            H2_1: {
-                floor: 2
-            },
-            H2_2: {
-                floor: 2
-            },
-            H2_3: {
-                floor: 2
-            },
-            H2_4: {
-                floor: 2
-            },
-            H2_5: {
-                floor: 2
-            },
-            H2_6: {
-                floor: 2
-            },
-            H2_7: {
-                floor: 2
-            },
-            H3_1: {
-                floor: 3
-            },
-            H3_2: {
-                floor: 3
-            },
-            H3_3: {
-                floor: 3
-            },
-            H3_4: {
-                floor: 3
-            },
-            H3_5: {
-                floor: 3
-            },
-            H3_6: {
-                floor: 3
-            },
-            H3_7: {
-                floor: 3
-            },
-            Corridor_1001: {
-                floor: 1
-            },
-            Corridor_1002: {
-                floor: 1
-            },
-            Corridor_1003: {
-                floor: 1
-            },
-            Corridor_1004: {
-                floor: 1
-            },
-            Corridor_2001: {
-                floor: 2
-            },
-            Corridor_2002: {
-                floor: 2
-            },
-            Corridor_2003: {
-                floor: 2
-            },
-            Corridor_2004: {
-                floor: 2
-            },
-            Corridor_3001: {
-                floor: 3
-            },
-            Corridor_3002: {
-                floor: 3
-            },
-            Corridor_3003: {
-                floor: 3
-            },
-            Corridor_3004: {
-                floor: 3
-            },
-            Multipurpose: {
-                floor: 1
-            },
-            Music_Large: {
-                floor: 2
-            },
-            Music_Large: {
-                floor: 2
-            },
-            Science_A: {
-                floor: 1
-            },
-            Science_B: {
-                floor: 1
-            },
-            Science_C: {
-                floor: 1
-            },
-            Science_D: {
-                floor: 1
-            },
-            Science_Preparation: {
-                floor: 1
-            },
-            WC_1: {
-                floor: 1
-            },
-        };
 
         function updateCameraAngle(angleDeg) {
             cameraDeg = angleDeg;
@@ -1366,7 +1293,7 @@ let loadModel;
     function touchend (e) {
         exhibitsBottomBar.classList.remove("nowBeingHeld");
         if (Date.now() - lastTouchendTime < 50) return;
-        exhibitsBottomBar.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}height .4s ease-out`;
+        exhibitsBottomBar.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}height .4s ease-out, width .4s ease-out`;
         const isNowOpen = exhibitsBottomBar.classList.contains("opened");
         console.log("isNowOpen : ", isNowOpen);
         if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {

@@ -57,23 +57,14 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    height: max-content;
     height: var(--bottomBarHeight);
+    width: calc(100% - var(--exhibitsTileMargin) * 2);
+    right: 0;
     bottom: 10px;
-    left: 0;
     z-index: 10;
     overflow: hidden;
-    transition: opacity .5s ease-in-out;
-    /* 
-    --reducePx: calc(50vh + 10px);
-    --currentHeight: clamp(
-        100px,
-        calc(0px - (var(--scrollPx) - var(--reducePx))),
-        200px
-    );
-    height: var(--currentHeight);
-    margin-top: calc(100px - var(--currentHeight)); */
 }
+
 .content.main .exhibits .tile.sortList .topBar {
     top: 0;
     width: 100%;
@@ -238,6 +229,7 @@
     z-index var(--duration) ease-in-out,
     width   var(--duration) ease-in-out,
     height  var(--duration) ease-in-out,
+    margin-top var(--duration) ease-in-out,
     backdrop-filter var(--duration) ease-in-out,
     --webkit-backdrop-filter var(--duration) ease-in-out,
     box-shadow var(--duration) ease-in-out;
@@ -254,33 +246,58 @@
     z-index: var(--zIndex);
     font-size: var(--fontSize);
     transform: scale(var(--scale));
-    height: var(--titleHeight);
     width:  var(--titleWidth);
+    height: var(--titleHeight);
     background-color: rgba(128, 128, 128, .75);
     overflow: hidden;
+    transition: opacity .5s ease-in-out;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened {
     width:  var(--wholeWidth);
-    height: 5em;
+    height: var(--wholeHeight);
     z-index: 10001 !important;
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
     box-shadow: 0 0 10px black;
-    padding-right : 6px;
-    padding-bottom: 6px;
+    padding-right : 4px;
+    margin-top: calc(var(--wholeHeight) * -.75);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span {
-    left: 2px;
+    left: 0;
     position: relative;
-    display: block;
-    width: min-content;
-    padding-right: 2px;
+    width: max-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity .5s ease-in-out;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened span {
+    opacity: 1 !important;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span img {
+    height: 1.5em;
+    width : 1.5em;
+}
+
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span:not(.title) {
+    opacity: 0;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span:not(.title) {
     top: 1em;
+    max-width: min(30vw, 200px);
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span.location {
-    display: inline-block;
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span.description {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div.detail.button {
+    margin-top: 20%;
+    padding: 5px;
+    padding-left : 10px;
+    padding-right: 10px;
+    width: min-content;
+    height: min-content;
+    pointer-events: auto;
 }
 
 .content.main .exhibits .tile .content .compass {
@@ -306,11 +323,10 @@
     width: 100%;
     height: 80px;
     bottom: 0;
-    user-select: none;
-    touch-action: none;
-    background-color: rgba(211, 211, 211, .25);
-    backdrop-filter: blur(10px);
-    --webkit-backdrop-filter: blur(10px);
+    pointer-events: none;
+}
+.content.main .exhibits .tile .content .compassBar * {
+    pointer-events: auto;
 }
 .content.main .exhibits .tile .content .buttons_floors {
     position: absolute;
