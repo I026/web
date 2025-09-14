@@ -231,18 +231,56 @@
 .content.main .exhibits .tile .content > .mapsView {
     min-height: calc(80vh - 100px);
 }
+
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition {
+    transition:
+    opacity var(--duration) ease-in-out,
+    z-index var(--duration) ease-in-out,
+    width   var(--duration) ease-in-out,
+    height  var(--duration) ease-in-out,
+    backdrop-filter var(--duration) ease-in-out,
+    --webkit-backdrop-filter var(--duration) ease-in-out,
+    box-shadow var(--duration) ease-in-out;
+}
+
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
     position: absolute;
     color: white;
-    font-size: 1em;
     pointer-events: none;
     white-space: nowrap;
     user-select: none;
-    background-color: rgba(128, 128, 128, .9);
     padding: 2px;
     border-radius: .5em;
-    transition:
-    opacity .5s ease-out;
+    z-index: var(--zIndex);
+    font-size: var(--fontSize);
+    transform: scale(var(--scale));
+    height: var(--titleHeight);
+    width:  var(--titleWidth);
+    background-color: rgba(128, 128, 128, .75);
+    overflow: hidden;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened {
+    width:  var(--wholeWidth);
+    height: 5em;
+    z-index: 10001 !important;
+    backdrop-filter: blur(10px);
+    --webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 0 10px black;
+    padding-right : 6px;
+    padding-bottom: 6px;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span {
+    left: 2px;
+    position: relative;
+    display: block;
+    width: min-content;
+    padding-right: 2px;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span:not(.title) {
+    top: 1em;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span.location {
+    display: inline-block;
 }
 
 .content.main .exhibits .tile .content .compass {

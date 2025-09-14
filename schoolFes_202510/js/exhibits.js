@@ -241,14 +241,15 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     tile.setAttribute("exhibits", getExhibits(i)[0]);
     tile.className = "tile";
 
-    names.innerHTML = `${getExhibits(i)[1].name}<span class="subText">場所 : ${
-        !getExhibits(i)[1]?.location?.name || getExhibits(i)[1].location.name === "" ?
-        getClassName(
+    if (!getExhibits(i)[1]?.location?.name || getExhibits(i)[1].location.name === "") {
+        getExhibits(i)[1].location.name = getClassName(
             getExhibits(i)[0].split("_")[0].split("")[0],
             getExhibits(i)[0].split("_")[0].split("")[1],
             getExhibits(i)[0].split("_")[1]
-        ) :
-        getExhibits(i)[1].location.name
+        );
+    }
+
+    names.innerHTML = `${getExhibits(i)[1].name}<span class="subText">場所 : ${getExhibits(i)[1].location.name
     }</span>`;
     names.classList.add("names");
     
@@ -693,9 +694,25 @@ let loadModel;
                         getExhibits();
 
                         if (exhibits[getFmtedObjName(partName)]?.name) {
-                            label.textContent = exhibits[getFmtedObjName(partName)].name;
                             label.className = "mapsLabel";
                             label.setAttribute("exhibits", partName);
+
+                            const title = d.createElement("span");
+                            const description = d.createElement("span");
+                            const location = d.createElement("span");
+                            
+                            title.textContent = exhibits[getFmtedObjName(partName)].name;
+                            title.className = "title";
+
+                            description.textContent = exhibits[getFmtedObjName(partName)].description;
+                            description.className = "description";
+                            
+                            location.textContent = exhibits[getFmtedObjName(partName)].location.name;
+                            location.className = "location";
+
+                            label.appendChild(title);
+                            label.appendChild(location);
+                            label.appendChild(description);
                             labelsArea.appendChild(label);
                         }
 
@@ -750,21 +767,32 @@ let loadModel;
                             Object.values(labels).forEach(({ element }) => {
                                 if (
                                     isOverlap(element, touchStart[0], touchStart[1]) &&
-                                    Math.abs(x - touchStart[0]) < 5 && Math.abs(y - touchStart[1]) < 5
+                                    Math.abs(x - touchStart[0]) < 5 && Math.abs(y - touchStart[1]) < 5 &&
+                                    element.getAttribute("isPressable") === "true"
                                 ) {
                                     Object.keys(modelParts).forEach((partName) => {
+                                        function addLabelTransition (transitionDuration = .5) {
+                                            label.style.setProperty("--duration", `${transitionDuration}s`)
+                                            label.classList.add("addTransition");
+                                            setTimeout(() => {
+                                                label.classList.remove("addTransition");
+                                            }, transitionDuration * 1000);
+                                        }
+
                                         const part = modelParts[partName];
                                         const label = labels[partName]?.element;
                                         const tile = exhibitsArea.querySelector(`.tile[exhibits=${getFmtedObjName(partName)}]`);
                                         if (tile && label && label === element) {
-                                            barHeightUpdate(false);
-                                            openTile(tile, true);
-                                            scrollTo(tile);
-                                            // 必要に応じてスクロール処理も
-                                            /* const rect = tile.getBoundingClientRect();
-                                            const scrollTop = window.scrollY || document.documentElement.scrollTop;
-                                            const targetY = rect.top + scrollTop - 120;
-                                            window.scrollTo({ top: targetY, behavior: "smooth" }); */
+                                            label.classList.toggle("opened");
+                                            // barHeightUpdate(false);
+                                            // openTile(tile, true);
+                                            // scrollTo(tile);
+                                            addLabelTransition();
+                                        } else {
+                                            if (label.classList.contains("opened")) {
+                                                addLabelTransition();
+                                                label.classList.remove("opened");
+                                            }
                                         }
                                     });
                                 }
@@ -784,6 +812,8 @@ let loadModel;
                         });
                     })();
 
+                    const truncate = (num, digit = 3) => Math.floor(num * digit) / digit;
+
                     function updateLabelsPosition() {
                         const rect = renderer.domElement.getBoundingClientRect();
 
@@ -799,25 +829,36 @@ let loadModel;
                             const widthHalf = rect.width / 2;
                             const heightHalf = rect.height / 2;
 
-                            element.style.left = (vector.x * widthHalf + widthHalf - element.offsetWidth / 2) + "px";
-                            element.style.top = (-vector.y * heightHalf + heightHalf - element.offsetHeight / 2) + "px";
-
-                            const distance = camera.position.distanceTo(part.getWorldPosition(new THREE.Vector3()));
-
-                            /* // カメラからパーツ中心に向けてレイキャスト
-                            const raycaster = new THREE.Raycaster(camera.position, vector.clone().sub(camera.position).normalize());
-
-                            // シーン全体から交差判定（自分自身も含む）
-                            const intersects = raycaster.intersectObjects(Object.values(modelParts));
-
-                            // 一番近いオブジェクトが自分自身かどうか確認
-                            const isBlocked = !(intersects.length > 0 && intersects[0].object !== part);
-                            element.style.opacity = isBlocked ? 0 : gsap.getProperty(part.material, "opacity"); */
-
-                            const opacity = gsap.getProperty(part.material, "opacity");
+                            const opacity = gsap.getProperty(part.material, "opacity") === 1 ? 1 : 0;
+                            element.setAttribute("isPressable", opacity === 1);
                             element.style.opacity = opacity;
-                            element.style.zIndex = Math.floor(1000 - distance); // 手前ほど大きく
-                            element.style.fontSize = Math.min(Math.max(camera.zoom * (distance * .85), .6), 100) + "px";
+
+                            if (element.getAttribute("isPressable") === "true" || element.style.opacity !== 0) {
+                                const leftPx = truncate(vector.x * widthHalf + widthHalf - element.offsetWidth / 2) + "px";
+                                const topPx  = truncate(-vector.y * heightHalf + heightHalf - element.offsetHeight / 2) + "px";
+                                if (element.style.left !== leftPx) element.style.left = leftPx;
+                                if (element.style.top !== topPx) element.style.top = topPx;
+
+                                const distance = camera.position.distanceTo(part.getWorldPosition(new THREE.Vector3()));
+
+                                element.style.setProperty("--zIndex",  Math.floor(10000 - distance * 10));
+                                element.style.setProperty("--fontSize",  truncate(Math.min(Math.max(camera.zoom * (distance * .85), .6), 100)) + "px");
+
+                                const childWidths  = [];
+                                Array.from(element.children).forEach(child => {
+                                    childWidths.push(child.getBoundingClientRect().width);
+                                });
+                                const wholeWidth  = Math.max(...childWidths);
+                                element.style.setProperty("--wholeWidth",  wholeWidth + "px");
+
+                                const title = element.querySelector("span.title");
+                                if (title) {
+                                    const titleWidth =  title.scrollWidth;
+                                    const titleHeight = title.getBoundingClientRect().height;
+                                    element.style.setProperty("--titleWidth",  titleWidth + "px");
+                                    element.style.setProperty("--titleHeight", titleHeight + "px");
+                                }
+                            }
                         });
                     }
 
