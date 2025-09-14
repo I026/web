@@ -777,7 +777,10 @@ let loadModel;
                                 title.innerHTML = titleText;
                                 title.className = "title";
                                 label.appendChild(title);
-                                if (isHTMLTag) label.style.padding = 0;
+                                if (isHTMLTag) {
+                                    label.style.padding = 0;
+                                    label.style.fontSize = "calc(var(--fontSize) * 1.3)";
+                                }
                             }
 
                             if (descriptionText) {
