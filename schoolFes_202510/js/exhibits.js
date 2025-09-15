@@ -1,14 +1,18 @@
 import * as THREE from "three";
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { gsap } from "https://cdn.jsdelivr.net/npm/gsap@3.12.2/index.js";
+
+/* 
+import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
-import { gsap } from "https://cdn.jsdelivr.net/npm/gsap@3.12.2/index.js";
-
-/* import { Line2 } from "three/examples/jsm/lines/Line2.js";
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
-import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"; */
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+*/
 
 const exhibitsBottomBar = d.querySelector(".exhibits .sortList");
 const exhibitsArea = d.querySelector(".exhibits .list");
@@ -546,10 +550,11 @@ let loadModel;
         const compassBar = d.createElement("div");
         const compass = d.createElement("div");
         
-        const buttons = d.createElement("div");
+        const buttons_right = d.createElement("div");
+        buttons_right.className = "buttons right";
 
-        const buttons_floors = d.createElement("div");
-        buttons_floors.className = "buttons_floors";
+        const buttons_left = d.createElement("div");
+        buttons_left.className = "buttons left";
         
         mapsView.className = "mapsView";
         labelsArea.className = "labelsArea";
@@ -614,7 +619,8 @@ let loadModel;
 
         let cameraDistance = 10; // モデル中心からの距離
         let cameraHeight = 10;    // 高さ（Y座標）
-        let cameraDeg = 0;     // 左右角度（度単位）
+        let camHorizontal = 0;     // 左右角度（度単位）
+        let camVertical = 0;   // 垂直角度（度単位）
 
         camera.position.set(0, cameraHeight, cameraDistance);
         camera.lookAt(0, 0, 0);
@@ -625,7 +631,11 @@ let loadModel;
         const loader = new GLTFLoader();
         let model; // モデルを外で保持
         
-        const getFloor = (name) => name.split("F")[1]?.split("_")[0] * 1;
+        function getFloor (name) {
+            const regex = /F(\d+)_/g; // gフラグで全マッチ取得
+            const matches = [...name.matchAll(regex)];
+            return matches.map(match => Number(match[1]));
+        }
         const getFmtedObjName = (name) => name.replace("F" + getFloor(name) + "_", "");
 
         loadModel = () => {
@@ -638,16 +648,92 @@ let loadModel;
                     scene.add(model);
 
                     // モデルが読み込まれたら OrbitControls の注視点をモデル中心に設定
-                    controls.target.set(model.position.x, model.position.y, model.position.z);
-                    controls.update();
+                    function setCamFocus(x = 0, y = 0, z = 0) {
+                        controls.target.set(x, y, z);
+                        controls.update();
+                    }
+
+                    setCamFocus(0, 0, 0);
+
+                    /* function getChild (obj) {
+                        if (
+                            obj?.type === "Group"
+                        ) {
+                            if (obj.children[0]) {
+                                getChild(obj.children);
+                            } else {
+                                console.log("children : ", obj.children);
+                            }
+                        }
+                    }
+                    getChild(model); */
 
                     // パーツを一括で取得
                     modelParts = {};
+
+                    const mergeObjs = [];
                     model.traverse((child) => {
                         if (child.isMesh) {
                             modelParts[child.name] = child;
                         }
+                        if (child.type === "Object3D") {
+                            // 1. Collect all child meshes of `child`
+                            const meshes = [];
+                            child.traverse((sub) => {
+                                if (sub.isMesh) meshes.push(sub);
+                            });
+                            if (meshes.length === 0) return;
+
+                            // 2. Clone their geometries and apply transforms
+                            const transformedGeometries = meshes.map(mesh => {
+                                const geom = mesh.geometry.clone();
+                                // Compose transformation matrix from both child (group) and mesh local transforms
+                                const matrix = new THREE.Matrix4();
+                                const parentMatrix = new THREE.Matrix4();
+                                parentMatrix.compose(child.position, child.quaternion, child.scale);
+                                const localMatrix = new THREE.Matrix4();
+                                localMatrix.compose(mesh.position, mesh.quaternion, mesh.scale);
+                                matrix.multiplyMatrices(parentMatrix, localMatrix);
+                                geom.applyMatrix4(matrix);
+                                return geom;
+                            });
+
+                            // 3. Merge these geometries into a single geometry, supporting multi-material
+                            const mergedGeometry = BufferGeometryUtils.mergeGeometries(transformedGeometries, true);
+                            if (!mergedGeometry) return;
+
+                            // 4. Create a new mesh with the merged geometry and an array of cloned materials
+                            // マテリアルを正確に複製
+                            const mergedMaterial = meshes.map(mesh => {
+                                const originalMat = mesh.material;
+                                const clonedMat = originalMat.clone();
+
+                                clonedMat.opacity = originalMat.opacity !== undefined ? originalMat.opacity : 1;
+                                clonedMat.transparent = true; // 透過を有効化
+
+                                if (originalMat.envMap) clonedMat.envMap = originalMat.envMap;
+                                clonedMat.needsUpdate = true;
+
+                                return clonedMat;
+                            });
+
+                            // ジオメトリ統合後に法線を再計算
+                            mergedGeometry.computeVertexNormals();
+
+                            const mergedMesh = new THREE.Mesh(mergedGeometry, mergedMaterial);
+                            // 5. Set the new mesh's name to `child.name`
+                            mergedMesh.name = child.name;
+
+                            mergeObjs.push({ parent: child.parent, original: child, merged: mergedMesh });
+                        }
                     });
+
+                    mergeObjs.forEach(item => {
+                        item.parent.add(item.merged);
+                        item.parent.remove(item.original);
+                        modelParts[item.original.name] = item.merged;
+                    });
+
                     console.log("パーツ一覧:", modelParts);
 
                     // エッジ線を追加（親レベルのメッシュのみ、子メッシュの内部構造は無視）
@@ -752,14 +838,12 @@ let loadModel;
                         if (partName.includes("WC")) {
                             locations[partName] = {
                                 name: '<img src="medias/images/wc.svg"/>',
-                                description: `トイレ ${getFloor(partName)}階`
+                                description: `トイレ ${getFloor(partName)[0]}階`
                             }
                         }
                         
                         getExhibits();
 
-                        // if (exhibits[partName]?.name) {
-                        console.log(partName, locations[partName]);
                         if (locations[partName]) {
                             label.className = "mapsLabel";
                             label.setAttribute("exhibits", partName);
@@ -772,7 +856,6 @@ let loadModel;
                             const detailTile = exhibitsArea.querySelector(`.tile[exhibits=${getFmtedObjName(partName)}]`);
 
                             if (titleText) {
-                                console.log("titleText : ", titleText);
                                 const title = d.createElement("span");
                                 title.innerHTML = titleText;
                                 title.className = "title";
@@ -810,7 +893,6 @@ let loadModel;
                                 });
                                 label.appendChild(detail);
                             }
-
                             labelsArea.appendChild(label);
                         }
 
@@ -904,7 +986,8 @@ let loadModel;
                             const heightHalf = rect.height / 2;
 
                             const opacity = (
-                                gsap.getProperty(part.material, "opacity") === 1
+                                gsap.getProperty(
+                                    Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1
                             ) ? 1 : 0;
                             element.setAttribute("isPressable", opacity === 1 && Array.from(element.children).length !== 1);
                             element.style.opacity = opacity;
@@ -968,7 +1051,10 @@ let loadModel;
                             }
 
                             console.log("deviceHeading : ", deviceHeading);
-                            updateCameraAngle(-deviceHeading);
+                            updateCameraAngle({
+                                horizontal: -deviceHeading,
+                                duration: 0
+                            });
                         };
 
                         if (typeof DeviceOrientationEvent.requestPermission === "function") {
@@ -998,13 +1084,13 @@ let loadModel;
                         const generateTouches = (e) => e ? [e?.clientX || e.touches[0]?.clientX, e?.clientY || e.touches[0]?.clientY] : [null, null];
 
                         let isNowBarTouch = false;
-                        let firstCameraDeg = cameraDeg;
+                        let firstCameraDeg = camHorizontal;
                         let firstTouches = [];
 
                         function barTouchStart (e) {
                             const touches = generateTouches(e);
                             isNowBarTouch = true;
-                            firstCameraDeg = cameraDeg;
+                            firstCameraDeg = camHorizontal;
                             firstTouches = touches;
                             window.removeEventListener("deviceorientation", deviceorientationHandler);
                         }
@@ -1017,9 +1103,9 @@ let loadModel;
                             ];
 
                             if (isNowBarTouch) {
-                                updateCameraAngle(
-                                    firstCameraDeg + differences[0] * -.1
-                                );
+                                updateCameraAngle({
+                                    horizontal: firstCameraDeg + differences[0] * -.1
+                                });
                             }
                         }
 
@@ -1041,39 +1127,148 @@ let loadModel;
                         window.addEventListener("mouseup", barTouchEnd);
                     });
 
+                    const panLimit = 2.2;
+
+                    (() => { // 無効化済み
+                        // Y=0 の水平面にグリッドを作成
+                        const squareSize = panLimit * 2;
+                        const half = squareSize / 2;
+                        const divisions = 64; // 内部の分割数（好みで変更
+
+                        const gridMaterial = new THREE.LineBasicMaterial({
+                            color: "lightgray",
+                            opacity: 0.1
+                        });
+
+                        // 外周の正方形
+                        const outerVertices = new Float32Array([
+                            -half, 0.01, -half,
+                            half, 0.01, -half,
+                            half, 0.01,  half,
+                            -half, 0.01,  half,
+                            -half, 0.01, -half
+                        ]);
+                        const outerGeometry = new THREE.BufferGeometry();
+                        outerGeometry.setAttribute("position", new THREE.BufferAttribute(outerVertices, 3));
+                        scene.add(new THREE.Line(outerGeometry, gridMaterial));
+
+                        // 内部グリッド線（水平・垂直）
+                        const gridHeight = 0; // グリッド線の高さ（Y座標）
+
+                        for (let i = 1; i < divisions; i++) {
+                            const t = -half + (squareSize / divisions) * i;
+
+                            // 水平線 (Z方向に平行)
+                            const hVertices = new Float32Array([
+                                -half, gridHeight, t,
+                                half, gridHeight, t
+                            ]);
+                            const hGeometry = new THREE.BufferGeometry();
+                            hGeometry.setAttribute("position", new THREE.BufferAttribute(hVertices, 3));
+                            scene.add(new THREE.Line(hGeometry, gridMaterial));
+
+                            // 垂直線 (X方向に平行)
+                            const vVertices = new Float32Array([
+                                t, gridHeight, -half,
+                                t, gridHeight,  half
+                            ]);
+                            const vGeometry = new THREE.BufferGeometry();
+                            vGeometry.setAttribute("position", new THREE.BufferAttribute(vVertices, 3));
+                            scene.add(new THREE.Line(vGeometry, gridMaterial));
+                        }
+                    });
+
                     let lastLabelUpdate = 0;
 
                     // パン操作時にモデルから離れすぎないように制限
                     controls.addEventListener("change", () => {
                         const now = Date.now();
 
-                        const maxDistance = 1; // モデル中心からの最大距離
+                        camera.zoom = THREE.MathUtils.clamp(camera.zoom, .6, 5);
+                        camera.updateProjectionMatrix();
 
-                        // 注視点を範囲内に制限
-                        controls.target.clamp(
-                            new THREE.Vector3(-maxDistance, -Infinity, -maxDistance),
-                            new THREE.Vector3(maxDistance, Infinity, maxDistance)
-                        );
+                        (() => {
+                            function cameraPan({
+                                x: targetX = targetOffset.x,
+                                z: targetZ = targetOffset.z,
+                                duration: duration = 1
+                            }) {
+                                // 現在のカメラとターゲットの差分ベクトル
+                                const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
 
-                        // カメラも注視点に合わせて補正
-                        const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
-                        offset.clampLength(controls.minDistance, controls.maxDistance);
-                        camera.position.copy(controls.target).add(offset);
+                                // ターゲットを指定位置に移動
+                                controls.target.set(targetX, controls.target.y, targetZ);
+
+                                // カメラの位置もターゲットに対して同じオフセットで移動
+                                camera.position.copy(controls.target).add(offset);
+
+                                // controlsを更新
+                                controls.update();
+                            }
+
+                            const targetOffset = controls.target.clone();
+                            const distance = targetOffset.length();
+                            controls.panSpeed = Math.max(
+                                Math.min(panLimit - distance, 1),
+                                0.25
+                            );
+
+                            // 円形の制限: 距離が panLimit を超えた場合のみスケーリング
+                            if (distance > panLimit) {
+                                const scale = panLimit / distance;
+                                cameraPan({
+                                    x: targetOffset.x * scale,
+                                    z: targetOffset.z * scale
+                                });
+                            }
+                        })();
 
                         // カメラの前方向ベクトルを取得
                         const cameraDirection = new THREE.Vector3();
                         camera.getWorldDirection(cameraDirection);
 
-                        // 方角を度で取得したい場合（北=+Z, 東=+X と仮定）
                         const radToDeg = 180 / Math.PI;
-                        const cD = Math.atan2(cameraDirection.x, cameraDirection.z) * radToDeg + 180;
-                        cameraDeg = cD;
 
-                        compass.style.transform = `rotate(${cameraDeg}deg)`;
+                        // 横方向の角度（北=+Z, 東=+X と仮定）
+                        camHorizontal = Math.atan2(cameraDirection.x, cameraDirection.z) * radToDeg + 180;
 
+                        // 縦方向の角度（水平=0, 上=+90, 下=-90）
+                        camVertical = Math.asin(cameraDirection.y) * -radToDeg;
+
+                        // コンパスを回転
+                        compass.style.transform = `rotate(${camHorizontal}deg)`;
+
+                        // 5msごと
                         if (now - lastLabelUpdate > 5) {
                             updateLabelsPosition();
                             lastLabelUpdate = now;
+
+                            const button_dimension_text = isShow2DMap ? "3D" : "2D";
+                            if (button_dimension.textContent !== button_dimension_text) button_dimension.textContent = button_dimension_text;
+
+                            return;
+                            const is3D = (
+                                Math.abs(getCamHorizontalSnap(camHorizontal) - camHorizontal) > 1 ||
+                                (Math.round(Math.abs(camVertical)) < 85)
+                            );
+
+                            isShow2DMap = !is3D && button_dimensionMode_2D();
+
+                            if (isShow2DMap) {
+                                controlMethodUpdate({
+                                    touches: {
+                                        ONE: THREE.TOUCH.PAN,
+                                        TWO: THREE.TOUCH.DOLLY_PAN
+                                    },
+                                    mouseButtons: {
+                                        LEFT: THREE.MOUSE.PAN,
+                                        MIDDLE: THREE.MOUSE.NONE,
+                                        RIGHT: THREE.MOUSE.NONE
+                                    }
+                                });
+                            } else {
+                                controlMethodUpdate();
+                            }
                         }
                     });
                 },
@@ -1118,42 +1313,116 @@ let loadModel;
         controls.enableZoom = true;
         controls.enablePan = true;
         controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = true;
-        controls.touches = {
-            ONE: THREE.TOUCH.ROTATE,
-            TWO: THREE.TOUCH.DOLLY_PAN
-        };
-        controls.mouseButtons = {
-            LEFT: THREE.MOUSE.ROTATE,
-            MIDDLE: THREE.MOUSE.PAN,
-            RIGHT: THREE.MOUSE.NONE
-        };
+        controls.screenSpacePanning = false;
+
+        function controlMethodUpdate(options = {}) {
+            const {
+                touches = {
+                    ONE: THREE.TOUCH.ROTATE,
+                    TWO: THREE.TOUCH.DOLLY_PAN
+                },
+                mouseButtons = {
+                    LEFT: THREE.MOUSE.ROTATE,
+                    MIDDLE: THREE.MOUSE.PAN,
+                    RIGHT: THREE.MOUSE.NONE
+                }
+            } = options;
+
+            controls.touches = touches;
+            controls.mouseButtons = mouseButtons;
+        }
+
+        controlMethodUpdate();
+
+        let isShow2DMap = false;
 
         controls.minDistance = 2;
         controls.maxDistance = 10;
-        controls.maxPolarAngle = Math.PI / 2; // カメラが地面の下に回り込まないよう制限
-
-        function updateCameraAngle(angleDeg) {
-            cameraDeg = angleDeg;
-            const angleRad = THREE.MathUtils.degToRad(cameraDeg);
-
-            // モデル中心を注視
-            const target = model.position;
-
-            // 現在の高さ（上下方向）は維持
-            const currentY = camera.position.y;
-
-            // 現在の距離を維持
-            const distance = camera.position.distanceTo(new THREE.Vector3(target.x, currentY, target.z));
-
-            // 左右方向だけを変更
-            camera.position.x = target.x + distance * Math.sin(angleRad);
-            camera.position.z = target.z + distance * Math.cos(angleRad);
-            camera.position.y = currentY; // 上下位置は触らない
-
-            // 注視点は変更しない（controlsが管理）
-            controls.update();
+        function setCamAngleLimit(min = 0, max = 85) {
+            controls.minPolarAngle = THREE.MathUtils.degToRad(min);
+            controls.maxPolarAngle = THREE.MathUtils.degToRad(max);
+            if (isShow2DMap) {
+                controls.minAzimuthAngle = 0;
+            } else {
+                controls.minAzimuthAngle = -Infinity;
+                controls.maxAzimuthAngle = Infinity;
+            }
         }
+        setCamAngleLimit();
+
+        function updateCameraAngle({
+            horizontal = 0,
+            vertical = 45,
+            duration = 1,
+            onComplete: finish
+        } = {}) {
+            console.log("updateCameraAngle : ", horizontal, vertical);
+
+            controls.enableRotate = false; // アニメーション中に回転禁止
+
+            const start = { h: camHorizontal, v: camVertical };
+            const target = {
+                h: horizontal !== undefined ? horizontal : camHorizontal,
+                v: vertical !== undefined ? vertical : camVertical
+            };
+
+            function updateAngle() {
+                camHorizontal = start.h;
+                camVertical = start.v;
+
+                // controls.target を基準に距離を計算
+                const distance = camera.position.distanceTo(controls.target);
+
+                const spherical = new THREE.Spherical(
+                    distance,
+                    THREE.MathUtils.degToRad(90 - camVertical),
+                    THREE.MathUtils.degToRad(camHorizontal)
+                );
+                const offset = new THREE.Vector3().setFromSpherical(spherical);
+
+                // controls.targetを基準にした正確な位置
+                camera.position.copy(controls.target.clone().add(offset));
+
+                controls.update();
+            }
+
+            function onComplete() {
+                controls.enableRotate = !isShow2DMap;
+                if (finish) finish();
+                controls.update();
+            }
+
+            if (duration === 0 || !gsap || typeof gsap === "undefined") {
+                start.h = target.h;
+                start.v = target.v;
+                updateAngle();
+                onComplete();
+                controls.enableDamping = true;
+                return;
+            }
+
+            let deltaH = ((target.h - start.h + 180) % 360) - 180;
+            gsap.to(start, {
+                h: start.h + deltaH,
+                v: target.v,
+                duration: duration,
+                ease: "power2.inOut",
+                onUpdate: updateAngle,
+                onComplete: onComplete
+            });
+        }
+
+        const button_dimension = d.createElement("div");
+        function button_dimensionMode_2D (isAdd) {
+            if (isAdd === true) {
+                button_dimension.classList.add("mode_2D");
+            } else if (isAdd === false) {
+                button_dimension.classList.remove("mode_2D");
+            } else {
+                return button_dimension.classList.contains("mode_2D");
+            }
+        }
+        button_dimension.className = "dimension button";
 
         const floors = {
             f1: {
@@ -1175,33 +1444,42 @@ let loadModel;
             button.className = "button";
 
             button.addEventListener("click", () => {
-                const allButtons = buttons_floors.querySelectorAll(".button");
+                /* if (index === 0) {
+                    updateCameraAngle({
+                        horizontal: 45,
+                        vertical: 85,
+                        duration: 0
+                    });
+                    return;
+                } */
+                const allButtons = buttons_left.querySelectorAll(".button");
 
                 const isOnlyValid = !button.classList.contains("invalid") &&
                     [...allButtons].every(b => b === button || b.classList.contains("invalid"));
 
-                if (isOnlyValid) {
-                    allButtons.forEach(el => el.classList.remove("invalid"));
-                } else {
+                if (isOnlyValid && !isShow2DMap) { // 2Dマップ表示中は全解除しない
                     allButtons.forEach(el => {
+                        el.classList.remove("invalid");
+                    });
+                } else {
+                    allButtons.forEach((el, index, arr) => {
                         el.classList.remove("invalid");
                         if (el !== button) el.classList.add("invalid");
                     });
                 }
 
                 // アクティブフロアを配列で取得
-                const activeFloors = [...buttons_floors.querySelectorAll(".button")]
+                const activeFloors = [...buttons_left.querySelectorAll(".button")]
                     .filter(btn => !btn.classList.contains("invalid"))
                     .map(btn => btn.getAttribute("floor").replaceAll("f", "") * 1);
 
                 Object.values(modelParts).forEach(part => {
                     const isPartActive = (
-                        // locations[part.name]?.floor ? activeFloors.includes(locations[part.name].floor) : true
-                        getFloor(part.name) ? activeFloors.includes(getFloor(part.name)) : true &&
-                        !(!isOnlyValid && (
+                        getFloor(part.name)[0] ?
+                        getFloor(part.name).some(floorNum => activeFloors.includes(floorNum)) :
+                        !( (!isOnlyValid || isShow2DMap) && (
                             part.name.includes("Roof") ||
-                            part.name.includes("Curve") ||
-                            part.name.includes("Roof")
+                            part.name.includes("Curve")
                         ))
                     );
 
@@ -1232,15 +1510,66 @@ let loadModel;
                 });
             });
             
-            buttons_floors.appendChild(button);
+            buttons_left.appendChild(button);
         });
+
+        const getCamHorizontalSnap = (horizontal) => Math.round(Math.round(horizontal / 45) * 45);
+
+        (() => {
+            button_dimension.addEventListener("click", () => {
+                isShow2DMap = !isShow2DMap;
+                mapsView.style.pointerEvents = "none";
+                if (isShow2DMap) {
+                    updateCameraAngle({
+                        horizontal: getCamHorizontalSnap(camHorizontal),
+                        vertical: 89,
+                        onComplete: () => {
+                            setCamAngleLimit(0, 0);
+                            mapsView.style.pointerEvents = "auto";
+                        }
+                    });
+                    controlMethodUpdate({
+                        touches: {
+                            ONE: THREE.TOUCH.PAN,
+                            TWO: THREE.TOUCH.DOLLY_PAN
+                        },
+                        mouseButtons: {
+                            LEFT: THREE.MOUSE.PAN,
+                            MIDDLE: THREE.MOUSE.NONE,
+                            RIGHT: THREE.MOUSE.NONE
+                        }
+                    });
+                } else {
+                    setCamAngleLimit()
+                    updateCameraAngle({
+                        horizontal: camHorizontal,
+                        onComplete: () => {
+                            setCamAngleLimit();
+                            mapsView.style.pointerEvents = "auto";
+                        }
+                    });
+                    controlMethodUpdate();
+                }
+                const floorButtons = buttons_left.querySelectorAll("div.button");
+                if (
+                    Array.from(floorButtons)
+                       .every(btn => !btn.classList.contains("invalid"))
+                ) {
+                    floorButtons.forEach((button, index, arr) => {
+                        if (index === arr.length - 1) button.click();
+                    });
+                }
+            });
+
+            buttons_right.appendChild(button_dimension);
+        })();
 
         mapsView.appendChild(compassBar);
         mapsView.appendChild(labelsArea);
-        mapsView.appendChild(buttons_floors);
+        mapsView.appendChild(buttons_left);
+        mapsView.appendChild(buttons_right);
+        
         compassBar.appendChild(compass);
-
-        mapsView.appendChild(buttons);
     })();
 })();
 

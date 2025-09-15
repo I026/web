@@ -234,6 +234,9 @@
     --webkit-backdrop-filter var(--duration) ease-in-out,
     box-shadow var(--duration) ease-in-out;
 }
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition span {
+    transition: margin .5s ease-in-out;
+}
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
     position: absolute;
@@ -269,8 +272,7 @@
     justify-content: center;
     align-items: center;
     transition:
-    opacity .5s ease-in-out,
-    margin .5s ease-in-out;
+    opacity .5s ease-in-out,;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened span {
     opacity: 1 !important;
@@ -330,24 +332,35 @@
     height: 80px;
     bottom: 0;
     pointer-events: none;
+    z-index: 10001;
 }
 .content.main .exhibits .tile .content .compassBar * {
     pointer-events: auto;
 }
-.content.main .exhibits .tile .content .buttons_floors {
+.content.main .exhibits .tile .content .buttons {
     position: absolute;
-    top: 5px;
-    left: 5px;
+    bottom: 5px;
+    z-index: 10001;
 }
-.content.main .exhibits .tile .content .buttons_floors .button {
+.content.main .exhibits .tile .content .buttons.right {
+    right: 5px;
+}
+.content.main .exhibits .tile .content .buttons.left {
+    left: 10px;
+    bottom: 80px;
+}
+.content.main .exhibits .tile .content .buttons .button {
     padding: 5px;
     margin: 5px;
     min-width: 2.5em;
     text-align: center;
-    transition: opacity .5s ease-in-out;
+    transition:
+    opacity .5s ease-in-out,
+    box-shadow .5s ease-in-out;
 }
-.content.main .exhibits .tile .content .buttons_floors .button.invalid {
+.content.main .exhibits .tile .content .buttons .button.invalid {
     opacity: .5;
+    box-shadow: none;
 }
 
 .content.main .exhibits .tile .content > div canvas {
