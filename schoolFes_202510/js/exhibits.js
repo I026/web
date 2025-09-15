@@ -622,7 +622,11 @@ let loadModel;
         let camHorizontal = 0;     // 左右角度（度単位）
         let camVertical = 0;   // 垂直角度（度単位）
 
-        camera.position.set(0, cameraHeight, cameraDistance);
+        camera.position.set(
+            cameraDistance,
+            cameraHeight,
+            cameraDistance
+        );
         camera.lookAt(0, 0, 0);
 
         let modelParts;
@@ -816,7 +820,8 @@ let loadModel;
                         F3_J3_2: exhibits.J3_2,
                         F3_J3_3: exhibits.J3_3,
                         F1_Entrance_Arch: {
-                            name: "入口"
+                            name: "入口",
+                            emphasis: true
                         },
                         F1_Gym_Entrance: {
                             name: mapPointIcon,
@@ -858,7 +863,7 @@ let loadModel;
                             if (titleText) {
                                 const title = d.createElement("span");
                                 title.innerHTML = titleText;
-                                title.className = "title";
+                                title.className = `title${locations[partName].emphasis ? " emphasis" : ""}`;
                                 label.appendChild(title);
                                 if (isHTMLTag) {
                                     label.style.padding = 0;
@@ -1298,11 +1303,22 @@ let loadModel;
         function setEdgeStyle(mesh, {
             color = "lightgray",
             opacity = 1,
+            duration = 0.5
         } = {}) {
             if (mesh.userData.edgeLine) {
                 const edgeMat = mesh.userData.edgeLine.material;
-                edgeMat.color.set(color);
-                edgeMat.opacity = opacity;
+                gsap.to(edgeMat.color, {
+                    r: new THREE.Color(color).r,
+                    g: new THREE.Color(color).g,
+                    b: new THREE.Color(color).b,
+                    duration: duration,
+                    ease: "power2.inOut"
+                });
+                gsap.to(edgeMat, {
+                    opacity: opacity,
+                    duration: duration,
+                    ease: "power2.inOut"
+                });
             }
         }
 

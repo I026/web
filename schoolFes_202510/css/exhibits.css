@@ -281,24 +281,27 @@
     height: 1.5em;
     width : 1.5em;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened span.title {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened > span.title {
     margin-left: calc(
         (var(--wholeWidth) - var(--titleWidth)) / 2
-    );
-    margin-top: calc(var(--titleHeight) * .15);
+        );
+        margin-top: calc(var(--titleHeight) * .15);
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > span.emphasis {
+    font-size: 1.5em !important;
 }
 
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span:not(.title) {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > span:not(.title) {
     opacity: 0;
     top: 1em;
     max-width: min(30vw, 200px);
     margin: 2px;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span.description {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > span.description {
     white-space: pre-wrap;
     word-break: break-all;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div.detail.button {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > div.detail.button {
     margin-top: 20%;
     padding: 5px;
     padding-left : 10px;
