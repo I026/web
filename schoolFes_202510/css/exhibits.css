@@ -221,6 +221,7 @@
 
 .content.main .exhibits .tile .content > .mapsView {
     min-height: calc(80vh - 100px);
+    user-select: none;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition {
