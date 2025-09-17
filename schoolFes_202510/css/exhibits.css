@@ -498,7 +498,8 @@
 }
 .content.main .exhibits .tile .content .buttons {
     position: absolute;
-    bottom: 15px;
+    /* bottom: 15px; */
+    top: 15px;
     z-index: 10001;
 }
 .content.main .exhibits .tile .content .buttons.right {
