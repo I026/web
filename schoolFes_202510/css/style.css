@@ -377,7 +377,7 @@ svg path, svg rect {
     padding: var(--margin);
 }
 .footers .footer {
-    overflow: scroll;
+    overflow: auto;
     background-color: lightgray;
     width: 100%;
     height: 100%;
