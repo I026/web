@@ -297,7 +297,7 @@
     flex-shrink: 0;
     top: 0;
     width: 100%;
-    height: min-content;
+    height: 100%;
     display: flex;
     flex-wrap: wrap;
     white-space: normal;
@@ -498,7 +498,7 @@
 }
 .content.main .exhibits .tile .content .buttons {
     position: absolute;
-    bottom: 5px;
+    bottom: 15px;
     z-index: 10001;
 }
 .content.main .exhibits .tile .content .buttons.right {
