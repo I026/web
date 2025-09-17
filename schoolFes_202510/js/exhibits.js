@@ -270,7 +270,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     const tile = d.createElement("div");
     const names = d.createElement("div");
     const description = d.createElement("div");
-    const locationMap = d.createElement("div");
+    const tagsContent = d.createElement("div");
     const tags = d.createElement("div");
 
     tile.style.animationDelay = `${i * 0.1}s`;
@@ -292,8 +292,6 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     description.innerHTML = `<span>${getExhibits(i)[1].description}</span>`;
     description.classList.add("description");
 
-    locationMap.className = "locationMap";
-
     let displayTagNames = [];
     const usedTags = new Set();
 
@@ -314,7 +312,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
         tag.style.backgroundColor = item[2];
         tag.className = "tag";
         tag.setAttribute("tag", item);
-        tags.appendChild(tag);
+        tagsContent.appendChild(tag);
     });
     const tagAttributes = [];
     displayTagNames.map(subArr => subArr[0]).forEach(item => {
@@ -322,12 +320,30 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     });
     tile.setAttribute("tag", tagAttributes.join(","));
     tags.classList.add("tags");
+    tagsContent.classList.add("tagsContent");
 
     tile.appendChild(names);
     tile.appendChild(description);
-    tile.appendChild(locationMap);
     tile.appendChild(tags);
+    tags.appendChild(tagsContent);
     exhibitsArea.appendChild(tile);
+
+    function scroll() {
+        const maxScroll = tagsContent.scrollWidth - tagsContent.clientWidth;
+        const scrollRatio = maxScroll === 0 ? 0 : tagsContent.scrollLeft / maxScroll;
+        tags.style.setProperty("--scrollPx", maxScroll - tagsContent.scrollLeft + "px");
+        tags.style.setProperty("--scrollRatio", scrollRatio);
+    }
+    scroll();
+    tagsContent.addEventListener("scroll", scroll);
+
+    tile.style.setProperty("--tileOpenHeight", (() => {
+        let height = 20;
+        Array.from(tile.children).forEach(child => {
+            height += child.scrollHeight;
+        });
+        return height;
+    })() + "px");
 }
 
 function getSortConditions () {
@@ -700,7 +716,7 @@ let loadModel;
             light.lookAt(0, 0, 0); // 原点を照らす
 
             const maxIntensity = 5;
-            const minIntensity = .1;
+            const minIntensity = 0;
             light.intensity = Math.max(minIntensity, Math.sin(sunPos.altitude) * maxIntensity);            
         }
         matchSun();
@@ -1106,7 +1122,9 @@ let loadModel;
                             label.classList.add("addTransition");
                             const onTransitionEnd = (e) => {
                                 if (e.target === label) { // この要素自身のトランジションのみ対象
-                                    label.classList.remove("addTransition");
+                                    setTimeout(() => {
+                                        label.classList.remove("addTransition");
+                                    }, transitionDuration * 1000);
                                 }
                             };
                             label.addEventListener("transitionend", onTransitionEnd, { once: true });
@@ -1189,18 +1207,20 @@ let loadModel;
                             const widthHalf = rect.width / 2;
                             const heightHalf = rect.height / 2;
 
-                            let opacity = 0;
-
                             if (gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1) {
-                                opacity = 1;
+                                if (getIsSortConforming(element, getSortConditions())) {
+                                    element.classList.remove("invalid");
+                                } else {
+                                    element.classList.add("invalid");
+                                    element.style.setProperty("--labelOpacity", .5);
+                                }
+                            } else {
+                                element.classList.add("invalid");
+                                element.style.setProperty("--labelOpacity", 0);
                             }
 
-                            if (!getIsSortConforming(element, getSortConditions())) {
-                                opacity = .2;
-                            }
 
-                            element.setAttribute("isPressable", opacity === 1 && Array.from(element.children).length !== 1);
-                            element.style.opacity = opacity;
+                            element.setAttribute("isPressable", !element.classList.contains("invalid") && Array.from(element.children).length !== 1);
 
                             if (element.getAttribute("isPressable") === "true" || element.style.opacity !== 0) {
                                 const leftPx = truncate(vector.x * widthHalf + widthHalf - element.offsetWidth / 2) + "px";
@@ -1230,8 +1250,12 @@ let loadModel;
                                         const childrens = Array.from(element.children);
                                         childrens.forEach(child => {
                                             childWidths.push(child.offsetWidth);
+                                            const style = window.getComputedStyle(element);
                                             height = Math.max(
-                                                child.offsetTop + child.getBoundingClientRect().height,
+                                                child.offsetTop +
+                                                child.getBoundingClientRect().height +
+                                                parseFloat(style.marginBottom),
+                                                parseFloat(style.marginTop),
                                                 height
                                             );
                                         });

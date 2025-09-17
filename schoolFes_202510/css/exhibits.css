@@ -27,18 +27,19 @@
 .content.main .exhibits .tile {
     --baseOpacity: .2;
     --baseHeight: 200px;
+    --baseBackgorundRGB: 211, 211, 211;
+    --padding: 8px;
     margin: var(--exhibitsTileMargin);
     margin-bottom: 0;
     width: calc(100% - var(--exhibitsTileMargin) * 2);
     height: var(--baseHeight);
-    backdrop-filter: blur(10px);
-    --webkit-backdrop-filter: blur(10px);
     border-radius: 10px;
-    background-color: rgba(211, 211, 211, .25);
+    background-color: rgba(var(--baseBackgorundRGB), .25);
     box-shadow: 0 0 10px gray;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
     font-size: 1.2em;
     position: relative;
     overflow: hidden;
@@ -47,6 +48,30 @@
     height  .5s ease-in-out,
     margin  .5s ease-in-out,
     opacity .5s ease-in-out;
+}
+.content.main .exhibits .list .tile {
+    height: var(--baseHeight);
+}
+.content.main .exhibits .list .tile::before {
+    content: "";
+    position: absolute;
+    display: block;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: opacity .5s ease-in-out;
+    background: linear-gradient(
+        to bottom,
+        transparent 20%,
+        white 80%
+    );
+    z-index: 4;
+    opacity: 1;
+    pointer-events: none;
+}
+.content.main .exhibits .list .tile.opened::before {
+    opacity: 0;
 }
 .content.main .exhibits .tile.hidden {
     opacity: var(--baseOpacity);
@@ -63,20 +88,19 @@
     opacity: 0;
 }
 .content.main .exhibits .tile.opened {
-    height: min(60vh, 600px);
+    /* height: min(60vh, 600px); */
+    height: max(
+        var(--tileOpenHeight), calc(var(--baseHeight) + 50px)
+    );
 }
 
 .content.main .exhibits .tile .description {
-    top: 3em;
+    top: 15px;
+    position: relative;
+    width: calc(100% - var(--padding) * 2);
+    padding: var(--padding);
 }
 
-.content.main .exhibits .tile .names {
-    position: absolute;
-    height: auto;
-    width: 100%;
-    padding-left: 8px;
-    top: 8px;
-}
 .content.main .exhibits .tile.sortList * {
     touch-action: pan-x;
 }
@@ -95,6 +119,8 @@
     bottom: 10px;
     z-index: 10;
     overflow: hidden;
+    backdrop-filter: blur(10px);
+    --webkit-backdrop-filter: blur(10px);
 }
 
 .content.main .exhibits .tile.sortList .topBar {
@@ -187,18 +213,13 @@
     align-items: center;
 }
 .content.main .exhibits .tile .names {
-    position: absolute;
-    width: 100%;
-    padding-left: 8px;
-    top: 8px;
+    position: relative;
+    width: calc(100% - var(--padding) * 2);
+    padding: var(--padding);
 }
 .content.main .exhibits .tile .names .subText {
     position: absolute;
     right: 10px;
-}
-.content.main .exhibits .tile .description {
-    position: absolute;
-    left: 8px;
 }
 .content.main .exhibits .tile .tags {
     position: absolute;
@@ -209,11 +230,45 @@
     width: 100%;
     display: flex;
     transition: opacity .5s ease-in-out;
+    z-index: 5;
+}
+.content.main .exhibits .list .tile .tags > .tagsContent {
+    position: relative;
+    display: flex;
+    bottom: 0;
+    left: 0;
     overflow-x: scroll;
     white-space: nowrap;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
 }
+.content.main .exhibits .list .tile .tags {
+    position: absolute;
+}
+.content.main .exhibits .list .tile .tags::before,
+.content.main .exhibits .list .tile .tags::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    display: block;
+    top: 0;
+    right: 0;
+    width: 10%;
+    height: 100%;
+    opacity: calc(1 - var(--scrollRatio));
+    z-index: 6;
+}
+.content.main .exhibits .list .tile .tags::before {
+    right: 0;
+    background: linear-gradient(to left, white 0%, transparent 100%);
+    opacity: calc(1 - var(--scrollRatio));
+}
+.content.main .exhibits .list .tile .tags::after {
+    left: 0;
+    background: linear-gradient(to right, white 0%, transparent 100%);
+    opacity: var(--scrollRatio);
+}
+
 .content.main .exhibits .tile .tags::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
 }
@@ -280,6 +335,10 @@
     transition: transform .5s ease-out;
 }
 
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.invalid {
+    opacity: var(--labelOpacity);
+    pointer-events: none;
+}
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
     position: absolute;
     color: white;
@@ -297,6 +356,7 @@
     height: var(--height);
     background-color: rgba(128, 128, 128, .75);
     overflow: hidden;
+    transition: opacity .5s ease-out;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .cancelBtn {
     position: absolute;
@@ -390,6 +450,7 @@
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div.detail.button {
+    position: relative;
     padding: 5px;
     border-radius: 8px;
     white-space: normal;
