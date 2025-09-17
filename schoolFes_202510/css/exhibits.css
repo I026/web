@@ -11,12 +11,26 @@
     overflow-x: hidden;
     padding-bottom: 10px;
     z-index: 9;
+    display: flex;
+    flex-direction: column;
+}
+@keyframes tag_show {
+    0% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: var(--tileOpacity);
+    }
 }
 .content.main .exhibits .tile {
+    --baseOpacity: .2;
+    --baseHeight: 200px;
     margin: var(--exhibitsTileMargin);
     margin-bottom: 0;
     width: calc(100% - var(--exhibitsTileMargin) * 2);
-    height: 200px;
+    height: var(--baseHeight);
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
     border-radius: 10px;
@@ -28,7 +42,25 @@
     font-size: 1.2em;
     position: relative;
     overflow: hidden;
-    transition: height .5s ease-in-out;
+    animation: tag_show .5s backwards;
+    transition:
+    height  .5s ease-in-out,
+    margin  .5s ease-in-out,
+    opacity .5s ease-in-out;
+}
+.content.main .exhibits .tile.hidden {
+    opacity: var(--baseOpacity);
+    pointer-events: none;
+    --whenHiddenHeight: 2.5em;
+    height: var(--whenHiddenHeight);
+}
+.content.main .exhibits .tile.hidden:last-child {
+    margin-bottom: calc(
+        (var(--baseHeight) - var(--whenHiddenHeight)) * (var(--numOfTile) - var(--numOfVisibleTile))
+    );
+}
+.content.main .exhibits .tile.hidden .tags {
+    opacity: 0;
 }
 .content.main .exhibits .tile.opened {
     height: min(60vh, 600px);
@@ -100,6 +132,7 @@
     border-radius: 10px;
     display: flex;
     justify-content: center;
+    cursor: pointer;
 }
 .content.main .exhibits .tile.sortList .tabs .tab:first-of-type {
     border-top-left-radius: 20px;
@@ -175,6 +208,7 @@
     left: 0;
     width: 100%;
     display: flex;
+    transition: opacity .5s ease-in-out;
     overflow-x: scroll;
     white-space: nowrap;
     scrollbar-width: none; /* Firefox */
@@ -226,90 +260,149 @@
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition {
     transition:
-    opacity var(--duration) ease-in-out,
-    z-index var(--duration) ease-in-out,
-    width   var(--duration) ease-in-out,
-    height  var(--duration) ease-in-out,
-    margin-top var(--duration) ease-in-out,
-    backdrop-filter var(--duration) ease-in-out,
-    --webkit-backdrop-filter var(--duration) ease-in-out,
-    box-shadow var(--duration) ease-in-out;
+    opacity                  var(--duration) ease-out,
+    z-index                  var(--duration) ease-out,
+    width                    var(--duration) ease-out,
+    height                   var(--duration) ease-out,
+    margin                   var(--duration) ease-out,
+    padding                  var(--duration) ease-out,
+    backdrop-filter          var(--duration) ease-out,
+    --webkit-backdrop-filter var(--duration) ease-out,
+    box-shadow               var(--duration) ease-out,
+    border-radius            var(--duration) ease-out,
+    opacity                  var(--duration) ease-out;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition span {
-    transition: margin .5s ease-in-out;
+    transition:
+    margin var(--duration) ease-out;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition .title {
+    transition: transform .5s ease-out;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
     position: absolute;
     color: white;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
     pointer-events: none;
-    white-space: nowrap;
     user-select: none;
-    padding: 4px;
+    padding: 0;
     border-radius: .5em;
     z-index: var(--zIndex);
     font-size: var(--fontSize);
     transform: scale(var(--scale));
-    width:  var(--titleWidth);
-    height: var(--titleHeight);
+    width:  var(--width);
+    height: var(--height);
     background-color: rgba(128, 128, 128, .75);
     overflow: hidden;
-    transition: opacity .5s ease-in-out;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .cancelBtn {
+    position: absolute;
+    --scale: 1em;
+    width : var(--scale);
+    height: var(--scale);
+    top  : calc(var(--scale) * -1);
+    right: calc(var(--scale) * -1);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .cancelBtn .bar {
+    width: var(--scale);
+    height: .1em;
+    background-color: gray;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel:not(.opened) {
+    padding: 4px;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened {
-    width:  var(--wholeWidth);
-    height: var(--wholeHeight);
+    --labelPadding: 8px;
+    padding: var(--labelPadding);
+    border-radius: calc(var(--labelPadding) * 2);
+    width:  var(--width);
+    height: calc(var(--height) - var(--labelPadding));
+    margin-top: calc(var(--height) * -.5);
     z-index: 10001 !important;
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
     box-shadow: 0 0 10px black;
-    margin-top: calc(var(--wholeHeight) * -.75);
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span {
-    left: 0;
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations {
     position: relative;
     width: max-content;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
+    left: 0;
     transition:
-    opacity .5s ease-in-out,;
+    opacity .5s ease-out,
+    margin  .5s ease-out
+    !important;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened span {
-    opacity: 1 !important;
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .title {
+    position: relative;
+    width : max-content;
+    height: fit-content;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel span img {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .title span {
+    display: flex;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened .title {
+    transform: translateX(calc(
+        var(--width) * .5 - 50%
+    ));
+}
+
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div img {
     height: 1.5em;
     width : 1.5em;
+    font-size: 1.25em;
+    object-fit: cover;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened > span.title {
-    margin-left: calc(
-        (var(--wholeWidth) - var(--titleWidth)) / 2
-        );
-        margin-top: calc(var(--titleHeight) * .15);
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened > div.title {
+    margin-bottom: 10px;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > span.emphasis {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened > div.informations {
+    opacity: 1;
+}
+
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > div.informations {
+    left: 0;
+    text-align: left;
+    opacity: 0;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > div.informations .location {
+    margin-top   : 0;
+    margin-bottom: 10px;
+}
+
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .emphasis {
     font-size: 1.5em !important;
 }
 
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > span:not(.title) {
-    opacity: 0;
-    top: 1em;
-    max-width: min(30vw, 200px);
-    margin: 2px;
-}
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > span.description {
-    white-space: pre-wrap;
-    word-break: break-all;
-}
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > div.detail.button {
-    margin-top: 20%;
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div.detail.button {
     padding: 5px;
+    border-radius: 8px;
+    white-space: normal;
+    max-width: 15em;
+    width: max-content;
+    height: min-content;
     padding-left : 10px;
     padding-right: 10px;
-    width: min-content;
-    height: min-content;
+    cursor: normal;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div.detail.button.pressable {
     pointer-events: auto;
+    cursor: pointer;
 }
 
 .content.main .exhibits .tile .content .compass {
@@ -406,14 +499,4 @@
     display: flex;
     justify-content: center;
     align-items: center;
-}
-@keyframes tag_show {
-    0% {
-        transform: translateX(100px);
-        opacity: 0;
-    }
-    100% {
-        transform: translateX(0);
-        opacity: 1;
-    }
 }

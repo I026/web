@@ -341,11 +341,14 @@ svg path, svg rect {
     overflow: visible;
 }
 .checkedBox .checkBox {
+    position: relative;
     opacity: 1;
     background-color: lightgray;
+    overflow: hidden;
 }
 .checkBox svg {
-    transform: translateY(-20%);
+    position: absolute;
+    transform: translateY(10%);
 }
 .checkBox svg path {
     transform: scale(1.25) translate(1%, -1%);

@@ -24,7 +24,43 @@ exhibitsBottomBar.addEventListener("wheel", e => {
 
 const getClassName = (school, input_grade, input_class) => (
     `${school == "H" || input_class > 3 ? "高校" : "中学"} ${input_grade}年${input_class}組`
-)
+);
+
+function queryParameter ({
+    type: type = "set",
+    key: key,
+    value: value,
+    url: url = new URL(window.location.href),
+}) {
+    let returnValue = null;
+    console.log("type : ", type);
+    switch (type) {
+        case "set":
+            url.searchParams.set(key, value);
+            break;
+        case "append":
+            console.log("value : ", value);
+            (value instanceof Array ? value : [value]).forEach(item => {
+                url.searchParams.append(key, item);
+            });
+            break;
+        case "delete":
+            url.searchParams.delete(key);
+            break;
+        case "get":
+            returnValue = url.searchParams.getAll(key);
+            break;
+        case "entries":
+            returnValue = Object.fromEntries(
+            Array.from(url.searchParams.entries())
+                .filter(([key, value]) => value !== undefined && value !== "undefined")
+            )
+            break;
+    }
+    window.history.pushState({}, "", url);
+    return returnValue;
+}
+
 const exhibits = {
     J1_1: {
         name: "(テスト文)",
@@ -61,7 +97,7 @@ const exhibits = {
     },
     J2_1: {
         name: "お化け屋敷",
-        description: "怖いお化けが出る屋敷",
+        description: "怖いお化けが出る屋敷怖いお化けが出る屋敷怖いお化けが出る屋敷怖いお化けが出る屋敷怖いお化けが出る屋敷怖いお化けが出る屋敷怖いお化けが出る屋敷",
         location: {
             name: ""
         },
@@ -237,7 +273,6 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     const locationMap = d.createElement("div");
     const tags = d.createElement("div");
 
-    tile.style.animation = "tag_show .5s both";
     tile.style.animationDelay = `${i * 0.1}s`;
     tile.setAttribute("exhibits", getExhibits(i)[0]);
     tile.className = "tile";
@@ -278,12 +313,14 @@ for (let i = 0; i < exhibitsLength; i += 1) {
         tag.innerHTML = item[1];
         tag.style.backgroundColor = item[2];
         tag.className = "tag";
-        tag.setAttribute(`tag_${item[0]}`, "");
+        tag.setAttribute("tag", item);
         tags.appendChild(tag);
     });
+    const tagAttributes = [];
     displayTagNames.map(subArr => subArr[0]).forEach(item => {
-        tile.setAttribute(`tag_${item}`, "");
+        tagAttributes.push(item);
     });
+    tile.setAttribute("tag", tagAttributes.join(","));
     tags.classList.add("tags");
 
     tile.appendChild(names);
@@ -293,34 +330,74 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     exhibitsArea.appendChild(tile);
 }
 
-function sortUpdate () {
+function getSortConditions () {
     let conditions = [];
-    (() => {
-        const checkedTags = exhibitsBottomBar.querySelectorAll(".tag.checkedBox:not([isButton])");
-        checkedTags.forEach(element => {
-            conditions.push(element.getAttribute("tag"));
-        });
-    })();
+    const checkedTags = exhibitsBottomBar.querySelectorAll(".tag.checkedBox:not([isButton])");
+    checkedTags.forEach(element => {
+        conditions.push(element.getAttribute("tag"));
+    });
+    return conditions;
+}
+
+function getIsSortConforming (element, conditions = getSortConditions()) {
+    let isConforming = true;
+    for (const condition of conditions) {
+        if (!element.getAttribute("tag") || !element.getAttribute("tag").split(",").includes(condition)) {
+            isConforming = false;
+            break;
+        }
+    };
+    return isConforming;
+}
+
+function updateSort () {
+    const conditions = getSortConditions();
 
     (() => {
-        let selector = `[tag_${conditions[0]}]`;
-
-        conditions.forEach(condition => {
-            selector += `[tag_${condition}]`;
-        });
-
         const allTiles = exhibitsArea.querySelectorAll(".tile");
+
+        function setTileVisible (element, isVisible) {
+            if (isVisible) {
+                element.classList.remove("hidden");
+                element.style.setProperty("--tileOpacity", 1);
+            } else {
+                element.classList.add("hidden");
+                element.classList.remove("opened");
+                element.style.setProperty("--tileOpacity", "var(--baseOpacity)");
+            }
+        }
+
         allTiles.forEach(element => {
-            element.style.display = `${conditions[0] ? "none" : "flex"}`;
+            if (conditions[0]) {
+                setTileVisible(element, false);
+            } else {
+                setTileVisible(element, true);
+            }
             element.classList.remove("topTileStyle");
             element.classList.remove("lowestTileStyle");
         });
 
-        const targetElements = exhibitsArea.querySelectorAll(selector);
-        targetElements.forEach(element => {
-            element.style.opacity = 1;
-            element.style.display = "flex";
+        const activeAllTiles = [];
+
+        const targetElements = [];
+        exhibitsArea.querySelectorAll(":scope > div.tile").forEach(tileItem => {
+            console.log(
+                "tileItem : ", tileItem.getAttribute("tag"),
+                "\nconditions : ", conditions
+            );
+            // if (tileItem.getAttribute("tag").includes(conditions.join(","))) {
+            if (getIsSortConforming(tileItem, conditions)) {
+                targetElements.push(tileItem);
+            }
         });
+        console.log("targetElements : ", targetElements);
+        targetElements.forEach(element => {
+            setTileVisible(element, true);
+            activeAllTiles.push(element);
+        });
+
+        exhibitsArea.style.setProperty("--numOfTile", allTiles.length);
+        exhibitsArea.style.setProperty("--numOfVisibleTile", activeAllTiles.length);
 
         conditions.forEach(condition => {
             exhibitsArea.querySelectorAll(`.tags [tag_${condition}]`).forEach(element => {
@@ -329,11 +406,7 @@ function sortUpdate () {
         });
 
         // 角丸系
-        const activeAllTiles = Array.from(allTiles).filter(tile => 
-            tile.style.display != "none"
-        );
 
-        console.log(activeAllTiles);
         if (activeAllTiles[0]) {
             activeAllTiles[0].classList.add("topTileStyle");
         }
@@ -342,8 +415,6 @@ function sortUpdate () {
         }
     })();
 }
-
-sortUpdate();
 
 function getBarOptionsHeight () {
     let barOptionsHeight = 0;
@@ -469,9 +540,14 @@ let loadModel;
     listView.className = "tags listView";
     bottomBar_contents.appendChild(listView);
 
-    Object.keys(tagOrder).forEach(tag => {
+    Object.keys(tagOrder).forEach((tag, tagIndex) => {
         const newTag = d.createElement("span");
-        newTag.className = "tag";
+        newTag.className = `tag${
+            queryParameter({
+                type: "get",
+                key: "sort"
+            }).includes(tag) ? " checkedBox" : ""
+        }`;
         // newTag.className = "tag checkedBox";
         newTag.style.backgroundColor = tagOrder[tag].themeColor;
         newTag.textContent = tagOrder[tag].displayName;
@@ -535,13 +611,23 @@ let loadModel;
                         }
                     });
                 }
+                queryParameter({
+                    type: "delete",
+                    key: "sort"
+                });
+                queryParameter({
+                    type: "append",
+                    key: "sort",
+                    value: getSortConditions()
+                });
             }
             updateResetButton();
-            sortUpdate();
+            updateSort();
         }
 
         newTag.addEventListener("click", tagClicked);
     });
+    updateSort();
 
     (() => { // mapsView
         const mapsView = d.createElement("div");
@@ -581,6 +667,9 @@ let loadModel;
 
         const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio * .9);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // ソフトシャドウ
+        renderer.setPixelRatio(window.devicePixelRatio * .9);
 
         // 描画領域を mapsView に追加
         mapsView.appendChild(renderer.domElement);
@@ -592,6 +681,10 @@ let loadModel;
         
         // 太陽の位置を取得
         const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.castShadow = true;
+        light.shadow.mapSize.width = 1024;
+        light.shadow.mapSize.height = 1024;
+        light.shadow.bias = -0.0001;
         function matchSun () {
             const sunPos = SunCalc.getPosition(now, latitude, longitude);
             const distance = 10; // 光源までの距離
@@ -599,15 +692,15 @@ let loadModel;
             const azimuth = sunPos.azimuth;   // 方位角（北=0）
 
             // 球座標 → デカルト座標変換
-            const x = Math.max(distance * Math.cos(altitude) * Math.sin(azimuth), 2);
+            const x = distance * Math.cos(altitude) * Math.sin(azimuth);
             const y = Math.max(distance * Math.sin(altitude), 2);
-            const z = Math.max(distance * Math.cos(altitude) * Math.cos(azimuth), 2);
+            const z = distance * Math.cos(altitude) * Math.cos(azimuth);
 
             light.position.set(x, y, z);
             light.lookAt(0, 0, 0); // 原点を照らす
 
             const maxIntensity = 5;
-            const minIntensity = 1;
+            const minIntensity = .1;
             light.intensity = Math.max(minIntensity, Math.sin(sunPos.altitude) * maxIntensity);            
         }
         matchSun();
@@ -647,6 +740,23 @@ let loadModel;
                 "medias/3ds/sc.glb",
                 (gltf) => {
                     model = gltf.scene;
+                    // 平面追加
+                    const planeGeometry = new THREE.PlaneGeometry(10, 10);
+                    const planeMaterial = new THREE.ShadowMaterial({ opacity: 0.05 }); // 影を受け取る透明マテリアル
+                    const groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+                    groundPlane.rotation.x = -Math.PI / 2;
+                    groundPlane.position.y = -0.01;
+                    groundPlane.name = "GroundPlane";
+
+                    // 影を受け取る
+                    groundPlane.receiveShadow = true;
+
+                    // 自身は影を作らない
+                    groundPlane.castShadow = false;
+
+                    scene.add(groundPlane);
+
                     model.position.set(0, 0, 0);
                     model.rotation.y = THREE.MathUtils.degToRad(180 - 45);
                     scene.add(model);
@@ -659,19 +769,6 @@ let loadModel;
 
                     setCamFocus(0, 0, 0);
 
-                    /* function getChild (obj) {
-                        if (
-                            obj?.type === "Group"
-                        ) {
-                            if (obj.children[0]) {
-                                getChild(obj.children);
-                            } else {
-                                console.log("children : ", obj.children);
-                            }
-                        }
-                    }
-                    getChild(model); */
-
                     // パーツを一括で取得
                     modelParts = {};
 
@@ -679,6 +776,8 @@ let loadModel;
                     model.traverse((child) => {
                         if (child.isMesh) {
                             modelParts[child.name] = child;
+                            child.castShadow = true;
+                            child.receiveShadow = true;
                         }
                         if (child.type === "Object3D") {
                             // 1. Collect all child meshes of `child`
@@ -766,10 +865,11 @@ let loadModel;
                         }
                     });
 
-                    function truncateText(text, length = 9) {
-                        if (typeof text !== "string") return "";
-                        return text.length > length ? text.slice(0, 4) + ".." : text;
-                    }
+                    const truncateText = (text, length = 10) => (
+                        typeof text === "string" ? (
+                            text.length > length ? text.slice(0, length) + ".." : text
+                        ) : ""
+                    );
 
                     function scrollToTile(targetTile) {
                         function scrollToAndThen(targetY, callback) {
@@ -813,23 +913,90 @@ let loadModel;
                         F1_J1_1: exhibits.J1_1,
                         F1_J1_2: exhibits.J1_2,
                         F1_J1_3: exhibits.J1_3,
+
+                        F1_H1_1: {
+                            name: "テスト文"
+                        },
+                        F1_H1_2: {
+                            name: "テスト文"
+                        },
+                        F1_H1_3: {
+                            name: "テスト文"
+                        },
+                        F1_H1_4: {
+                            name: "テスト文"
+                        },
+                        F1_H1_5: {
+                            name: "テスト文"
+                        },
+                        F1_H1_6: {
+                            name: "テスト文"
+                        },
+                        F1_H1_7: {
+                            name: "テスト文"
+                        },
+
                         F2_J2_1: exhibits.J2_1,
                         F2_J2_2: exhibits.J2_2,
                         F2_J2_3: exhibits.J2_3,
+
+                        F2_H2_1: {
+                            name: "テスト文"
+                        },
+                        F2_H2_2: {
+                            name: "テスト文"
+                        },
+                        F2_H2_3: {
+                            name: "テスト文"
+                        },
+                        F2_H2_4: {
+                            name: "テスト文"
+                        },
+                        F2_H2_5: {
+                            name: "テスト文"
+                        },
+                        F2_H2_6: {
+                            name: "テスト文"
+                        },
+                        F2_H2_7: {
+                            name: "テスト文"
+                        },
+
                         F3_J3_1: exhibits.J3_1,
                         F3_J3_2: exhibits.J3_2,
                         F3_J3_3: exhibits.J3_3,
+
+                        F3_H3_1: {
+                            name: "テスト文"
+                        },
+                        F3_H3_2: {
+                            name: "テスト文"
+                        },
+                        F3_H3_3: {
+                            name: "テスト文"
+                        },
+                        F3_H3_4: {
+                            name: "テスト文"
+                        },
+                        F3_H3_5: {
+                            name: "テスト文"
+                        },
+                        F3_H3_6: {
+                            name: "テスト文"
+                        },
+                        F3_H3_7: {
+                            name: "テスト文"
+                        },
+
                         F1_Entrance_Arch: {
                             name: "入口",
                             emphasis: true
                         },
                         F1_Gym_Entrance: {
-                            name: mapPointIcon,
-                            description: "体育館"
+                            name: "体育館",
                         },
                         F1_Art: {
-                            name: mapPointIcon,
-                            description: "美術棟"
+                            name: "美術棟",
                         },
                     };
 
@@ -840,7 +1007,7 @@ let loadModel;
 
                         // part.material.color.set("lightgreen");
 
-                        if (partName.includes("WC")) {
+                        if (partName.includes("_WC")) {
                             locations[partName] = {
                                 name: '<img src="medias/images/wc.svg"/>',
                                 description: `トイレ ${getFloor(partName)[0]}階`
@@ -849,9 +1016,20 @@ let loadModel;
                         
                         getExhibits();
 
+                        function setTagAttributes (tags, element) {
+                            if (!Array.isArray(tags)) return;
+                            const tagAttributes = [];
+                            tags.forEach(tag => {
+                                tagAttributes.push(tag);
+                            });
+                            element.setAttribute("tag", tagAttributes.join(","));
+                        }
+
                         if (locations[partName]) {
                             label.className = "mapsLabel";
                             label.setAttribute("exhibits", partName);
+
+                            setTagAttributes(locations[partName].tag, label);
 
                             const isHTMLTag = locations[partName].name.includes("<");
 
@@ -861,50 +1039,79 @@ let loadModel;
                             const detailTile = exhibitsArea.querySelector(`.tile[exhibits=${getFmtedObjName(partName)}]`);
 
                             if (titleText) {
-                                const title = d.createElement("span");
-                                title.innerHTML = titleText;
+                                const title = d.createElement("div");
+                                const text = d.createElement("span");
+                                text.innerHTML = titleText;
                                 title.className = `title${locations[partName].emphasis ? " emphasis" : ""}`;
+                                title.appendChild(text);
                                 label.appendChild(title);
-                                if (isHTMLTag) {
-                                    label.style.padding = 0;
-                                    label.style.fontSize = "calc(var(--fontSize) * 1.3)";
-                                }
                             }
 
-                            if (descriptionText) {
+                            /* if (descriptionText) {
                                 const description = d.createElement("span");
                                 description.textContent = descriptionText;
                                 description.className = "description";
                                 label.appendChild(description);
-                            }
+                            } */
                             
+                            const informations = d.createElement("div");
+                            informations.className = "informations";
+                            label.appendChild(informations);
+
                             if (locationText) {
                                 const location = d.createElement("span");
                                 location.textContent = locationText;
                                 location.className = "location";
-                                label.appendChild(location);
+                                informations.appendChild(location);
                             }
                             
-                            if (detailTile) {
+                            if (descriptionText) {
                                 const detail = d.createElement("div");
-                                detail.textContent = "詳細";
+                                detail.textContent = truncateText(descriptionText, 20);
                                 detail.className = "detail button";
-                                detail.addEventListener("click", e => {
-                                    e.preventDefault();
-                                    label.classList.remove("opened");
-                                    barHeightUpdate(false);
-                                    openTile(detailTile, true);
-                                    scrollToTile(detailTile);
-                                });
-                                label.appendChild(detail);
+                                if (!!detailTile) {
+                                    detail.classList.add("pressable");
+                                    detail.addEventListener("click", e => {
+                                        e.preventDefault();
+                                        label.classList.remove("opened");
+                                        barHeightUpdate(false);
+                                        openTile(detailTile, true);
+                                        scrollToTile(detailTile);
+                                    });
+                                }
+                                informations.appendChild(detail);
                             }
+
                             labelsArea.appendChild(label);
                         }
+
+                        (() => {
+                            const cancelBtn = d.createElement("div");
+                            cancelBtn.classList = "cancelBtn";
+                            for (let i = 0; i < 2; i += 1) {
+                                const bar = d.createElement("div");
+                                bar.className = "bar";
+                                bar.style.transform = `rotate(${45 + i * 90}deg)`;
+                                cancelBtn.appendChild(bar);
+                            }
+                            label.appendChild(cancelBtn);
+                        });
 
                         labels[partName] = { element: label, part: part };
                     });
 
                     (() => {
+                        function addLabelTransition (label, transitionDuration = .5) {
+                            label.style.setProperty("--duration", `${transitionDuration}s`)
+                            label.classList.add("addTransition");
+                            const onTransitionEnd = (e) => {
+                                if (e.target === label) { // この要素自身のトランジションのみ対象
+                                    label.classList.remove("addTransition");
+                                }
+                            };
+                            label.addEventListener("transitionend", onTransitionEnd, { once: true });
+                        }
+
                         function isOverlap(el, x, y) {
                             const rect = el.getBoundingClientRect();
                             return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
@@ -917,14 +1124,6 @@ let loadModel;
                             if (Date.now() - lastHandleEventAt < 100) return;
                             
                             const candidateLabels = [];
-
-                            function addLabelTransition (label, transitionDuration = .5) {
-                                label.style.setProperty("--duration", `${transitionDuration}s`)
-                                label.classList.add("addTransition");
-                                setTimeout(() => {
-                                    label.classList.remove("addTransition");
-                                }, (transitionDuration + .3) * 1000);
-                            }
 
                             Object.values(labels).forEach(labelObj => {
                                 const labelElement = labelObj.element;
@@ -948,15 +1147,15 @@ let loadModel;
                                 const labelElement = labelObj.element;
 
                                 if (labelElement.classList.contains("opened") && labelElement !== topLabel) {
-                                    addLabelTransition(labelElement);
                                     labelElement.classList.remove("opened");
+                                    addLabelTransition(labelElement);
                                 }
                             });
-
                             if (topLabel) {
-                                addLabelTransition(topLabel);
                                 topLabel.classList.toggle("opened");
+                                addLabelTransition(topLabel);
                             }
+
                             lastHandleEventAt = Date.now();
                         }
 
@@ -990,10 +1189,16 @@ let loadModel;
                             const widthHalf = rect.width / 2;
                             const heightHalf = rect.height / 2;
 
-                            const opacity = (
-                                gsap.getProperty(
-                                    Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1
-                            ) ? 1 : 0;
+                            let opacity = 0;
+
+                            if (gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1) {
+                                opacity = 1;
+                            }
+
+                            if (!getIsSortConforming(element, getSortConditions())) {
+                                opacity = .2;
+                            }
+
                             element.setAttribute("isPressable", opacity === 1 && Array.from(element.children).length !== 1);
                             element.style.opacity = opacity;
 
@@ -1003,9 +1208,11 @@ let loadModel;
                                 if (element.style.left !== leftPx) element.style.left = leftPx;
                                 if (element.style.top !== topPx) element.style.top = topPx;
 
+                                part.getWorldPosition(vector);
+
                                 const distance = camera.position.distanceTo(part.getWorldPosition(new THREE.Vector3()));
 
-                                element.style.setProperty("--zIndex",  Math.floor(10000 - distance * 10));
+                                element.style.setProperty("--zIndex",  10000 - distance * 10);
                                 element.style.setProperty("--fontSize",  truncate(
                                     Math.min(
                                         Math.max(
@@ -1014,23 +1221,52 @@ let loadModel;
                                     , 15)
                                 ) + "px");
 
-                                const childWidths  = [];
-                                let wholeHeight = 0;
-                                Array.from(element.children).forEach(child => {
-                                    childWidths.push(child.getBoundingClientRect().width);
-                                    wholeHeight = Math.max(child.offsetTop + child.offsetHeight, wholeHeight);
-                                });
-                                const wholeWidth  = Math.max(...childWidths) + 4;
-                                element.style.setProperty("--wholeWidth",  wholeWidth + "px");
+                                (() => {
+                                    const childWidths = [];
+                                    let height = 0;
+                                    let width  = 0;
+
+                                    if (element.classList.contains("opened")) {
+                                        const childrens = Array.from(element.children);
+                                        childrens.forEach(child => {
+                                            childWidths.push(child.offsetWidth);
+                                            height = Math.max(
+                                                child.offsetTop + child.getBoundingClientRect().height,
+                                                height
+                                            );
+                                        });
+                                        width = Math.max(...childWidths);
+                                    } else {
+                                        const title = element.querySelector(".title");
+                                        if (title) {
+                                            width  = title.getBoundingClientRect().width;
+                                            height = title.getBoundingClientRect().height;
+                                        }
+                                    }
+                                    width  += "px";
+                                    height += "px";
+
+                                    const widthProperty = "--width";
+                                    const heightProperty = "--height";
+
+                                    if (getComputedStyle(element).getPropertyValue(widthProperty) !== width) {
+                                        element.style.setProperty(widthProperty,  width);
+                                    }
+                                    if (getComputedStyle(element).getPropertyValue(heightProperty) !== height) {
+                                        element.style.setProperty(heightProperty, height);
+                                    }
+                                })();
+
+                                /* element.style.setProperty("--wholeWidth",  wholeWidth + "px");
                                 element.style.setProperty("--wholeHeight",  wholeHeight + "px");
 
                                 const title = element.querySelector("span.title");
                                 if (title) {
-                                    const titleWidth = title.offsetWidth;
+                                    const titleWidth = title.getBoundingClientRect().width;
                                     const titleHeight = title.getBoundingClientRect().height;
                                     element.style.setProperty("--titleWidth",  titleWidth + "px");
                                     element.style.setProperty("--titleHeight", titleHeight + "px");
-                                }
+                                } */
                             }
                         });
                     }
