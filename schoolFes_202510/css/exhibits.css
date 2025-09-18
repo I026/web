@@ -113,7 +113,7 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    max-height: var(--bottomBarHeight);
+    height: var(--bottomBarHeight);
     width: calc(100% - var(--exhibitsTileMargin) * 2);
     right: 0;
     bottom: 10px;
@@ -309,9 +309,9 @@
 }
 
 .content.main .exhibits .tile .content > .mapsView {
-    min-height: calc(80vh - 100px);
+    height: calc(80vh - 100px);
+    bottom: 0;
     user-select: none;
-    position: relative;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition {
@@ -498,7 +498,7 @@
 }
 .content.main .exhibits .tile .content .buttons {
     position: absolute;
-    bottom: 5px;
+    top: 5px;
     z-index: 10001;
 }
 .content.main .exhibits .tile .content .buttons.right {
