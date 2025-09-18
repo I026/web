@@ -309,7 +309,7 @@
 }
 
 .content.main .exhibits .tile .content > .mapsView {
-    height: calc(80vh - 100px);
+    height: calc(80vh - 185px);
     bottom: 0;
     user-select: none;
 }
