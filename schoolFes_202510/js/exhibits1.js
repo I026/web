@@ -454,11 +454,8 @@ function barHeightUpdate (isToOpen = exhibitsBottomBar.classList.contains("opene
 }
 
 const bottomBar_contents = d.createElement("div");
-const sortList_topContents = d.createElement("div");
 const sortList_topBar = d.createElement("div");
 const sortList_tabs = d.createElement("div");
-
-sortList_topContents.className = "topContents";
 
 let loadModel;
 
@@ -548,9 +545,8 @@ let loadModel;
         isBarTouchNow = false;
     });
 
-    sortList_topContents.appendChild(sortList_topBar);
-    sortList_topContents.appendChild(sortList_tabs);
-    exhibitsBottomBar.appendChild(sortList_topContents);
+    exhibitsBottomBar.appendChild(sortList_topBar);
+    exhibitsBottomBar.appendChild(sortList_tabs);
     exhibitsBottomBar.appendChild(bottomBar_contents);
 })();
 
@@ -1206,15 +1202,14 @@ let loadModel;
                                 element.style.setProperty("--labelOpacity", 0);
                             }
 
-                            element.setAttribute("isPressable", (
-                                !element.classList.contains("invalid") && element.querySelector(".informations")?.textContent.length !== 0
-                            ));
+
+                            element.setAttribute("isPressable", !element.classList.contains("invalid") && Array.from(element.children).length !== 1);
 
                             if (element.getAttribute("isPressable") === "true" || element.style.opacity !== 0) {
                                 const leftPx = truncate(vector.x * widthHalf + widthHalf - element.offsetWidth / 2) + "px";
                                 const topPx  = truncate(-vector.y * heightHalf + heightHalf - element.offsetHeight / 2) + "px";
-                                if (getComputedStyle(element).getPropertyValue("--leftPx") !== leftPx) element.style.setProperty("--leftPx", leftPx);
-                                if (getComputedStyle(element).getPropertyValue("--topPx ")  !== topPx)  element.style.setProperty("--topPx", topPx);
+                                if (element.style.left !== leftPx) element.style.left = leftPx;
+                                if (element.style.top !== topPx) element.style.top = topPx;
 
                                 part.getWorldPosition(vector);
 
@@ -1323,13 +1318,9 @@ let loadModel;
                             window.addEventListener("deviceorientation", deviceorientationHandler);
                         }
                     };
+                    directionMatch();
 
-                    compass.addEventListener("click", () => {
-                        updateCameraAngle({
-                            horizontal: 0,
-                            vertical: camVertical
-                        });
-                    });
+                    compass.addEventListener("click", directionMatch);
 
                     function removeDirectionMatch () {
                         window.removeEventListener("deviceorientation", deviceorientationHandler);
@@ -1538,22 +1529,14 @@ let loadModel;
             );
         };
 
-        function windowResize() {
-            const topMargin = (
-                parseFloat(getComputedStyle(mapsView).getPropertyValue("--topBarHeight")) +
-                parseFloat(getComputedStyle(mapsView).getPropertyValue("--tabsHeight"))
-            );
-
+        function windowResize () {
             const aspect = mapsView.clientWidth / mapsView.clientHeight;
-
-            camera.left   = -cameraSize * aspect;
-            camera.right  = cameraSize * aspect;
-            camera.top    = cameraSize + topMargin / mapsView.clientHeight * cameraSize * 2; // topMarginをカメラの高さに換算
+            camera.left = -cameraSize * aspect;
+            camera.right = cameraSize * aspect;
+            camera.top = cameraSize;
             camera.bottom = -cameraSize;
             camera.updateProjectionMatrix();
-
-            renderer.setSize(mapsView.clientWidth, mapsView.clientHeight + topMargin);
-
+            renderer.setSize(mapsView.clientWidth, mapsView.clientHeight);
             barHeightUpdate();
         }
 
@@ -1634,13 +1617,7 @@ let loadModel;
         } = {}) {
             console.log("updateCameraAngle : ", horizontal, vertical);
 
-            // 回転禁止＆慣性無効化
-            let prevDamping;
-            setTimeout(() => {
-                controls.enableRotate = false;
-                prevDamping = controls.enableDamping;
-                controls.enableDamping = false;
-            }, duration);
+            controls.enableRotate = false; // アニメーション中に回転禁止
 
             const start = { h: camHorizontal, v: camVertical };
             const target = {
@@ -1652,7 +1629,9 @@ let loadModel;
                 camHorizontal = start.h;
                 camVertical = start.v;
 
+                // controls.target を基準に距離を計算
                 const distance = camera.position.distanceTo(controls.target);
+
                 const spherical = new THREE.Spherical(
                     distance,
                     THREE.MathUtils.degToRad(90 - camVertical),
@@ -1660,14 +1639,14 @@ let loadModel;
                 );
                 const offset = new THREE.Vector3().setFromSpherical(spherical);
 
+                // controls.targetを基準にした正確な位置
                 camera.position.copy(controls.target.clone().add(offset));
+
                 controls.update();
             }
 
             function onComplete() {
-                // 回転と慣性を元に戻す
                 controls.enableRotate = !isShow2DMap;
-                controls.enableDamping = prevDamping;
                 if (finish) finish();
                 controls.update();
             }
@@ -1677,6 +1656,7 @@ let loadModel;
                 start.v = target.v;
                 updateAngle();
                 onComplete();
+                controls.enableDamping = true;
                 return;
             }
 
@@ -1801,7 +1781,7 @@ let loadModel;
                 if (isShow2DMap) {
                     updateCameraAngle({
                         horizontal: getCamHorizontalSnap(camHorizontal),
-                        vertical: 89.5,
+                        vertical: 89,
                         onComplete: () => {
                             setCamAngleLimit(0, 0);
                             mapsView.style.pointerEvents = "auto";
@@ -1840,14 +1820,15 @@ let loadModel;
                 }
             });
 
-            buttons_right.appendChild(compass);
             buttons_right.appendChild(button_dimension);
         })();
 
-        // mapsView.appendChild(compassBar);
+        mapsView.appendChild(compassBar);
         mapsView.appendChild(labelsArea);
         mapsView.appendChild(buttons_left);
         mapsView.appendChild(buttons_right);
+        
+        compassBar.appendChild(compass);
     })();
 })();
 
