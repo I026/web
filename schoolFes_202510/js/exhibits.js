@@ -683,8 +683,7 @@ let loadModel;
 
         const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio * .9);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // ソフトシャドウ
+        renderer.shadowMap.enabled = false;
         renderer.setPixelRatio(window.devicePixelRatio * .9);
 
         // 描画領域を mapsView に追加
@@ -756,22 +755,6 @@ let loadModel;
                 "medias/3ds/sc.glb",
                 (gltf) => {
                     model = gltf.scene;
-                    // 平面追加
-                    const planeGeometry = new THREE.PlaneGeometry(10, 10);
-                    const planeMaterial = new THREE.ShadowMaterial({ opacity: 0.05 }); // 影を受け取る透明マテリアル
-                    const groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
-
-                    groundPlane.rotation.x = -Math.PI / 2;
-                    groundPlane.position.y = -0.01;
-                    groundPlane.name = "GroundPlane";
-
-                    // 影を受け取る
-                    groundPlane.receiveShadow = true;
-
-                    // 自身は影を作らない
-                    groundPlane.castShadow = false;
-
-                    scene.add(groundPlane);
 
                     model.position.set(0, 0, 0);
                     model.rotation.y = THREE.MathUtils.degToRad(180 - 45);
@@ -792,7 +775,7 @@ let loadModel;
                     model.traverse((child) => {
                         if (child.isMesh) {
                             modelParts[child.name] = child;
-                            child.castShadow = true;
+                            child.castShadow = false;
                             child.receiveShadow = true;
                         }
                         if (child.type === "Object3D") {
