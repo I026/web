@@ -454,11 +454,8 @@ function barHeightUpdate (isToOpen = exhibitsBottomBar.classList.contains("opene
 }
 
 const bottomBar_contents = d.createElement("div");
-const sortList_topContents = d.createElement("div");
 const sortList_topBar = d.createElement("div");
 const sortList_tabs = d.createElement("div");
-
-sortList_topContents.className = "topContents";
 
 let loadModel;
 
@@ -548,9 +545,8 @@ let loadModel;
         isBarTouchNow = false;
     });
 
-    sortList_topContents.appendChild(sortList_topBar);
-    sortList_topContents.appendChild(sortList_tabs);
-    exhibitsBottomBar.appendChild(sortList_topContents);
+    exhibitsBottomBar.appendChild(sortList_topBar);
+    exhibitsBottomBar.appendChild(sortList_tabs);
     exhibitsBottomBar.appendChild(bottomBar_contents);
 })();
 
@@ -687,7 +683,8 @@ let loadModel;
 
         const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
         renderer.setPixelRatio(window.devicePixelRatio * .9);
-        renderer.shadowMap.enabled = false;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // ソフトシャドウ
         renderer.setPixelRatio(window.devicePixelRatio * .9);
 
         // 描画領域を mapsView に追加
@@ -759,6 +756,22 @@ let loadModel;
                 "medias/3ds/sc.glb",
                 (gltf) => {
                     model = gltf.scene;
+                    // 平面追加
+                    const planeGeometry = new THREE.PlaneGeometry(10, 10);
+                    const planeMaterial = new THREE.ShadowMaterial({ opacity: 0.05 }); // 影を受け取る透明マテリアル
+                    const groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+                    groundPlane.rotation.x = -Math.PI / 2;
+                    groundPlane.position.y = -0.01;
+                    groundPlane.name = "GroundPlane";
+
+                    // 影を受け取る
+                    groundPlane.receiveShadow = true;
+
+                    // 自身は影を作らない
+                    groundPlane.castShadow = false;
+
+                    scene.add(groundPlane);
 
                     model.position.set(0, 0, 0);
                     model.rotation.y = THREE.MathUtils.degToRad(180 - 45);
@@ -779,7 +792,7 @@ let loadModel;
                     model.traverse((child) => {
                         if (child.isMesh) {
                             modelParts[child.name] = child;
-                            child.castShadow = false;
+                            child.castShadow = true;
                             child.receiveShadow = true;
                         }
                         if (child.type === "Object3D") {
@@ -1206,15 +1219,14 @@ let loadModel;
                                 element.style.setProperty("--labelOpacity", 0);
                             }
 
-                            element.setAttribute("isPressable", (
-                                !element.classList.contains("invalid") && element.querySelector(".informations")?.textContent.length !== 0
-                            ));
+
+                            element.setAttribute("isPressable", !element.classList.contains("invalid") && Array.from(element.children).length !== 1);
 
                             if (element.getAttribute("isPressable") === "true" || element.style.opacity !== 0) {
                                 const leftPx = truncate(vector.x * widthHalf + widthHalf - element.offsetWidth / 2) + "px";
                                 const topPx  = truncate(-vector.y * heightHalf + heightHalf - element.offsetHeight / 2) + "px";
-                                if (getComputedStyle(element).getPropertyValue("--leftPx") !== leftPx) element.style.setProperty("--leftPx", leftPx);
-                                if (getComputedStyle(element).getPropertyValue("--topPx ")  !== topPx)  element.style.setProperty("--topPx", topPx);
+                                if (element.style.left !== leftPx) element.style.left = leftPx;
+                                if (element.style.top !== topPx) element.style.top = topPx;
 
                                 part.getWorldPosition(vector);
 
@@ -1536,17 +1548,12 @@ let loadModel;
 
         function windowResize () {
             const aspect = mapsView.clientWidth / mapsView.clientHeight;
-            const topMargin = (
-                mapsView.clientHeight +
-                parseFloat(getComputedStyle(mapsView).getPropertyValue("--topBarHeight")) +
-                parseFloat(getComputedStyle(mapsView).getPropertyValue("--tabsHeight"))
-            );
-            camera.left   = -cameraSize * aspect;
-            camera.right  = cameraSize  * aspect;
-            camera.top    = cameraSize;
+            camera.left = -cameraSize * aspect;
+            camera.right = cameraSize * aspect;
+            camera.top = cameraSize;
             camera.bottom = -cameraSize;
             camera.updateProjectionMatrix();
-            renderer.setSize(mapsView.clientWidth, topMargin);
+            renderer.setSize(mapsView.clientWidth, mapsView.clientHeight);
             barHeightUpdate();
         }
 
