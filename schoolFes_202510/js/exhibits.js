@@ -780,60 +780,80 @@ let loadModel;
                         if (child.isMesh) {
                             modelParts[child.name] = child;
                             child.castShadow = false;
-                            child.receiveShadow = true;
+                            child.receiveShadow = false;
                         }
                         if (child.type === "Object3D") {
-                            // 1. Collect all child meshes of `child`
                             const meshes = [];
                             child.traverse((sub) => {
                                 if (sub.isMesh) meshes.push(sub);
                             });
                             if (meshes.length === 0) return;
 
-                            // 2. Clone their geometries and apply transforms
+                            // マージ前のワールド座標を保存
+                            child.userData.originalTransform = {
+                                position: child.position.clone(),
+                                rotation: child.rotation.clone(),
+                                scale: child.scale.clone(),
+                                matrixWorld: child.matrixWorld.clone()
+                            };
+
+                            // ジオメトリ統合
                             const transformedGeometries = meshes.map(mesh => {
-                                const geom = mesh.geometry.clone();
-                                // Compose transformation matrix from both child (group) and mesh local transforms
+                                let geom = mesh.geometry.clone();
+
+                                // 1. 重複頂点の削除
+                                geom = BufferGeometryUtils.mergeVertices(geom);
+
+                                // 2. ワールド変換を適用
                                 const matrix = new THREE.Matrix4();
-                                const parentMatrix = new THREE.Matrix4();
-                                parentMatrix.compose(child.position, child.quaternion, child.scale);
-                                const localMatrix = new THREE.Matrix4();
-                                localMatrix.compose(mesh.position, mesh.quaternion, mesh.scale);
-                                matrix.multiplyMatrices(parentMatrix, localMatrix);
+                                matrix.multiplyMatrices(
+                                    new THREE.Matrix4().compose(child.position, child.quaternion, child.scale),
+                                    new THREE.Matrix4().compose(mesh.position, mesh.quaternion, mesh.scale)
+                                );
                                 geom.applyMatrix4(matrix);
+
+                                // 3. LOD用の簡略化ジオメトリ作成（例: デシメーションは簡易版）
+                                const lodGeom = geom.clone();
+                                const lod = new THREE.LOD();
+                                lod.addLevel(new THREE.Mesh(geom, mesh.material.clone()), 0); // 高精度
+                                lod.addLevel(new THREE.Mesh(lodGeom, mesh.material.clone()), 50); // 簡易版
                                 return geom;
                             });
 
-                            // 3. Merge these geometries into a single geometry, supporting multi-material
                             const mergedGeometry = BufferGeometryUtils.mergeGeometries(transformedGeometries, true);
                             if (!mergedGeometry) return;
 
-                            // 4. Create a new mesh with the merged geometry and an array of cloned materials
-                            // マテリアルを正確に複製
                             const mergedMaterial = meshes.map(mesh => {
-                                const originalMat = mesh.material;
-                                const clonedMat = originalMat.clone();
-
-                                clonedMat.opacity = originalMat.opacity !== undefined ? originalMat.opacity : 1;
-                                clonedMat.transparent = true; // 透過を有効化
-
-                                if (originalMat.envMap) clonedMat.envMap = originalMat.envMap;
-                                clonedMat.needsUpdate = true;
-
-                                return clonedMat;
+                                const cloned = mesh.material.clone();
+                                cloned.opacity = mesh.material.opacity ?? 1;
+                                cloned.transparent = true;
+                                if (mesh.material.envMap) cloned.envMap = mesh.material.envMap;
+                                cloned.needsUpdate = true;
+                                return cloned;
                             });
 
-                            // ジオメトリ統合後に法線を再計算
+                            // 法線再計算
                             mergedGeometry.computeVertexNormals();
 
                             const mergedMesh = new THREE.Mesh(mergedGeometry, mergedMaterial);
-                            // 5. Set the new mesh's name to `child.name`
+
+                            // 描画上はマージ前のワールド変換を適用
+                            mergedGeometry.applyMatrix4(child.matrixWorld);
+
+                            mergedMesh.position.set(0, 0, 0);
+                            mergedMesh.rotation.set(0, 0, 0);
+                            mergedMesh.scale.set(1, 1, 1);
+
                             mergedMesh.name = child.name;
+
+                            // 元の位置情報を mergedMesh にもコピーしておく
+                            mergedMesh.userData.originalTransform = { ...child.userData.originalTransform };
 
                             mergeObjs.push({ parent: child.parent, original: child, merged: mergedMesh });
                         }
                     });
 
+                    // マージ後に置き換え
                     mergeObjs.forEach(item => {
                         item.parent.add(item.merged);
                         item.parent.remove(item.original);
@@ -1179,10 +1199,10 @@ let loadModel;
 
                     const truncate = (num, digit = 3) => Math.floor(num * digit) / digit;
 
+                    const getFmtedPx = (px) => px.replace("px", "");
                     function updateLabelsPosition() {
                         const rect = renderer.domElement.getBoundingClientRect();
-
-                        Object.values(labels).forEach(({ element, part }) => {
+                        Object.values(labels).forEach(({ element, part }, index) => {
                             const vector = new THREE.Vector3();
                             if (part.geometry) {
                                 part.geometry.computeBoundingBox();
@@ -1193,6 +1213,10 @@ let loadModel;
 
                             const widthHalf = rect.width / 2;
                             const heightHalf = rect.height / 2;
+
+                            const camPos = camera.position;
+                            const objPos = part.userData?.originalTransform?.position.clone() || part.getWorldPosition(new THREE.Vector3());
+                            const camDistance = camPos.distanceTo(objPos);
 
                             if (gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1) {
                                 if (getIsSortConforming(element, getSortConditions())) {
@@ -1211,24 +1235,30 @@ let loadModel;
                             ));
 
                             if (element.getAttribute("isPressable") === "true" || element.style.opacity !== 0) {
-                                const leftPx = truncate(vector.x * widthHalf + widthHalf - element.offsetWidth / 2) + "px";
-                                const topPx  = truncate(-vector.y * heightHalf + heightHalf - element.offsetHeight / 2) + "px";
-                                if (getComputedStyle(element).getPropertyValue("--leftPx") !== leftPx) element.style.setProperty("--leftPx", leftPx);
-                                if (getComputedStyle(element).getPropertyValue("--topPx ")  !== topPx)  element.style.setProperty("--topPx", topPx);
+                                const leftPx = truncate(vector.x * widthHalf + widthHalf - element.offsetWidth / 2);
+                                const topPx  = truncate(-vector.y * heightHalf + heightHalf - element.offsetHeight / 2);
+                                if (
+                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > .6
+                                ) {
+                                    element.style.setProperty("--leftPx", leftPx + "px");
+                                }
+                                if (
+                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > .6
+                                ) {
+                                    element.style.setProperty("--topPx", topPx + "px");
+                                }
+                                if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > .01) {
+                                    element.style.setProperty("--camDistance", camDistance);
+                                }
 
-                                part.getWorldPosition(vector);
+                                // const transformValue = `translate3d(${leftPx}px, ${topPx}px, 0)`;
 
-                                const distance = camera.position.distanceTo(part.getWorldPosition(new THREE.Vector3()));
+                                /* if (element.style.transform !== transformValue) {
+                                    element.style.transform = transformValue;
+                                } */
 
-                                element.style.setProperty("--zIndex",  10000 - distance * 10);
-                                element.style.setProperty("--fontSize",  truncate(
-                                    Math.min(
-                                        Math.max(
-                                            camera.zoom * (distance * .9) * (Math.min(window.innerWidth, 500) * .002),
-                                        1)
-                                    , 15)
-                                ) + "px");
-
+                                // if (part.name.includes("J2_1")) console.log(camDistance);
+                                
                                 (() => {
                                     const childWidths = [];
                                     let height = 0;
@@ -1323,13 +1353,6 @@ let loadModel;
                             window.addEventListener("deviceorientation", deviceorientationHandler);
                         }
                     };
-
-                    compass.addEventListener("click", () => {
-                        updateCameraAngle({
-                            horizontal: 0,
-                            vertical: camVertical
-                        });
-                    });
 
                     function removeDirectionMatch () {
                         window.removeEventListener("deviceorientation", deviceorientationHandler);
@@ -1495,8 +1518,7 @@ let loadModel;
                         // コンパスを回転
                         compass.style.transform = `rotate(${camHorizontal}deg)`;
 
-                        // 5msごと
-                        if (now - lastLabelUpdate > 5) {
+                        if (now - lastLabelUpdate > 0) {
                             updateLabelsPosition();
                             lastLabelUpdate = now;
 

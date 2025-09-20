@@ -365,9 +365,12 @@
     transition: transform .5s ease-out;
 }
 
+.content.main .exhibits .tile .content .mapsView .labelsArea {
+    transform: translateY(calc(var(--topMargin) * -1));
+}
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.invalid {
-    opacity: var(--labelOpacity);
     pointer-events: none;
+    opacity: var(--labelOpacity);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
     position: absolute;
@@ -379,15 +382,23 @@
     user-select: none;
     padding: 0;
     border-radius: .5em;
-    z-index: var(--zIndex);
-    font-size: var(--fontSize);
-    transform: scale(var(--scale));
+    z-index: calc(
+        10000 - (var(--camDistance) * 10)
+    );
+    /* font-size: (max(.05vw, .11vh) * .1); */
+    font-size: min(calc(
+        (
+            10000 - (var(--camDistance) * 10)
+        ) * .000075em
+    ), max(1vw, 1vh));
     width:  var(--width);
     height: var(--height);
     background-color: rgba(128, 128, 128, .75);
     overflow: hidden;
-    transition: opacity .5s ease-out;
-    top : calc(var(--topPx) - var(--topMargin));
+    --transitionDuration: .5s;
+    transition:
+    opacity var(--transitionDuration) ease-out;
+    top : var(--topPx);
     left: var(--leftPx);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .cancelBtn {
