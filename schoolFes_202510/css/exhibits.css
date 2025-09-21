@@ -610,6 +610,30 @@
     left: 5px;
     justify-content: flex-start;
 }
+.content.main .exhibits .tile .content .buttons.top {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    height: 80px;
+    width: 100%;
+    pointer-events: none;
+    top: 0;
+}
+@keyframes showText {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+.content.main .exhibits .tile .content .buttons.top .button {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
 .content.main .exhibits .tile .content .buttons .button {
     padding: 5px;
     margin: 5px;
