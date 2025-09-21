@@ -183,7 +183,6 @@ function setPathViewBox() {
             
             // アニメーションを設定（indexを使って遅延）
             path.style.animationDelay = `${index * 0.05}s`;
-
             if (path.parentElement.parentElement.classList.contains("checkBox")) {
                 setTimeout(() => {
                     path.style.transition = "stroke-dashoffset .5s ease-in-out";
@@ -400,4 +399,24 @@ function scrollProcess() {
 }
 scrollProcess();
 window.addEventListener("scroll", scrollProcess);
-window.addEventListener("DOMContentLoaded", setPathViewBox);
+window.addEventListener("DOMContentLoaded", () => {
+    setPathViewBox();
+
+    // DOM変更を監視
+    const observer = new MutationObserver(mutations => {
+        for (const mutation of mutations) {
+            if (
+                [...mutation.addedNodes].some(node => node.nodeName === "SVG" || node.querySelector?.("svg")) ||
+                mutation.target.nodeName === "SVG"
+            ) {
+                setPathViewBox();
+                break;
+            }
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+});

@@ -13,6 +13,7 @@
     z-index: 9;
     display: flex;
     flex-direction: column;
+    margin-bottom: 50vh;
 }
 @keyframes tag_show {
     0% {
@@ -99,6 +100,44 @@
     position: relative;
     width: calc(100% - var(--padding) * 2);
     padding: var(--padding);
+}
+.content.main .exhibits .tile .location {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: .75em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.content.main .exhibits .tile .location svg {
+    position: relative;
+    height: 1.25em;
+    width: 1.25em;
+    margin-left: .5px;
+    transform: rotate(225deg);
+}
+.content.main .exhibits .tile .location svg path {
+    stroke-width: 100;
+    transition: stroke-dashoffset .5s ease-in-out;
+}
+.content.main .exhibits .tile .location span.locationText {
+    transition: opacity .5s ease-in-out;
+}
+.content.main .exhibits .tile .location:hover span.locationText {
+    opacity: 0;
+}
+.content.main .exhibits .tile .location:hover svg path {
+    stroke-dashoffset: var(--pathLength);
+    opacity: 0;
+}
+.content.main .exhibits .tile .location span.text {
+    position: absolute;
+    opacity: 0;
+    transition: opacity .5s ease-in-out;
+}
+.content.main .exhibits .tile .location:hover span.text {
+    opacity: 1;
 }
 
 .content.main .exhibits .tile.sortList * {
@@ -214,6 +253,12 @@
     stroke-dashoffset: var(--pathLength);
     opacity: 0 !important;
 }
+.content.main .exhibits .tile.sortList .content {
+    transition: opacity .5s ease-in-out;
+}
+.content.main .exhibits .tile.sortList:not(.opened) .content {
+    opacity: 0;
+}
 .content.main .exhibits .tile.sortList.opened .topBar svg g.close path {
     stroke-dashoffset: 0;
     opacity: 1 !important;
@@ -305,9 +350,10 @@
     width: 100%;
     position: absolute;
     top: 0;
-    height: calc(
+    /* height: calc(
         var(--bottomBarHeight) + var(--topMargin)
-    );
+    ); */
+    height: 100%;
     scroll-snap-type: x mandatory;
     overflow-x: scroll;
     overflow-y: visible;
@@ -341,8 +387,18 @@
     height: calc(80vh - 95px);
     bottom: 0;
     user-select: none;
+    transition: height .5s ease-in-out;
 }
 
+.content.main .exhibits .tile .content .mapsView .labelsArea {
+    pointer-events: none;
+    /* height: calc(100% + var(--topMargin)); */
+    height: calc(
+        var(--bottomBarHeight) + var(--topMargin)
+    );
+    width: 100%;
+    overflow: hidden;
+}
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition {
     transition:
     opacity                  var(--duration) ease-out,
@@ -430,7 +486,7 @@
     height: calc(var(--height) - var(--labelPadding));
     margin-top: calc(var(--height) * -.5);
     z-index: 10001 !important;
-    box-shadow: 0 0 10px black;
+    box-shadow: 0 0 10px gray;
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
 }
@@ -484,8 +540,9 @@
     opacity: 0;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > div.informations .location {
-    margin-top   : 0;
-    margin-bottom: 10px;
+    position: relative;
+    margin-bottom: 15px;
+    top: 0;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .emphasis {

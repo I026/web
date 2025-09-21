@@ -4,6 +4,13 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { gsap } from "https://cdn.jsdelivr.net/npm/gsap@3.12.2/index.js";
 
+/**
+ * @param {THREE.Object3D} target
+ * @param {THREE.OrthographicCamera} camera
+ * @param {THREE.OrbitControls} controls
+ * @param {number} margin
+ */
+
 /* 
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -168,6 +175,100 @@ const exhibits = {
         ],
     },
 }
+
+const maps_pointIcon = '<img src="medias/images/mapPoint.svg"/>';
+
+const maps_locations = {
+    F1_J1_1: exhibits.J1_1,
+    F1_J1_2: exhibits.J1_2,
+    F1_J1_3: exhibits.J1_3,
+
+    F1_H1_1: {
+        name: "テスト文"
+    },
+    F1_H1_2: {
+        name: "テスト文"
+    },
+    F1_H1_3: {
+        name: "テスト文"
+    },
+    F1_H1_4: {
+        name: "テスト文"
+    },
+    F1_H1_5: {
+        name: "テスト文"
+    },
+    F1_H1_6: {
+        name: "テスト文"
+    },
+    F1_H1_7: {
+        name: "テスト文"
+    },
+
+    F2_J2_1: exhibits.J2_1,
+    F2_J2_2: exhibits.J2_2,
+    F2_J2_3: exhibits.J2_3,
+
+    F2_H2_1: {
+        name: "テスト文"
+    },
+    F2_H2_2: {
+        name: "テスト文"
+    },
+    F2_H2_3: {
+        name: "テスト文"
+    },
+    F2_H2_4: {
+        name: "テスト文"
+    },
+    F2_H2_5: {
+        name: "テスト文"
+    },
+    F2_H2_6: {
+        name: "テスト文"
+    },
+    F2_H2_7: {
+        name: "テスト文"
+    },
+
+    F3_J3_1: exhibits.J3_1,
+    F3_J3_2: exhibits.J3_2,
+    F3_J3_3: exhibits.J3_3,
+
+    F3_H3_1: {
+        name: "テスト文"
+    },
+    F3_H3_2: {
+        name: "テスト文"
+    },
+    F3_H3_3: {
+        name: "テスト文"
+    },
+    F3_H3_4: {
+        name: "テスト文"
+    },
+    F3_H3_5: {
+        name: "テスト文"
+    },
+    F3_H3_6: {
+        name: "テスト文"
+    },
+    F3_H3_7: {
+        name: "テスト文"
+    },
+
+    F1_Entrance_Arch: {
+        name: "入口",
+        emphasis: true
+    },
+    F1_Gym_Entrance: {
+        name: "体育館",
+    },
+    F1_Art: {
+        name: "美術棟",
+    },
+};
+
 const getExhibits = (n) => ([ Object.keys(exhibits)[n], Object.values(exhibits)[n] ])
 const exhibitsLength = Object.keys(exhibits).length;
 const tagGroups = {
@@ -266,9 +367,199 @@ function openTile (targetTile, isToOpen = !targetTile.classList.contains("opened
     }
 }
 
+function getBarOptionsHeight () {
+    let barOptionsHeight = 0;
+    exhibitsBottomBar.querySelectorAll(':scope > *:not(.content)').forEach(element => {
+        barOptionsHeight += element.offsetHeight
+    });
+    return barOptionsHeight;
+}
+
+function barHeightUpdate (isToOpen = exhibitsBottomBar.classList.contains("opened")) {
+    if (isToOpen) {
+        const nowShow = exhibitsBottomBar.querySelector(".content > div.nowShow");
+        const areaHeight = getBarOptionsHeight() + nowShow?.offsetHeight;
+
+        exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${Math.min(areaHeight, window.innerHeight - 100)}px`);
+        exhibitsBottomBar.classList.add("opened");
+    } else {
+        exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${getBarOptionsHeight()}px`);
+        exhibitsBottomBar.classList.remove("opened");
+    }
+}
+
+barHeightUpdate();
+
+function tabClassUpdate (tabIndex) {
+    const tabs = sortList_tabs.querySelectorAll(".tab");
+    tabs.forEach(tab => {
+        tab.classList.remove("selected");
+    });
+    tabs[tabIndex].classList.add("selected");
+
+    const contents = exhibitsBottomBar.querySelectorAll(".content > div");
+    contents.forEach(content => {
+        content.classList.remove("nowShow");
+    });
+    contents[tabIndex].classList.add("nowShow");
+}
+
+function barTabClicked (tabIndex) {
+    bottomBar_contents.scrollTo({
+        top: 0,
+        left: tabIndex * bottomBar_contents.scrollWidth,
+        behavior: "smooth"
+    });
+    tabClassUpdate(tabIndex);
+    barHeightUpdate(true);
+}
+
+// カメラ
+const maps_renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+const maps_aspect = window.innerWidth / window.innerHeight;
+const maps_cameraSize = 1.2; // 表示範囲の大きさ（好みで調整）
+const maps_camera = new THREE.OrthographicCamera(
+    -maps_cameraSize * maps_aspect,  // left
+    maps_cameraSize * maps_aspect,   // right
+    maps_cameraSize,            // top
+    -maps_cameraSize,           // bottom
+    0.1,                   // near
+    1000                   // far
+);
+
+// OrbitControls 初期化
+const maps_controls = new OrbitControls(maps_camera, maps_renderer.domElement);
+
+function cameraPan({
+    x: targetX = targetOffset.x,
+    z: targetZ = targetOffset.z,
+    duration: duration = 1
+}) {
+    // 現在のカメラとターゲットの差分ベクトル
+    const offset = new THREE.Vector3().subVectors(maps_camera.position, maps_controls.target);
+
+    function instantMove () {
+        maps_controls.target.set(targetX, maps_controls.target.y, targetZ);
+        maps_camera.position.copy(maps_controls.target).add(offset);
+        maps_controls.update();
+    }
+
+    if (duration === 0) {
+        instantMove();
+    } else {
+        const startTarget = maps_controls.target.clone();
+        const startCamera = maps_camera.position.clone();
+
+        gsap.to(startTarget, {
+            x: targetX,
+            z: targetZ,
+            duration: duration,
+            ease: "power2.inOut",
+            onUpdate: () => {
+                maps_controls.target.set(startTarget.x, maps_controls.target.y, startTarget.z);
+                maps_camera.position.copy(maps_controls.target).add(offset);
+                maps_controls.update();
+            },
+            onComplete: instantMove
+        });
+    }
+}
+
+function maps_frameObject({
+    target: target,
+    camera: camera = maps_camera,
+    controls: controls = maps_controls,
+    duration: duration = 1
+}) {
+    if (!target?.geometry) return;
+
+    // バウンディングボックスの取得
+    target.geometry.computeBoundingBox();
+    const bbox = target.geometry.boundingBox.clone();
+
+    // ワールド座標系に変換
+    bbox.applyMatrix4(target.matrixWorld);
+
+    const size = new THREE.Vector3();
+    bbox.getSize(size);
+    const center = new THREE.Vector3();
+    bbox.getCenter(center);
+
+    // ズームもスムーズに変更する場合
+    gsap.to(camera, {
+        zoom: 2, // 目標ズーム値
+        duration: duration,
+        ease: "power2.inOut",
+        onUpdate: () => camera.updateProjectionMatrix()
+    });
+
+    // OrbitControls の注視点もトランジション付きで更新
+    if (controls) {
+        if (controls.enableRotate) {
+            gsap.to(controls.target, {
+                x: center.x,
+                y: center.y - .2,
+                z: center.z,
+                duration: duration,
+                ease: "power2.inOut",
+                onUpdate: () => controls.update()
+            });
+        } else {
+        const currentTarget = controls.target;
+            const newTarget = new THREE.Vector3(center.x, currentTarget.y, center.z);
+            cameraPan({
+                x: newTarget.x,
+                z: newTarget.z,
+                duration: duration
+            });
+        }
+    }
+}
+
+let maps_modelParts = {};
+
+const mapsView = d.createElement("div");
+const maps_labelsArea = d.createElement("div");
+
+function maps_addLabelTransition (label, transitionDuration = .5) {
+    label.style.setProperty("--duration", `${transitionDuration}s`)
+    label.classList.add("addTransition");
+    const onTransitionEnd = (e) => {
+        if (e.target === label) { // この要素自身のトランジションのみ対象
+            setTimeout(() => {
+                label.classList.remove("addTransition");
+            }, transitionDuration * 1000);
+        }
+    };
+    label.addEventListener("transitionend", onTransitionEnd, { once: true });
+}
+
+const maps_buttons_right = d.createElement("div");
+const maps_buttons_left = d.createElement("div");
+
+function maps_changeFloor (floor) {
+    const floorButtons = maps_buttons_left.querySelectorAll("div.button");
+    floorButtons.forEach((button, index, arr) => {
+        if (index === arr.length - floor) button.click();
+    });
+}
+
+function get_isEveryFloorValid () {
+    const floorButtons = maps_buttons_left.querySelectorAll("div.button");
+    return Array.from(floorButtons)
+        .every(btn => !btn.classList.contains("invalid"));
+};
+
+function maps_getFloor (name) {
+    const regex = /F(\d+)_/g; // gフラグで全マッチ取得
+    const matches = [...name.matchAll(regex)];
+    return matches.map(match => Number(match[1]));
+}
+
 for (let i = 0; i < exhibitsLength; i += 1) {
     const tile = d.createElement("div");
     const names = d.createElement("div");
+    const location = d.createElement("div");
     const description = d.createElement("div");
     const tagsContent = d.createElement("div");
     const tags = d.createElement("div");
@@ -285,9 +576,45 @@ for (let i = 0; i < exhibitsLength; i += 1) {
         );
     }
 
-    names.innerHTML = `${getExhibits(i)[1].name}<span class="subText">場所 : ${getExhibits(i)[1].location.name
-    }</span>`;
+    names.textContent = getExhibits(i)[1].name;
     names.classList.add("names");
+
+    const locationText = d.createElement("span");
+    locationText.className = "locationText";
+    locationText.textContent = getExhibits(i)[1].location.name;
+    location.className = "location button";
+    location.appendChild(locationText);
+    (() => {
+        const arrow = d.createElementNS("http://www.w3.org/2000/svg", "svg");
+        arrow.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+        const path = d.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", "M228.451,230.092L228.451,850.906L849.265,850.906");
+
+        const text = d.createElement("span");
+        text.className = "text";
+        text.textContent = "地図で見る";
+
+        arrow.appendChild(path);
+        location.appendChild(arrow);
+        location.appendChild(text);
+    })();
+    location.addEventListener("click", e => {
+        e.stopPropagation();
+        barTabClicked(1);
+        Object.values(maps_locations).forEach((item, index) => {
+            if (getExhibits(i)[1] === item) {
+                const targetObj = maps_modelParts[Object.keys(maps_locations)[index]];
+                maps_frameObject({
+                    target: targetObj
+                });
+                const targetLabel = maps_labelsArea.querySelector(`.mapsLabel[exhibits="${Object.keys(maps_locations)[index]}"]`);
+                targetLabel.classList.add("opened");
+                maps_addLabelTransition(targetLabel);
+                if (!get_isEveryFloorValid()) maps_changeFloor(maps_getFloor(targetObj.name));
+            }
+        });
+    });
     
     description.innerHTML = `<span>${getExhibits(i)[1].description}</span>`;
     description.classList.add("description");
@@ -323,6 +650,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     tagsContent.classList.add("tagsContent");
 
     tile.appendChild(names);
+    tile.appendChild(location);
     tile.appendChild(description);
     tile.appendChild(tags);
     tags.appendChild(tagsContent);
@@ -432,27 +760,6 @@ function updateSort () {
     })();
 }
 
-function getBarOptionsHeight () {
-    let barOptionsHeight = 0;
-    exhibitsBottomBar.querySelectorAll(':scope > *:not(.content)').forEach(element => {
-        barOptionsHeight += element.offsetHeight
-    });
-    return barOptionsHeight;
-}
-
-function barHeightUpdate (isToOpen = exhibitsBottomBar.classList.contains("opened")) {
-    if (isToOpen) {
-        const nowShow = exhibitsBottomBar.querySelector(".content > div.nowShow");
-        const areaHeight = getBarOptionsHeight() + nowShow?.offsetHeight;
-
-        exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${Math.min(areaHeight, window.innerHeight - 100)}px`);
-        exhibitsBottomBar.classList.add("opened");
-    } else {
-        exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${getBarOptionsHeight()}px`);
-        exhibitsBottomBar.classList.remove("opened");
-    }
-}
-
 const bottomBar_contents = d.createElement("div");
 const sortList_topContents = d.createElement("div");
 const sortList_topBar = d.createElement("div");
@@ -477,35 +784,6 @@ let loadModel;
 
     sortList_tabs.className = "tabs";
 
-    function tabClassUpdate (tabIndex) {
-        const tabs = sortList_tabs.querySelectorAll(".tab");
-        tabs.forEach(tab => {
-            tab.classList.remove("selected");
-        });
-        tabs[tabIndex].classList.add("selected");
-
-        const contents = exhibitsBottomBar.querySelectorAll(".content > div");
-        contents.forEach(content => {
-            content.classList.remove("nowShow");
-        });
-        contents[tabIndex].classList.add("nowShow");
-    }
-
-    function tabClicked (tabIndex) {
-        bottomBar_contents.scrollTo({
-            top: 0,
-            left: tabIndex * bottomBar_contents.scrollWidth,
-            behavior: "smooth"
-        });
-        tabClassUpdate(tabIndex);
-        barHeightUpdate(true);
-
-        if (loadModel && tabIndex === 1 && !window.modelLoaded) {
-            window.modelLoaded = true;
-            loadModel();
-        }
-    }
-
     [
         "絞り込み",
         "地図",
@@ -515,12 +793,12 @@ let loadModel;
         tab.className = "tab";
         tab.innerHTML = item;
 
-        tab.addEventListener("click", () => tabClicked(index));
+        tab.addEventListener("click", () => barTabClicked(index));
 
         sortList_tabs.appendChild(tab);
 
         if (index === 0) setTimeout(() => {
-            tabClicked(index);
+            barTabClicked(index);
         });
     });
 
@@ -533,7 +811,7 @@ let loadModel;
         }
         const tabIndex = Math.round(getScrollRatio());
         if (!isBarTouchNow && getScrollRatio() % 1 === 0) {
-            tabClicked(tabIndex);
+            barTabClicked(tabIndex);
         }
         barHeightUpdate();
     }
@@ -581,7 +859,7 @@ let loadModel;
 
         function generateCheckBox () {
             const checkBox = d.createElement("div");
-            checkBox.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg"><path d="M239.48,469.289 L416.256,646.066 L840.52,221.802"/></svg>`;
+            checkBox.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="anim"><path d="M239.48,469.289 L416.256,646.066 L840.52,221.802"/></svg>`;
             checkBox.className = "checkBox";
             newTag.appendChild(checkBox);
             setPathViewBox();
@@ -650,20 +928,16 @@ let loadModel;
     updateSort();
 
     (() => { // mapsView
-        const mapsView = d.createElement("div");
-        const labelsArea = d.createElement("div");
         bottomBar_contents.appendChild(mapsView);
         const compassBar = d.createElement("div");
         const compass = d.createElement("div");
         
-        const buttons_right = d.createElement("div");
-        buttons_right.className = "buttons right";
+        maps_buttons_right.className = "buttons right";
 
-        const buttons_left = d.createElement("div");
-        buttons_left.className = "buttons left";
+        maps_buttons_left.className = "buttons left";
         
         mapsView.className = "mapsView";
-        labelsArea.className = "labelsArea";
+        maps_labelsArea.className = "labelsArea";
         compassBar.className = "compassBar";
         compass.className = "compass";
         
@@ -672,26 +946,12 @@ let loadModel;
         const scene = new THREE.Scene();
         scene.background = null; // 背景色
 
-        const aspect = window.innerWidth / window.innerHeight;
-        const cameraSize = 1.2; // 表示範囲の大きさ（好みで調整）
-
-        // カメラ
-        const camera = new THREE.OrthographicCamera(
-            -cameraSize * aspect,  // left
-            cameraSize * aspect,   // right
-            cameraSize,            // top
-            -cameraSize,           // bottom
-            0.1,                   // near
-            1000                   // far
-        );
-
-        const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
-        renderer.setPixelRatio(window.devicePixelRatio * .9);
-        renderer.shadowMap.enabled = false;
-        renderer.setPixelRatio(window.devicePixelRatio * .9);
+        maps_renderer.setPixelRatio(window.devicePixelRatio * .9);
+        maps_renderer.shadowMap.enabled = false;
+        maps_renderer.setPixelRatio(window.devicePixelRatio * .9);
 
         // 描画領域を mapsView に追加
-        mapsView.appendChild(renderer.domElement);
+        mapsView.appendChild(maps_renderer.domElement);
 
         // 照明
         const latitude = 35.86059681776511;
@@ -734,25 +994,18 @@ let loadModel;
         let camHorizontal = 0;     // 左右角度（度単位）
         let camVertical = 0;   // 垂直角度（度単位）
 
-        camera.position.set(
+        maps_camera.position.set(
             cameraDistance,
             cameraHeight,
             cameraDistance
         );
-        camera.lookAt(0, 0, 0);
-
-        let modelParts;
+        maps_camera.lookAt(0, 0, 0);
 
         // 3Dモデル読み込み
         const loader = new GLTFLoader();
         let model; // モデルを外で保持
         
-        function getFloor (name) {
-            const regex = /F(\d+)_/g; // gフラグで全マッチ取得
-            const matches = [...name.matchAll(regex)];
-            return matches.map(match => Number(match[1]));
-        }
-        const getFmtedObjName = (name) => name.replace("F" + getFloor(name) + "_", "");
+        const getFmtedObjName = (name) => name.replace("F" + maps_getFloor(name) + "_", "");
 
         loadModel = () => {
             loader.load(
@@ -766,19 +1019,23 @@ let loadModel;
 
                     // モデルが読み込まれたら OrbitControls の注視点をモデル中心に設定
                     function setCamFocus(x = 0, y = 0, z = 0) {
-                        controls.target.set(x, y, z);
-                        controls.update();
+                        maps_controls.target.set(x, y, z);
+                        maps_controls.update();
                     }
 
                     setCamFocus(0, 0, 0);
 
-                    // パーツを一括で取得
-                    modelParts = {};
+                    maps_controls.enableDamping = true; // 慣性スクロール
+                    maps_controls.enableRotate = true;
+                    maps_controls.enableZoom = true;
+                    maps_controls.enablePan = true;
+                    maps_controls.dampingFactor = 0.05;
+                    maps_controls.screenSpacePanning = false;
 
                     const mergeObjs = [];
                     model.traverse((child) => {
                         if (child.isMesh) {
-                            modelParts[child.name] = child;
+                            maps_modelParts[child.name] = child;
                             child.castShadow = false;
                             child.receiveShadow = false;
                         }
@@ -857,13 +1114,13 @@ let loadModel;
                     mergeObjs.forEach(item => {
                         item.parent.add(item.merged);
                         item.parent.remove(item.original);
-                        modelParts[item.original.name] = item.merged;
+                        maps_modelParts[item.original.name] = item.merged;
                     });
 
-                    console.log("パーツ一覧:", modelParts);
+                    console.log("パーツ一覧:", maps_modelParts);
 
                     // エッジ線を追加（親レベルのメッシュのみ、子メッシュの内部構造は無視）
-                    Object.values(modelParts).forEach((mesh) => {
+                    Object.values(maps_modelParts).forEach((mesh) => {
                         if (mesh.isMesh && mesh.parent && mesh.parent.type === "Group") {
                             const edges = new THREE.EdgesGeometry(mesh.geometry, 15); // 境界角度閾値
                             const line = new THREE.LineSegments(
@@ -930,110 +1187,17 @@ let loadModel;
                         });
                     }
 
-                    const mapPointIcon = '<img src="medias/images/mapPoint.svg"/>';
-
-                    const locations = {
-                        F1_J1_1: exhibits.J1_1,
-                        F1_J1_2: exhibits.J1_2,
-                        F1_J1_3: exhibits.J1_3,
-
-                        F1_H1_1: {
-                            name: "テスト文"
-                        },
-                        F1_H1_2: {
-                            name: "テスト文"
-                        },
-                        F1_H1_3: {
-                            name: "テスト文"
-                        },
-                        F1_H1_4: {
-                            name: "テスト文"
-                        },
-                        F1_H1_5: {
-                            name: "テスト文"
-                        },
-                        F1_H1_6: {
-                            name: "テスト文"
-                        },
-                        F1_H1_7: {
-                            name: "テスト文"
-                        },
-
-                        F2_J2_1: exhibits.J2_1,
-                        F2_J2_2: exhibits.J2_2,
-                        F2_J2_3: exhibits.J2_3,
-
-                        F2_H2_1: {
-                            name: "テスト文"
-                        },
-                        F2_H2_2: {
-                            name: "テスト文"
-                        },
-                        F2_H2_3: {
-                            name: "テスト文"
-                        },
-                        F2_H2_4: {
-                            name: "テスト文"
-                        },
-                        F2_H2_5: {
-                            name: "テスト文"
-                        },
-                        F2_H2_6: {
-                            name: "テスト文"
-                        },
-                        F2_H2_7: {
-                            name: "テスト文"
-                        },
-
-                        F3_J3_1: exhibits.J3_1,
-                        F3_J3_2: exhibits.J3_2,
-                        F3_J3_3: exhibits.J3_3,
-
-                        F3_H3_1: {
-                            name: "テスト文"
-                        },
-                        F3_H3_2: {
-                            name: "テスト文"
-                        },
-                        F3_H3_3: {
-                            name: "テスト文"
-                        },
-                        F3_H3_4: {
-                            name: "テスト文"
-                        },
-                        F3_H3_5: {
-                            name: "テスト文"
-                        },
-                        F3_H3_6: {
-                            name: "テスト文"
-                        },
-                        F3_H3_7: {
-                            name: "テスト文"
-                        },
-
-                        F1_Entrance_Arch: {
-                            name: "入口",
-                            emphasis: true
-                        },
-                        F1_Gym_Entrance: {
-                            name: "体育館",
-                        },
-                        F1_Art: {
-                            name: "美術棟",
-                        },
-                    };
-
                     const labels = {};
-                    Object.keys(modelParts).forEach((partName) => {
-                        const part = modelParts[partName];
+                    Object.keys(maps_modelParts).forEach((partName) => {
+                        const part = maps_modelParts[partName];
                         const label = document.createElement("div");
 
                         // part.material.color.set("lightgreen");
 
                         if (partName.includes("_WC")) {
-                            locations[partName] = {
+                            maps_locations[partName] = {
                                 name: '<img src="medias/images/wc.svg"/>',
-                                description: `トイレ ${getFloor(partName)[0]}階`
+                                description: `トイレ ${maps_getFloor(partName)[0]}階`
                             }
                         }
                         
@@ -1048,24 +1212,24 @@ let loadModel;
                             element.setAttribute("tag", tagAttributes.join(","));
                         }
 
-                        if (locations[partName]) {
+                        if (maps_locations[partName]) {
                             label.className = "mapsLabel";
                             label.setAttribute("exhibits", partName);
 
-                            setTagAttributes(locations[partName].tag, label);
+                            setTagAttributes(maps_locations[partName].tag, label);
 
-                            const isHTMLTag = locations[partName].name.includes("<");
+                            const isHTMLTag = maps_locations[partName].name.includes("<");
 
-                            const titleText = isHTMLTag ? locations[partName].name : truncateText(locations[partName].name);
-                            const descriptionText = locations[partName]?.description;
-                            const locationText = locations[partName]?.location?.name;
+                            const titleText = isHTMLTag ? maps_locations[partName].name : truncateText(maps_locations[partName].name);
+                            const descriptionText = maps_locations[partName]?.description;
+                            const locationText = maps_locations[partName]?.location?.name;
                             const detailTile = exhibitsArea.querySelector(`.tile[exhibits=${getFmtedObjName(partName)}]`);
 
                             if (titleText) {
                                 const title = d.createElement("div");
                                 const text = d.createElement("span");
                                 text.innerHTML = titleText;
-                                title.className = `title${locations[partName].emphasis ? " emphasis" : ""}`;
+                                title.className = `title${maps_locations[partName].emphasis ? " emphasis" : ""}`;
                                 title.appendChild(text);
                                 label.appendChild(title);
                             }
@@ -1105,7 +1269,7 @@ let loadModel;
                                 informations.appendChild(detail);
                             }
 
-                            labelsArea.appendChild(label);
+                            maps_labelsArea.appendChild(label);
                         }
 
                         (() => {
@@ -1124,19 +1288,6 @@ let loadModel;
                     });
 
                     (() => {
-                        function addLabelTransition (label, transitionDuration = .5) {
-                            label.style.setProperty("--duration", `${transitionDuration}s`)
-                            label.classList.add("addTransition");
-                            const onTransitionEnd = (e) => {
-                                if (e.target === label) { // この要素自身のトランジションのみ対象
-                                    setTimeout(() => {
-                                        label.classList.remove("addTransition");
-                                    }, transitionDuration * 1000);
-                                }
-                            };
-                            label.addEventListener("transitionend", onTransitionEnd, { once: true });
-                        }
-
                         function isOverlap(el, x, y) {
                             const rect = el.getBoundingClientRect();
                             return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
@@ -1145,6 +1296,7 @@ let loadModel;
                         // document 全体でタッチやマウスの開始・終了イベントを監視
                         let touchStart = [];
                         let lastHandleEventAt;
+
                         function handleEvent(x, y) {
                             if (Date.now() - lastHandleEventAt < 100) return;
                             
@@ -1162,6 +1314,10 @@ let loadModel;
                                 }
                             });
 
+                            maps_frameObject({
+                                target: maps_modelParts[candidateLabels[0]?.getAttribute("exhibits")]
+                            });
+
                             const topLabel = candidateLabels
                                 .sort((a, b) => 
                                     (parseFloat(getComputedStyle(b).getPropertyValue("--zIndex")) || 0) -
@@ -1173,12 +1329,12 @@ let loadModel;
 
                                 if (labelElement.classList.contains("opened") && labelElement !== topLabel) {
                                     labelElement.classList.remove("opened");
-                                    addLabelTransition(labelElement);
+                                    maps_addLabelTransition(labelElement);
                                 }
                             });
                             if (topLabel) {
                                 topLabel.classList.toggle("opened");
-                                addLabelTransition(topLabel);
+                                maps_addLabelTransition(topLabel);
                             }
 
                             lastHandleEventAt = Date.now();
@@ -1201,7 +1357,7 @@ let loadModel;
 
                     const getFmtedPx = (px) => px.replace("px", "");
                     function updateLabelsPosition() {
-                        const rect = renderer.domElement.getBoundingClientRect();
+                        const rect = maps_renderer.domElement.getBoundingClientRect();
                         Object.values(labels).forEach(({ element, part }, index) => {
                             const vector = new THREE.Vector3();
                             if (part.geometry) {
@@ -1209,12 +1365,12 @@ let loadModel;
                                 part.geometry.boundingBox.getCenter(vector);
                                 part.localToWorld(vector);
                             }
-                            vector.project(camera);
+                            vector.project(maps_camera);
 
                             const widthHalf = rect.width / 2;
                             const heightHalf = rect.height / 2;
 
-                            const camPos = camera.position;
+                            const camPos = maps_camera.position;
                             const objPos = part.userData?.originalTransform?.position.clone() || part.getWorldPosition(new THREE.Vector3());
                             const camDistance = camPos.distanceTo(objPos);
 
@@ -1238,16 +1394,16 @@ let loadModel;
                                 const leftPx = truncate(vector.x * widthHalf + widthHalf - element.offsetWidth / 2);
                                 const topPx  = truncate(-vector.y * heightHalf + heightHalf - element.offsetHeight / 2);
                                 if (
-                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > .6
+                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > .1
                                 ) {
                                     element.style.setProperty("--leftPx", leftPx + "px");
                                 }
                                 if (
-                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > .6
+                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > .1
                                 ) {
                                     element.style.setProperty("--topPx", topPx + "px");
                                 }
-                                if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > .01) {
+                                if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > .1) {
                                     element.style.setProperty("--camDistance", camDistance);
                                 }
 
@@ -1316,8 +1472,8 @@ let loadModel;
                     // 描画ループ
                     function animate() {
                         requestAnimationFrame(animate);
-                        controls.update();
-                        renderer.render(scene, camera);
+                        maps_controls.update();
+                        maps_renderer.render(scene, maps_camera);
                     }
                     animate();
 
@@ -1461,34 +1617,20 @@ let loadModel;
                     let lastLabelUpdate = 0;
 
                     // パン操作時にモデルから離れすぎないように制限
-                    controls.addEventListener("change", () => {
+                    maps_controls.addEventListener("change", () => {
+                        if (
+                            Array.from(sortList_tabs.children).findIndex(child => child.classList.contains("selected")) !== 1 ||
+                            !exhibitsBottomBar.classList.contains("opened")
+                        ) return;
                         const now = Date.now();
 
-                        camera.zoom = THREE.MathUtils.clamp(camera.zoom, .6, 5);
-                        camera.updateProjectionMatrix();
+                        maps_camera.zoom = THREE.MathUtils.clamp(maps_camera.zoom, .6, 5);
+                        maps_camera.updateProjectionMatrix();
 
                         (() => {
-                            function cameraPan({
-                                x: targetX = targetOffset.x,
-                                z: targetZ = targetOffset.z,
-                                duration: duration = 1
-                            }) {
-                                // 現在のカメラとターゲットの差分ベクトル
-                                const offset = new THREE.Vector3().subVectors(camera.position, controls.target);
-
-                                // ターゲットを指定位置に移動
-                                controls.target.set(targetX, controls.target.y, targetZ);
-
-                                // カメラの位置もターゲットに対して同じオフセットで移動
-                                camera.position.copy(controls.target).add(offset);
-
-                                // controlsを更新
-                                controls.update();
-                            }
-
-                            const targetOffset = controls.target.clone();
+                            const targetOffset = maps_controls.target.clone();
                             const distance = targetOffset.length();
-                            controls.panSpeed = Math.max(
+                            maps_controls.panSpeed = Math.max(
                                 Math.min(panLimit - distance, 1),
                                 0.25
                             );
@@ -1498,14 +1640,15 @@ let loadModel;
                                 const scale = panLimit / distance;
                                 cameraPan({
                                     x: targetOffset.x * scale,
-                                    z: targetOffset.z * scale
+                                    z: targetOffset.z * scale,
+                                    duration: 0
                                 });
                             }
                         })();
 
                         // カメラの前方向ベクトルを取得
                         const cameraDirection = new THREE.Vector3();
-                        camera.getWorldDirection(cameraDirection);
+                        maps_camera.getWorldDirection(cameraDirection);
 
                         const radToDeg = 180 / Math.PI;
 
@@ -1518,7 +1661,7 @@ let loadModel;
                         // コンパスを回転
                         compass.style.transform = `rotate(${camHorizontal}deg)`;
 
-                        if (now - lastLabelUpdate > 0) {
+                        if (now - lastLabelUpdate > 10) {
                             updateLabelsPosition();
                             lastLabelUpdate = now;
 
@@ -1559,6 +1702,7 @@ let loadModel;
                 }
             );
         };
+        loadModel();
 
         function windowResize() {
             const topMargin = (
@@ -1568,13 +1712,13 @@ let loadModel;
 
             const aspect = mapsView.clientWidth / mapsView.clientHeight;
 
-            camera.left   = -cameraSize * aspect;
-            camera.right  = cameraSize * aspect;
-            camera.top    = cameraSize + topMargin / mapsView.clientHeight * cameraSize * 2; // topMarginをカメラの高さに換算
-            camera.bottom = -cameraSize;
-            camera.updateProjectionMatrix();
+            maps_camera.left   = -maps_cameraSize * aspect;
+            maps_camera.right  = maps_cameraSize * aspect;
+            maps_camera.top    = maps_cameraSize + topMargin / mapsView.clientHeight * maps_cameraSize * 2; // topMarginをカメラの高さに換算
+            maps_camera.bottom = -maps_cameraSize;
+            maps_camera.updateProjectionMatrix();
 
-            renderer.setSize(mapsView.clientWidth, mapsView.clientHeight + topMargin);
+            maps_renderer.setSize(mapsView.clientWidth, mapsView.clientHeight + topMargin);
 
             barHeightUpdate();
         }
@@ -1604,15 +1748,6 @@ let loadModel;
             }
         }
 
-        // OrbitControls 初期化
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true; // 慣性スクロール
-        controls.enableRotate = true;
-        controls.enableZoom = true;
-        controls.enablePan = true;
-        controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
-
         function controlMethodUpdate(options = {}) {
             const {
                 touches = {
@@ -1626,24 +1761,24 @@ let loadModel;
                 }
             } = options;
 
-            controls.touches = touches;
-            controls.mouseButtons = mouseButtons;
+            maps_controls.touches = touches;
+            maps_controls.mouseButtons = mouseButtons;
         }
 
         controlMethodUpdate();
 
         let isShow2DMap = false;
 
-        controls.minDistance = 2;
-        controls.maxDistance = 10;
+        maps_controls.minDistance = 2;
+        maps_controls.maxDistance = 10;
         function setCamAngleLimit(min = 0, max = 85) {
-            controls.minPolarAngle = THREE.MathUtils.degToRad(min);
-            controls.maxPolarAngle = THREE.MathUtils.degToRad(max);
+            maps_controls.minPolarAngle = THREE.MathUtils.degToRad(min);
+            maps_controls.maxPolarAngle = THREE.MathUtils.degToRad(max);
             if (isShow2DMap) {
-                controls.minAzimuthAngle = 0;
+                maps_controls.minAzimuthAngle = 0;
             } else {
-                controls.minAzimuthAngle = -Infinity;
-                controls.maxAzimuthAngle = Infinity;
+                maps_controls.minAzimuthAngle = -Infinity;
+                maps_controls.maxAzimuthAngle = Infinity;
             }
         }
         setCamAngleLimit();
@@ -1659,9 +1794,9 @@ let loadModel;
             // 回転禁止＆慣性無効化
             let prevDamping;
             setTimeout(() => {
-                controls.enableRotate = false;
-                prevDamping = controls.enableDamping;
-                controls.enableDamping = false;
+                maps_controls.enableRotate = false;
+                prevDamping = maps_controls.enableDamping;
+                maps_controls.enableDamping = false;
             }, duration);
 
             const start = { h: camHorizontal, v: camVertical };
@@ -1674,7 +1809,7 @@ let loadModel;
                 camHorizontal = start.h;
                 camVertical = start.v;
 
-                const distance = camera.position.distanceTo(controls.target);
+                const distance = maps_camera.position.distanceTo(maps_controls.target);
                 const spherical = new THREE.Spherical(
                     distance,
                     THREE.MathUtils.degToRad(90 - camVertical),
@@ -1682,16 +1817,16 @@ let loadModel;
                 );
                 const offset = new THREE.Vector3().setFromSpherical(spherical);
 
-                camera.position.copy(controls.target.clone().add(offset));
-                controls.update();
+                maps_camera.position.copy(maps_controls.target.clone().add(offset));
+                maps_controls.update();
             }
 
             function onComplete() {
                 // 回転と慣性を元に戻す
-                controls.enableRotate = !isShow2DMap;
-                controls.enableDamping = prevDamping;
+                maps_controls.enableRotate = !isShow2DMap;
+                maps_controls.enableDamping = prevDamping;
                 if (finish) finish();
-                controls.update();
+                maps_controls.update();
             }
 
             if (duration === 0 || !gsap || typeof gsap === "undefined") {
@@ -1753,7 +1888,7 @@ let loadModel;
                     });
                     return;
                 } */
-                const allButtons = buttons_left.querySelectorAll(".button");
+                const allButtons = maps_buttons_left.querySelectorAll(".button");
 
                 const isOnlyValid = !button.classList.contains("invalid") &&
                     [...allButtons].every(b => b === button || b.classList.contains("invalid"));
@@ -1770,14 +1905,14 @@ let loadModel;
                 }
 
                 // アクティブフロアを配列で取得
-                const activeFloors = [...buttons_left.querySelectorAll(".button")]
+                const activeFloors = [...maps_buttons_left.querySelectorAll(".button")]
                     .filter(btn => !btn.classList.contains("invalid"))
                     .map(btn => btn.getAttribute("floor").replaceAll("f", "") * 1);
 
-                Object.values(modelParts).forEach(part => {
+                Object.values(maps_modelParts).forEach(part => {
                     const isPartActive = (
-                        getFloor(part.name)[0] ?
-                        getFloor(part.name).some(floorNum => activeFloors.includes(floorNum)) :
+                        maps_getFloor(part.name)[0] ?
+                        maps_getFloor(part.name).some(floorNum => activeFloors.includes(floorNum)) :
                         !( (!isOnlyValid || isShow2DMap) && (
                             part.name.includes("Roof") ||
                             part.name.includes("Curve")
@@ -1796,10 +1931,6 @@ let loadModel;
                         part.material.depthWrite = isPartActive;
                     }
 
-                    // パーツがどのフロアに属するかを判定
-                    // const isPartActive = exhibits[part.name] ? activeFloors.includes(exhibits[part.name]?.location.floor) : true;
-
-                    // part.visible = isPartActive;
                     gsap.to(part.material, {
                         duration: 0.5,
                         opacity: isPartActive ? 1 : .05,
@@ -1811,7 +1942,7 @@ let loadModel;
                 });
             });
             
-            buttons_left.appendChild(button);
+            maps_buttons_left.appendChild(button);
         });
 
         const getCamHorizontalSnap = (horizontal) => Math.round(Math.round(horizontal / 45) * 45);
@@ -1851,25 +1982,17 @@ let loadModel;
                     });
                     controlMethodUpdate();
                 }
-                const floorButtons = buttons_left.querySelectorAll("div.button");
-                if (
-                    Array.from(floorButtons)
-                       .every(btn => !btn.classList.contains("invalid"))
-                ) {
-                    floorButtons.forEach((button, index, arr) => {
-                        if (index === arr.length - 1) button.click();
-                    });
-                }
+                if (get_isEveryFloorValid()) maps_changeFloor(1);
             });
 
-            buttons_right.appendChild(compass);
-            buttons_right.appendChild(button_dimension);
+            maps_buttons_right.appendChild(compass);
+            maps_buttons_right.appendChild(button_dimension);
         })();
 
         // mapsView.appendChild(compassBar);
-        mapsView.appendChild(labelsArea);
-        mapsView.appendChild(buttons_left);
-        mapsView.appendChild(buttons_right);
+        mapsView.appendChild(maps_labelsArea);
+        mapsView.appendChild(maps_buttons_left);
+        mapsView.appendChild(maps_buttons_right);
     })();
 })();
 
@@ -1922,10 +2045,15 @@ let loadModel;
 
     let lastTouchendTime = Date.now();
 
+    function barTransitionUpdate () {
+        exhibitsBottomBar.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}height .4s ease-out, width .4s ease-out`;
+    }
+    barTransitionUpdate();
+
     function touchend (e) {
         exhibitsBottomBar.classList.remove("nowBeingHeld");
         if (Date.now() - lastTouchendTime < 50) return;
-        exhibitsBottomBar.style.transition = `${sortListTransition === "" || sortListTransition === "none" ? "" : `${sortListTransition}, `}height .4s ease-out, width .4s ease-out`;
+        barTransitionUpdate();
         const isNowOpen = exhibitsBottomBar.classList.contains("opened");
         console.log("isNowOpen : ", isNowOpen);
         if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {

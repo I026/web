@@ -103,9 +103,11 @@ svg path, svg rect {
     stroke-width: 3;
     opacity: 0;
     stroke-dasharray: var(--pathLength);
+    transform-origin: 50% 50%;
+}
+svg.anim path, svg.anim rect {
     stroke-dashoffset: var(--pathLength);
     animation: drawPath 1.25s ease-in-out both;
-    transform-origin: 50% 50%;
 }
 .content.top svg {
     width: 100vw;
@@ -337,20 +339,18 @@ svg path, svg rect {
     transition:
     background-color .5s ease-in-out;
 }
-.checkBox svg {
-    overflow: visible;
-}
 .checkedBox .checkBox {
     position: relative;
     opacity: 1;
     background-color: lightgray;
     overflow: hidden;
 }
-.checkBox svg {
+.checkBox svg.anim {
+    overflow: visible;
     position: absolute;
     transform: translateY(10%);
 }
-.checkBox svg path {
+.checkBox svg.anim path {
     transform: scale(1.25) translate(1%, -1%);
     stroke: black;
     animation: none !important;
@@ -358,7 +358,7 @@ svg path, svg rect {
     stroke-dashoffset: var(--pathLength) !important;
     stroke-width: 125;
 }
-.checkedBox .checkBox svg path {
+.checkedBox .checkBox svg.anim path {
     stroke-dashoffset: 0 !important;
 }
 .checkedBox {
