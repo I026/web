@@ -398,7 +398,6 @@
         min(100vh - 200px, 1000px)
     );
     /* height: calc(var(--bottomBarHeight) + var(--topMargin)); */
-    padding-bottom: 0;
     /* height: min(
         calc(100vh - var(--topMargin))
     ); */
@@ -406,6 +405,7 @@
         var(--bottomBarHeight) - var(--topMargin)
     ); */
     /* height: fit-content; */
+    padding-bottom: 0;
     bottom: 0;
     user-select: none;
 }
