@@ -742,7 +742,7 @@
     margin: 0;
     right: 5px;
     top: 0;
-    --arrowScale: 1.4em;
+    --arrowScale: 1.6em;
     min-height: var(--arrowScale) !important;
     min-width: var(--arrowScale) !important;
     height: var(--arrowScale) !important;
@@ -788,16 +788,14 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: flex-start;
+    align-items: flex-end;
     width: 100%;
     pointer-events: none;
-    --buttonsHeight: 70px;
+    --buttonsHeight: 2.19em;
     height: min-content;
-    top: auto !important;
-    bottom: 5px !important;
-    /* top: calc(
-        var(--bottomBarHeight) - var(--topMargin) - var(--buttonsHeight)
-    ); */
+    top: calc(
+        var(--bottomBarHeight) - var(--topMargin) - var(--buttonsHeight) - 3.5px
+    );
 }
 @keyframes showText {
     0% {
@@ -813,6 +811,7 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    bottom: 0;
     flex-shrink: 0;
     margin: 0;
 }

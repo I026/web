@@ -414,7 +414,7 @@ function tabClassUpdate (tabIndex) {
     contents[tabIndex].classList.add("nowShow");
 }
 
-function barTabClicked (tabIndex) {
+function barTabClick (tabIndex) {
     bottomBar_contents.scrollTo({
         top: 0,
         left: tabIndex * bottomBar_contents.scrollWidth,
@@ -659,7 +659,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     })();
     location.addEventListener("click", e => {
         e.stopPropagation();
-        barTabClicked(1);
+        barTabClick(1);
         Object.values(maps_locations).forEach((item, index) => {
             if (getExhibits(i)[1] === item) {
                 const targetObj = maps_modelParts[Object.keys(maps_locations)[index]];
@@ -845,12 +845,12 @@ let loadModel;
         tab.className = "tab";
         tab.innerHTML = item;
 
-        tab.addEventListener("click", () => barTabClicked(index));
+        tab.addEventListener("click", () => barTabClick(index));
 
         sortList_tabs.appendChild(tab);
 
         if (index === 0) setTimeout(() => {
-            barTabClicked(index);
+            barTabClick(index);
         });
     });
 
@@ -863,7 +863,7 @@ let loadModel;
         }
         const tabIndex = Math.round(getScrollRatio());
         if (!isBarTouchNow && getScrollRatio() % 1 === 0) {
-            barTabClicked(tabIndex);
+            barTabClick(tabIndex);
         }
         barHeightUpdate();
     }
@@ -1942,7 +1942,7 @@ let loadModel;
 
             maps_renderer.setSize(mapsView.clientWidth, mapsView.clientHeight + topMargin);
 
-            barHeightUpdate();
+            barHeightUpdate(false);
         }
 
         windowResize();
