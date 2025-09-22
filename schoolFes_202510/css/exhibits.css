@@ -536,7 +536,7 @@
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow {
     --arrowScale: 1em;
-    opacity: .5;
+    opacity: 1;
     overflow: visible;
     font-size: .5em;
     z-index: 10001;
