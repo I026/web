@@ -540,6 +540,7 @@
     overflow: visible;
     font-size: .5em;
     z-index: 10001;
+    box-shadow: 0 0 10px gray;
     transition: font-size var(--transitionDuration) ease-out;
     /* animation: label_edgeAnim .5s infinite; */
     /* margin-right: calc(var(--arrowScale) * 1); */
@@ -556,7 +557,8 @@
     opacity: 1;
     width : var(--arrowScale);
     height: var(--arrowScale);
-    background-color: rgba(211, 211, 211, .25);
+    box-shadow: 0 0 10px gray;
+    background-color: rgba(211, 211, 211, .75);
     /* background-color: transparent; */
     color: black;
 }
