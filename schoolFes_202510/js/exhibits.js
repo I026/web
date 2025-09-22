@@ -1495,14 +1495,14 @@ let loadModel;
                             lastHandleEventAt = Date.now();
                         }
 
-                        document.addEventListener("mousedown", (e) => touchStart = [e.clientX, e.clientY]);
-                        document.addEventListener("mouseup", (e) => handleEvent(e.clientX, e.clientY));
+                        d.addEventListener("mousedown", (e) => touchStart = [e.clientX, e.clientY]);
+                        d.addEventListener("mouseup", (e) => handleEvent(e.clientX, e.clientY));
 
-                        document.addEventListener("touchstart", (e) => {
+                        d.addEventListener("touchstart", (e) => {
                             const touch = e.touches[0];
                             touchStart = [touch.clientX, touch.clientY];
                         });
-                        document.addEventListener("touchend", (e) => {
+                        d.addEventListener("touchend", (e) => {
                             const touch = e.changedTouches[0];
                             handleEvent(touch.clientX, touch.clientY);
                         });
