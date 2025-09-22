@@ -474,7 +474,7 @@
     /* font-size: var(--fontSize); */
     font-size: max(min(
         calc(
-            max(max(.6vw, .6vh), .2em) * var(--camZoom)
+            min(max(max(.6vw, .6vh), .2em), .65em) * var(--camZoom)
         ),
         1em
     ), 0em);
