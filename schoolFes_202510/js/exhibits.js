@@ -1872,7 +1872,7 @@ let loadModel;
                         // コンパスを回転
                         compass.style.transform = `rotate(${camHorizontal}deg)`;
 
-                        if (now - lastLabelUpdate > 5) {
+                        if (now - lastLabelUpdate > 50) {
                             updateLabelsPosition();
                             lastLabelUpdate = now;
 
