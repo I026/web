@@ -695,7 +695,8 @@
     height: var(--arrowScale);
     width: var(--arrowScale);
     border-radius: var(--arrowScale);
-    background-color: rgba(211, 211, 211, .25);
+    /* background-color: rgba(211, 211, 211, .25); */
+    background-color: lightgray;
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);
 }
@@ -762,6 +763,7 @@
     min-width: 2.5em;
     text-align: center;
     position: relative;
+    background-color: lightgray;
     transition:
     opacity .5s ease-in-out,
     box-shadow .5s ease-in-out;
