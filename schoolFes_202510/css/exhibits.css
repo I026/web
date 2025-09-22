@@ -685,9 +685,7 @@
     display: flex;
     align-items: center;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel:not(.opened) .informations {
-    display: none;
-}
+
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .title span {
     display: flex;
 }
