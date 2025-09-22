@@ -1514,7 +1514,8 @@ let loadModel;
 
                     const getFmtedPx = (px) => px.replace("px", "");
                     function updateLabelsPosition() {
-                        const rect = maps_renderer.domElement.getBoundingClientRect();
+                        const mapsView_rect = mapsView.getBoundingClientRect();
+                        const maps_renderer_rect = maps_renderer.domElement.getBoundingClientRect();
                         Object.values(labels).forEach(({ element, part }, index) => {
                             const vector = new THREE.Vector3();
                             if (part.geometry) {
@@ -1533,8 +1534,8 @@ let loadModel;
 
                             vector.project(maps_camera);
 
-                            const rectWidthHalf  = rect.width  / 2;
-                            const rectHeightHalf = rect.height / 2;
+                            const rectWidthHalf  = maps_renderer_rect.width  / 2;
+                            const rectHeightHalf = maps_renderer_rect.height / 2;
 
                             const camPos = maps_camera.position;
                             const objPos = part.userData?.originalTransform?.position.clone() || part.getWorldPosition(new THREE.Vector3());
@@ -1605,14 +1606,14 @@ let loadModel;
                                 if (isAlwaysShow) {
                                     leftPx = min(
                                         max(leftPx, margin),
-                                        rect.width - element.offsetWidth - margin
+                                        mapsView_rect.width - element.offsetWidth - margin
                                     );
                                 }
                                 const originalTopPx = topPx;
                                 if (isAlwaysShow) {
                                     topPx = min(
                                         max(topPx, (areaTopMargin + 100) + margin),
-                                        rect.height - element.offsetHeight - margin - 50
+                                        mapsView_rect.height - element.offsetHeight - margin + 30
                                     );
                                 }
                                 const difference = {
@@ -2267,8 +2268,9 @@ let loadModel;
         ) isHolded = true;
 
         difference = [touchStartPos[0] - currentPos[0], touchStartPos[1] - currentPos[1]];
+        const bottomBarHeight = touchStart_height + difference[1] + (difference[1] < 0 ? holdStartThreshold : -holdStartThreshold);
         if (isHolded) {
-            exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${touchStart_height + difference[1] + (difference[1] < 0 ? holdStartThreshold : -holdStartThreshold)}px`);
+            exhibitsBottomBar.style.setProperty("--bottomBarHeight", `${bottomBarHeight}px`);
         }
     });
 
