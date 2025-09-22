@@ -525,17 +525,19 @@
     opacity: 1;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.right .arrow {
-    left: calc(var(--arrowScale) * -1 - 10px);
+    /* left: calc(var(--arrowScale) * -1 - 10px); */
+    top: calc(var(--arrowScale) * -1 - 10px);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.left .arrow {
-    right: calc(var(--arrowScale) * -1 - 10px);
+    /* right: calc(var(--arrowScale) * -1 - 10px); */
+    top: calc(var(--arrowScale) * -1 - 10px);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge:not(.alwaysShow) {
     display: none !important;
     opacity: 0;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow {
-    --arrowScale: 1em;
+    --arrowScale: 25px;
     opacity: 1;
     overflow: visible;
     font-size: .5em;

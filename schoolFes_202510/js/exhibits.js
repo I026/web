@@ -1608,7 +1608,7 @@ let loadModel;
                                 const originalTopPx = topPx;
                                 if (isAlwaysShow) {
                                     topPx = min(
-                                        max(topPx, areaTopMargin + margin),
+                                        max(topPx, (areaTopMargin + 35) + margin),
                                         rect.height - element.offsetHeight - margin
                                     );
                                 }
