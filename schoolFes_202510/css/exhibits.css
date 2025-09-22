@@ -395,17 +395,28 @@
 }
 
 .content.main .exhibits .tile .content > .mapsView {
-    height: calc(80vh - 95px);
+    height: calc(
+        min(100vh - 200px, 1000px)
+    );
+    /* height: calc(100vh - 200px); */
+    padding-bottom: 0;
+    /* height: min(
+        calc(100vh - var(--topMargin))
+    ); */
+    /* height: calc(
+        var(--bottomBarHeight) - var(--topMargin)
+    ); */
+    /* height: fit-content; */
     bottom: 0;
     user-select: none;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea {
     pointer-events: none;
-    /* height: calc(100% + var(--topMargin)); */
-    height: calc(
+    height: calc(100% + var(--topMargin));
+    /* height: calc(
         var(--bottomBarHeight) + var(--topMargin)
-    );
+    ); */
     width: 100%;
     overflow: hidden;
 }
@@ -524,6 +535,12 @@
     /* transform: translateX(3.5em); */
     opacity: 1;
 }
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.right {
+    align-items: flex-end;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.left {
+    align-items: flex-start;
+}
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.right .arrow {
     /* left: calc(var(--arrowScale) * -1 - 10px); */
     top: calc(var(--arrowScale) * -1 - 10px);
@@ -537,7 +554,7 @@
     opacity: 0;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow {
-    --arrowScale: 25px;
+    /* --arrowScale: 25px; */
     opacity: 1;
     overflow: visible;
     font-size: .5em;
@@ -571,12 +588,19 @@
 @keyframes arrowPath {
     from {
         stroke-dashoffset: var(--pathLength);
+        opacity: 0;
     }
-    50% {
+    25% {
         stroke-dashoffset: 0;
+        opacity: 1;
+    }
+    75% {
+        stroke-dashoffset: 0;
+        opacity: 1;
     }
     to {
-        stroke-dashoffset: var(--pathLength_minus);
+        /* stroke-dashoffset: var(--pathLength_minus); */
+        opacity: 0;
     }
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow .arrow svg path {
@@ -585,7 +609,8 @@
          10%,
         -10%
     );
-    animation: arrowPath 2s ease-in-out infinite;
+    /* animation: arrowPath 4s ease-in-out infinite; */
+    animation: arrowPath 4s ease-in-out;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .cancelBtn {
     position: absolute;
@@ -712,23 +737,24 @@
 }
 
 .content.main .exhibits .tile .content .compass {
-    position: absolute;
-    right: 5px;
+    position: absolute !important;
     padding: 0;
     margin: 0;
-    --arrowScale: 3em;
-    bottom: calc(-1 * var(--arrowScale) - 10px);
-    height: var(--arrowScale);
-    width: var(--arrowScale);
+    right: 5px;
+    top: 0;
+    --arrowScale: 1.4em;
+    min-height: var(--arrowScale) !important;
+    min-width: var(--arrowScale) !important;
+    height: var(--arrowScale) !important;
+    width: var(--arrowScale) !important;
     border-radius: var(--arrowScale);
-    /* background-color: rgba(211, 211, 211, .25); */
-    background-color: lightgray;
-    backdrop-filter: blur(10px);
-    --webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .content.main .exhibits .tile .content .compass img {
-    width: 100%;
-    height: 100%;
+    width : 110%;
+    height: 110%;
 }
 .content.main .exhibits .tile .content .compassBar {
     position: absolute;
@@ -754,19 +780,24 @@
 }
 .content.main .exhibits .tile .content .buttons.left {
     left: 5px;
+    flex-direction: row-reverse;
     justify-content: flex-start;
 }
 .content.main .exhibits .tile .content .buttons.top {
     position: absolute;
     display: flex;
-    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
     width: 100%;
     pointer-events: none;
-    --buttonsHeight: 80px;
-    height: var(--buttonsHeight);
-    top: calc(
-        var(--bottomBarHeight) - var(--topMargin) - var(--buttonsHeight) * .7
-    );
+    --buttonsHeight: 70px;
+    height: min-content;
+    top: auto !important;
+    bottom: 5px !important;
+    /* top: calc(
+        var(--bottomBarHeight) - var(--topMargin) - var(--buttonsHeight)
+    ); */
 }
 @keyframes showText {
     0% {
@@ -782,23 +813,48 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    flex-shrink: 0;
+    margin: 0;
 }
 .content.main .exhibits .tile .content .buttons .button {
     padding: 5px;
-    margin: 5px;
+    margin: 2.5px;
+    border-radius: .5em;
     min-width: 2.5em;
     text-align: center;
     position: relative;
-    background-color: lightgray;
+    background-color: white;
+    --maxBorderRadius: .75em;
     transition:
     opacity .5s ease-in-out,
     box-shadow .5s ease-in-out;
 }
+
+.content.main .exhibits .tile .content .buttons.right .button:first-child {
+    border-top-left-radius : var(--maxBorderRadius);
+    border-top-right-radius: var(--maxBorderRadius);
+}
+.content.main .exhibits .tile .content .buttons.right .button:last-child {
+    border-bottom-left-radius : var(--maxBorderRadius);
+    border-bottom-right-radius: var(--maxBorderRadius);
+}
+
+.content.main .exhibits .tile .content .buttons.left .button:first-child {
+    border-top-right-radius: var(--maxBorderRadius);
+    border-bottom-right-radius: var(--maxBorderRadius);
+}
+.content.main .exhibits .tile .content .buttons.left .button:last-child {
+    border-top-left-radius : var(--maxBorderRadius);
+    border-bottom-left-radius : var(--maxBorderRadius);
+}
+.content.main .exhibits .tile .content .buttons.top .button {
+    border-radius : var(--maxBorderRadius);
+}
+
 .content.main .exhibits .tile .content .buttons .button.invalid {
     opacity: .5;
     box-shadow: none;
 }
-
 .content.main .exhibits .tile .content > div canvas {
     position: absolute;
     bottom: 0;

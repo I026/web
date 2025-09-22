@@ -1027,9 +1027,11 @@ let loadModel;
         mapsView.className = "mapsView";
         maps_labelsArea.className = "labelsArea";
         compassBar.className = "compassBar";
-        compass.className = "compass";
+        compass.className = "compass button";
         
-        compass.innerHTML = '<img src="medias/images/compass.svg"/>';
+        const compassImg = d.createElement("img");
+        compassImg.src = "medias/images/compass.svg";
+        compass.appendChild(compassImg);
 
         const scene = new THREE.Scene();
         scene.background = null; // 背景色
@@ -1527,6 +1529,8 @@ let loadModel;
 
                                 part.localToWorld(vector);
                             }
+                            const isAlwaysShow = maps_locations[part.name]?.isAlwaysShow || false;
+
                             vector.project(maps_camera);
 
                             const rectWidthHalf  = rect.width  / 2;
@@ -1536,7 +1540,7 @@ let loadModel;
                             const objPos = part.userData?.originalTransform?.position.clone() || part.getWorldPosition(new THREE.Vector3());
                             const camDistance = camPos.distanceTo(objPos);
 
-                            if (gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1) {
+                            if ((gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1) || isAlwaysShow) {
                                 if (getIsSortConforming(element, getSortConditions())) {
                                     if (element.classList.contains("invalid")) element.classList.remove("invalid");
                                 } else {
@@ -1589,7 +1593,6 @@ let loadModel;
                                     element.style.setProperty(labelHeightProperty, labelHeight + "px");
                                 }
 
-                                const isAlwaysShow = maps_locations[part.name]?.isAlwaysShow || false;
                                 let leftPx = Math.floor(truncate( vector.x * rectWidthHalf  + rectWidthHalf  - element.offsetWidth  / 2) * 100) / 100;
                                 let topPx  = Math.floor(truncate(-vector.y * rectHeightHalf + rectHeightHalf - element.offsetHeight / 2) * 100) / 100;
                                 const max = Math.max;
@@ -1608,8 +1611,8 @@ let loadModel;
                                 const originalTopPx = topPx;
                                 if (isAlwaysShow) {
                                     topPx = min(
-                                        max(topPx, (areaTopMargin + 35) + margin),
-                                        rect.height - element.offsetHeight - margin
+                                        max(topPx, (areaTopMargin + 100) + margin),
+                                        rect.height - element.offsetHeight - margin - 50
                                     );
                                 }
                                 const difference = {
@@ -1621,6 +1624,12 @@ let loadModel;
                                     difference.left,
                                     difference.top,
                                 );
+                                element.style.setProperty("--arrowScale", min(
+                                    min(
+                                        Math.abs(difference.left) + Math.abs(difference.top),
+                                    ) * .2,
+                                    35
+                                ) + "px");
                                 element.style.setProperty("--differenceDeg",`${differenceDeg}deg`);
                                 if (originalLeftPx - rectHeightHalf > 0) {
                                     if (!element.classList.contains("right")) {
@@ -1870,7 +1879,7 @@ let loadModel;
                         camVertical = Math.asin(cameraDirection.y) * -radToDeg;
 
                         // コンパスを回転
-                        compass.style.transform = `rotate(${camHorizontal}deg)`;
+                        compassImg.style.transform = `rotate(${camHorizontal}deg)`;
 
                         if (now - lastLabelUpdate > 27.5) {
                             lastLabelUpdate = now;
@@ -2206,8 +2215,8 @@ let loadModel;
                 if (get_isEveryFloorValid()) maps_changeFloor(1);
             });
 
-            maps_buttons_right.appendChild(compass);
             maps_buttons_right.appendChild(button_dimension);
+            maps_buttons_top.appendChild(compass);
         })();
 
         // mapsView.appendChild(compassBar);

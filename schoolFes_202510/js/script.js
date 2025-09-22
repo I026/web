@@ -41,6 +41,31 @@ const titleMap = {
     d.head.appendChild(meta_noindex);
 })();
 
+(() => { // fonts
+    const link_font1 = d.createElement("link");
+    link_font1.rel  = "preconnect";
+    link_font1.href = "https://fonts.googleapis.com";
+
+    const link_font2 = d.createElement("link");
+    link_font2.rel  = "preconnect";
+    link_font2.href = "https://fonts.gstatic.com";
+    link_font2.setAttribute("crossorigin", "");
+
+    const link_font3 = d.createElement("link");
+    link_font3.rel  = "stylesheet";
+    link_font3.href = "https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Outfit:wght@100..900&display=swap";
+
+    /* 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    */
+
+    d.head.appendChild(link_font1);
+    d.head.appendChild(link_font2);
+    d.head.appendChild(link_font3);
+})();
+
 (() => { // favicon
     const link_favicon = d.createElement("link");
     
