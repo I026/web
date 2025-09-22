@@ -105,7 +105,7 @@
     position: absolute;
     right: 10px;
     top: 10px;
-    font-size: .75em;
+    font-size: .8em;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -355,7 +355,7 @@
     ); */
     height: 100%;
     scroll-snap-type: x mandatory;
-    overflow-x: scroll;
+    overflow-x: auto;
     overflow-y: visible;
     display: flex;
     flex-direction: row;
@@ -387,7 +387,6 @@
     height: calc(80vh - 95px);
     bottom: 0;
     user-select: none;
-    transition: height .5s ease-in-out;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea {
@@ -398,6 +397,9 @@
     );
     width: 100%;
     overflow: hidden;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations .location{
+    right: auto;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition {
     transition:
@@ -411,6 +413,8 @@
     --webkit-backdrop-filter var(--duration) ease-out,
     box-shadow               var(--duration) ease-out,
     border-radius            var(--duration) ease-out,
+    font-size                var(--duration) ease-out,
+    color                    var(--duration) ease-out,
     opacity                  var(--duration) ease-out;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition span {
@@ -442,18 +446,32 @@
         10000 - (var(--camDistance) * 10)
     );
     /* font-size: (max(.05vw, .11vh) * .1); */
-    font-size: min(calc(
+    /* --fontSize: min(calc(
         (
             10000 - (var(--camDistance) * 10)
         ) * .000075em
-    ), max(1vw, 1vh));
+    ), max(1vw, 1.5vh)); */
+    --fontSize: min(max(calc(
+        (
+            1000 - (
+                var(--camDistance) * var(--camDistance) * var(--camDistance)
+            )
+        ) * .01em
+    ), max(.9vw, .9vh)), .9em);
+    /* font-size: var(--fontSize); */
+    font-size: max(min(
+        calc(
+            max(.5vw, .5vh) * var(--camZoom)
+        ),
+        1em
+    ), .5em);
     width:  var(--width);
     height: var(--height);
-    background-color: rgba(128, 128, 128, .75);
+    background-color: rgba(128, 128, 128, .9);
     overflow: hidden;
     --transitionDuration: .5s;
     transition:
-    opacity var(--transitionDuration) ease-out;
+    opacity   var(--transitionDuration) ease-out;
     top : var(--topPx);
     left: var(--leftPx);
 }
@@ -483,11 +501,14 @@
     padding: var(--labelPadding);
     border-radius: calc(var(--labelPadding) * 2);
     width:  var(--width);
+    font-size: calc(var(--fontSize) * 1.5);
     height: calc(var(--height) - var(--labelPadding));
     margin-top: calc(var(--height) * -.5);
     z-index: 10001 !important;
     box-shadow: 0 0 10px gray;
     backdrop-filter: blur(10px);
+    color: white;
+    opacity: 1;
     --webkit-backdrop-filter: blur(10px);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations {
@@ -509,6 +530,12 @@
     height: fit-content;
     padding: 0;
     margin: 0;
+    opacity: max(calc(
+        (
+            60 - var(--camDistance) * var(--camDistance) * .5
+        ) * .08
+    ), .1);
+    transition: opacity var(--transitionDuration) ease-in-out;
     display: flex;
     align-items: center;
 }
@@ -519,6 +546,7 @@
     transform: translateX(calc(
         var(--width) * .5 - 50%
     ));
+    opacity: 1;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div img {
@@ -614,10 +642,13 @@
     position: absolute;
     display: flex;
     align-items: center;
-    height: 80px;
     width: 100%;
     pointer-events: none;
-    top: 0;
+    --buttonsHeight: 80px;
+    height: var(--buttonsHeight);
+    top: calc(
+        var(--bottomBarHeight) - var(--topMargin) - var(--buttonsHeight) * .7
+    );
 }
 @keyframes showText {
     0% {
