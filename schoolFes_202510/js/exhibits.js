@@ -1598,7 +1598,7 @@ let loadModel;
                                     // const margin = maps_camera.zoom * 20 + 5;
                                     // const margin = 24;
                                     // const margin = labelWidth;
-                                    const margin = 42;
+                                    const margin = 32;
                                     const originalLeftPx = leftPx;
                                     leftPx = min(
                                         max(leftPx, margin),

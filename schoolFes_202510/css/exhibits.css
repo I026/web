@@ -484,7 +484,8 @@
     overflow: hidden;
     --transitionDuration: .5s;
     transition:
-    opacity var(--transitionDuration) ease-out;
+    opacity var(--transitionDuration) ease-out,
+    font-size var(--transitionDuration) ease-in-out;
     top : var(--topPx);
     left: var(--leftPx);
 }
@@ -521,9 +522,10 @@
     right: calc(var(--arrowScale) * -1 - 5px);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge {
-    --arrowScale: min(calc(var(--height) + 8px), 34px);
+    --arrowScale: 1em;
     opacity: .5;
     overflow: visible;
+    font-size: .5em;
     /* animation: label_edgeAnim .5s infinite; */
     /* margin-right: calc(var(--arrowScale) * 1); */
 }
