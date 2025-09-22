@@ -393,7 +393,6 @@
     top: var(--topMargin);
     /* white-space: normal; */
 }
-
 .content.main .exhibits .tile .content > .mapsView {
     height: calc(
         min(100vh - 200px, 1000px)
@@ -409,6 +408,11 @@
     /* height: fit-content; */
     bottom: 0;
     user-select: none;
+}
+@supports (-webkit-touch-callout: none) {
+    .content.main .exhibits .tile .content > .mapsView {
+        height: calc(100% - var(--topMargin)) !important;
+    }
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea {

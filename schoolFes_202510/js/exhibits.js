@@ -1920,7 +1920,7 @@ let loadModel;
                     console.log((xhr.loaded / xhr.total * 100) + '% loaded');
                 },
                 (error) => {
-                    console.error('モデル読み込みエラー', error);
+                    console.error("モデル読み込みエラー", error);
                 }
             );
         };
