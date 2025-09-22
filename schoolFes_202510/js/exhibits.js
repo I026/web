@@ -2283,7 +2283,9 @@ let loadModel;
 
     function touchend (e) {
         exhibitsBottomBar.classList.remove("nowBeingHeld");
-        if (Date.now() - lastTouchendTime < 50) return;
+        if (Date.now() - lastTouchendTime < (
+            Math.min( Math.max(50, Math.max(1000 - window.innerWidth, 0) * .1), 200 )
+        )) return;
         barTransitionUpdate();
         const isNowOpen = exhibitsBottomBar.classList.contains("opened");
         if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {
