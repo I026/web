@@ -2181,7 +2181,6 @@ let loadModel;
         (() => {
             button_dimension.addEventListener("click", () => {
                 isShow2DMap = !isShow2DMap;
-                mapsView.style.pointerEvents = "none";
                 if (isShow2DMap) {
                     updateCameraAngle({
                         horizontal: getCamHorizontalSnap(camHorizontal),
@@ -2208,7 +2207,6 @@ let loadModel;
                         horizontal: camHorizontal,
                         onComplete: () => {
                             setCamAngleLimit();
-                            mapsView.style.pointerEvents = "auto";
                         }
                     });
                     controlMethodUpdate();
