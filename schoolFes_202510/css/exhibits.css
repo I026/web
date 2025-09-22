@@ -556,7 +556,8 @@
     opacity: 1;
     width : var(--arrowScale);
     height: var(--arrowScale);
-    background-color: var(--labelBackgroundColor);
+    background-color: rgba(211, 211, 211, .25);
+    /* background-color: transparent; */
     color: black;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow .arrow svg {
