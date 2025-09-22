@@ -1943,7 +1943,7 @@ let loadModel;
 
             maps_renderer.setSize(mapsView.clientWidth, mapsView.clientHeight + topMargin);
 
-            barHeightUpdate(false);
+            barHeightUpdate();
         }
 
         windowResize();
