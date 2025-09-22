@@ -484,7 +484,7 @@
     overflow: hidden;
     --transitionDuration: .5s;
     transition:
-    opacity   var(--transitionDuration) ease-out;
+    opacity var(--transitionDuration) ease-out;
     top : var(--topPx);
     left: var(--leftPx);
 }
@@ -623,7 +623,7 @@
         ) * .08
     ), max(calc(
         3 - (var(--camZoom) * var(--camZoom) * .5)
-    ), .05));
+    ), .2));
     transition: opacity var(--transitionDuration) ease-in-out;
     display: flex;
     align-items: center;
