@@ -81,7 +81,9 @@
     opacity: 1;
     pointer-events: none;
 }
-.content.main .exhibits .list .tile.opened::before {
+.content.main .exhibits .list .tile.opened::before,
+.content.main .exhibits .list .tile.hidden::before
+{
     opacity: 0;
 }
 .content.main .exhibits .tile.hidden {
@@ -119,6 +121,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 1.25em;
+    transition: height .5s ease-in-out;
+}
+.content.main .exhibits .tile.hidden .location {
+    height: calc(var(--whenHiddenHeight) / 2 - 10px);
 }
 .content.main .exhibits .tile .location svg {
     position: relative;
