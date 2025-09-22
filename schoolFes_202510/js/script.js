@@ -148,7 +148,7 @@ const titleMap = {
 })();
 
 function setPathViewBox() {
-    const svgs = document.querySelectorAll("svg");
+    const svgs = d.querySelectorAll("svg");
 
     svgs.forEach(svg => {
         svg.querySelectorAll("path").forEach(originalPath => {
@@ -180,6 +180,7 @@ function setPathViewBox() {
 
             // CSS変数に長さをセット
             path.style.setProperty("--pathLength", length);
+            path.style.setProperty("--pathLength_minus", length * -1);
             
             // アニメーションを設定（indexを使って遅延）
             path.style.animationDelay = `${index * 0.05}s`;
@@ -405,9 +406,11 @@ window.addEventListener("DOMContentLoaded", () => {
     // DOM変更を監視
     const observer = new MutationObserver(mutations => {
         for (const mutation of mutations) {
+            // SVG追加時または style/class 変更時に setPathViewBox
             if (
                 [...mutation.addedNodes].some(node => node.nodeName === "SVG" || node.querySelector?.("svg")) ||
-                mutation.target.nodeName === "SVG"
+                mutation.target.nodeName === "SVG" ||
+                (mutation.type === "attributes" && (mutation.attributeName === "style" || mutation.attributeName === "class"))
             ) {
                 setPathViewBox();
                 break;
@@ -418,5 +421,7 @@ window.addEventListener("DOMContentLoaded", () => {
     observer.observe(document.body, {
         childList: true,
         subtree: true,
+        attributes: true,
+        attributeFilter: ["style", "class"],
     });
 });

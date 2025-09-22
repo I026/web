@@ -16,11 +16,15 @@
     margin-bottom: 50vh;
 }
 @keyframes tag_show {
-    0% {
+    from {
         transform: translateX(100px);
         opacity: 0;
     }
-    100% {
+    50% {
+        transform: translateX(-2px);
+        opacity: .9;
+    }
+    to {
         transform: translateX(0);
         opacity: var(--tileOpacity);
     }
@@ -44,7 +48,6 @@
     font-size: 1.2em;
     position: relative;
     overflow: hidden;
-    animation: tag_show .5s backwards;
     transition:
     height  .5s ease-in-out,
     margin  .5s ease-in-out,
@@ -52,6 +55,13 @@
 }
 .content.main .exhibits .list .tile {
     height: var(--baseHeight);
+}
+.content.main .exhibits .list .tile:not(.inVisible) {
+    animation: tag_show 1s ease-out backwards;
+}
+.content.main .exhibits .list .tile.inVisible > div {
+    display: none !important;
+    box-shadow: none;
 }
 .content.main .exhibits .list .tile::before {
     content: "";
@@ -147,6 +157,7 @@
     --topBarHeight: 40px;
     --tabsHeight: 50px;
     --topMargin: calc(var(--topBarHeight) + var(--tabsHeight));
+    margin-top: var(--topMargin);
     touch-action: none;
     position: fixed;
     display: flex;
@@ -430,6 +441,7 @@
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.invalid {
     pointer-events: none;
+    --labelOpacity: .5;
     opacity: var(--labelOpacity);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
@@ -461,13 +473,14 @@
     /* font-size: var(--fontSize); */
     font-size: max(min(
         calc(
-            max(.5vw, .5vh) * var(--camZoom)
+            max(.6vw, .6vh) * var(--camZoom)
         ),
         1em
-    ), .5em);
+    ), 0em);
     width:  var(--width);
     height: var(--height);
-    background-color: rgba(128, 128, 128, .9);
+    --labelBackgroundColor: rgba(128, 128, 128, .9);
+    background-color: var(--labelBackgroundColor);
     overflow: hidden;
     --transitionDuration: .5s;
     transition:
@@ -475,13 +488,87 @@
     top : var(--topPx);
     left: var(--leftPx);
 }
+@keyframes label_edgeAnim {
+    from {
+        transform: translate(0px, 0px) rotate(0deg);
+    }
+    50% {
+        transform: rotate(var(--differenceDeg));
+    }
+    to {
+        transform: translate(0px, 0px) rotate(0deg);
+    }
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .arrow {
+    position: absolute;
+    width : var(--arrowScale);
+    height: var(--arrowScale);
+    font-size: 24px !important;
+    border-radius: var(--arrowScale);
+    display: flex;
+    bottom: 0;
+    flex-shrink: 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity .5s ease-in-out;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.right .arrow {
+    left: calc(var(--arrowScale) * -1 - 5px);
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.left .arrow {
+    right: calc(var(--arrowScale) * -1 - 5px);
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge {
+    --arrowScale: min(calc(var(--height) + 8px), 34px);
+    opacity: .5;
+    overflow: visible;
+    /* animation: label_edgeAnim .5s infinite; */
+    /* margin-right: calc(var(--arrowScale) * 1); */
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge .arrow {
+    transform: rotate(
+        calc(
+            var(--differenceDeg) + 45deg
+        )
+    );
+    opacity: 1;
+    width : var(--arrowScale);
+    height: var(--arrowScale);
+    background-color: var(--labelBackgroundColor);
+    color: black;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge .arrow svg {
+    width : 80%;
+    height: 80%;
+}
+@keyframes arrowPath {
+    from {
+        stroke-dashoffset: var(--pathLength);
+    }
+    50% {
+        stroke-dashoffset: 0;
+    }
+    to {
+        stroke-dashoffset: var(--pathLength_minus);
+    }
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge .arrow svg path {
+    stroke-width: 90;
+    transform: translate(
+         10%,
+        -10%
+    );
+    animation: arrowPath 2s ease-in-out infinite;
+}
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .cancelBtn {
     position: absolute;
-    --scale: 1em;
-    width : var(--scale);
-    height: var(--scale);
-    top  : calc(var(--scale) * -1);
-    right: calc(var(--scale) * -1);
+    --arrowScale: 1em;
+    width : var(--arrowScale);
+    height: var(--arrowScale);
+    top  : calc(var(--arrowScale) * -1);
+    right: calc(var(--arrowScale) * -1);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -489,7 +576,7 @@
     align-items: center;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .cancelBtn .bar {
-    width: var(--scale);
+    width: var(--arrowScale);
     height: .1em;
     background-color: gray;
 }
@@ -534,7 +621,9 @@
         (
             60 - var(--camDistance) * var(--camDistance) * .5
         ) * .08
-    ), .1);
+    ), max(calc(
+        3 - (var(--camZoom) * var(--camZoom) * .5)
+    ), .05));
     transition: opacity var(--transitionDuration) ease-in-out;
     display: flex;
     align-items: center;
@@ -550,8 +639,8 @@
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div img {
-    height: 1.5em;
-    width : 1.5em;
+    height: 1em;
+    width : 1em;
     font-size: 1.25em;
     object-fit: cover;
 }
@@ -599,11 +688,11 @@
     right: 5px;
     padding: 0;
     margin: 0;
-    --scale: 3em;
-    bottom: calc(-1 * var(--scale) - 10px);
-    height: var(--scale);
-    width: var(--scale);
-    border-radius: var(--scale);
+    --arrowScale: 3em;
+    bottom: calc(-1 * var(--arrowScale) - 10px);
+    height: var(--arrowScale);
+    width: var(--arrowScale);
+    border-radius: var(--arrowScale);
     background-color: rgba(211, 211, 211, .25);
     backdrop-filter: blur(10px);
     --webkit-backdrop-filter: blur(10px);

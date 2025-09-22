@@ -162,6 +162,38 @@ const exhibits = {
 const maps_pointIcon = '<img src="medias/images/mapPoint.svg"/>';
 
 const maps_locations = {
+    F1_Entrance_Arch: {
+        name: "入口",
+        emphasis: true,
+        location: {
+            name: "正面玄関"
+        },
+        isAlwaysShow: true,
+    },
+    F1_Gym_Entrance: {
+        name: "体育館",
+    },
+    F1_Art: {
+        name: "美術棟",
+        offset: {
+            y: .5,
+        },
+    },
+    F1_Dining004: {
+        name: "食堂",
+        offset: {
+            y: .2,
+        },
+        isAlwaysShow: true,
+    },
+    F1_Certificate_Table: {
+        name: maps_pointIcon,
+        description: "金券",
+        offset: {
+            y: 0,
+        },
+    },
+
     F1_J1_1: exhibits.J1_1,
     F1_J1_2: exhibits.J1_2,
     F1_J1_3: exhibits.J1_3,
@@ -238,25 +270,12 @@ const maps_locations = {
         name: "テスト文"
     },
 
-    F1_Entrance_Arch: {
-        name: "入口",
-        emphasis: true
-    },
-    F1_Gym_Entrance: {
-        name: "体育館",
-    },
-    F1_Art: {
-        name: "美術棟",
-        offset: {
-            y: .1,
-        },
-    },
-
     BusStation_Base: {
         name: "バス停",
         offset: {
             y: .1,
         },
+        isAlwaysShow: true,
     },
 };
 
@@ -555,6 +574,28 @@ exhibitsArea.addEventListener("click", e => {
     openTile(tile);
 });
 
+function startObserve({ target, callback, once = true, threshold = 0 }) {
+  if (!target) return;
+
+  // 複数要素の場合も配列にする
+  const elements = NodeList.prototype.isPrototypeOf(target) || Array.isArray(target)
+    ? target
+    : [target];
+
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        callback(entry.target);
+        if (once) {
+          observer.unobserve(entry.target);
+        }
+      }
+    });
+  }, { threshold });
+
+  elements.forEach(el => observer.observe(el));
+}
+
 for (let i = 0; i < exhibitsLength; i += 1) {
     const tile = d.createElement("div");
     const names = d.createElement("div");
@@ -563,9 +604,23 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     const tagsContent = d.createElement("div");
     const tags = d.createElement("div");
 
-    tile.style.animationDelay = `${i * 0.1}s`;
     tile.setAttribute("exhibits", getExhibits(i)[0]);
-    tile.className = "tile";
+    tile.className = "tile inVisible";
+
+    startObserve({
+        target: tile,
+        callback: () => {
+            // 上の要素をすべて削除
+            const tiles = Array.from(exhibitsArea.children);
+            for (let i = 0; i < tiles.indexOf(tile) + 1; i += 1) {
+                if (tiles[i].classList.contains("inVisible")) {
+                    tiles[i]?.classList.remove("inVisible");
+                    tiles[i].style.animationDelay = `${i * .05}s`;
+                }
+            }
+        },
+        once: true,
+    });
 
     if (!getExhibits(i)[1].location) {
         getExhibits(i)[1].location = {};
@@ -906,16 +961,16 @@ let loadModel;
                         }
                     });
                 }
-                queryParameter({
-                    type: "delete",
-                    key: "sort"
-                });
-                queryParameter({
-                    type: "append",
-                    key: "sort",
-                    value: getSortConditions()
-                });
             }
+            queryParameter({
+                type: "delete",
+                key: "sort"
+            });
+            queryParameter({
+                type: "append",
+                key: "sort",
+                value: getSortConditions()
+            });
             updateResetButton();
             updateSort();
         }
@@ -1360,6 +1415,21 @@ let loadModel;
                             label.appendChild(cancelBtn);
                         });
 
+                        (() => {
+                            const arrowBox = d.createElement("div");
+                            arrowBox.classList = "arrow";
+
+                            const arrow = d.createElementNS("http://www.w3.org/2000/svg", "svg");
+                            arrow.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+                            const path = d.createElementNS("http://www.w3.org/2000/svg", "path");
+                            path.setAttribute("d", "M228.451,230.092L228.451,850.906L849.265,850.906");
+
+                            arrowBox.appendChild(arrow);
+                            arrow.appendChild(path);
+                            label.appendChild(arrowBox);
+                        })();
+
                         labels[partName] = { element: label, part: part };
                     });
 
@@ -1438,6 +1508,8 @@ let loadModel;
 
                     const truncate = (num, digit = 3) => Math.floor(num * digit) / digit;
 
+                    const areaTopMargin = getComputedStyle(exhibitsBottomBar).marginTop.replace("px", "") * 1;
+
                     const getFmtedPx = (px) => px.replace("px", "");
                     function updateLabelsPosition() {
                         const rect = maps_renderer.domElement.getBoundingClientRect();
@@ -1446,12 +1518,19 @@ let loadModel;
                             if (part.geometry) {
                                 part.geometry.computeBoundingBox();
                                 part.geometry.boundingBox.getCenter(vector);
+
+                                // offset分だけ3D空間で位置をずらす
+                                const offset = maps_locations[part.name]?.offset;
+                                vector.x += offset?.x || 0;
+                                vector.y += offset?.y || 0;
+                                vector.z += offset?.z || 0;
+
                                 part.localToWorld(vector);
                             }
                             vector.project(maps_camera);
 
-                            const widthHalf = rect.width / 2;
-                            const heightHalf = rect.height / 2;
+                            const rectWidthHalf  = rect.width  / 2;
+                            const rectHeightHalf = rect.height / 2;
 
                             const camPos = maps_camera.position;
                             const objPos = part.userData?.originalTransform?.position.clone() || part.getWorldPosition(new THREE.Vector3());
@@ -1459,13 +1538,13 @@ let loadModel;
 
                             if (gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1) {
                                 if (getIsSortConforming(element, getSortConditions())) {
-                                    element.classList.remove("invalid");
+                                    if (element.classList.contains("invalid")) element.classList.remove("invalid");
                                 } else {
-                                    element.classList.add("invalid");
+                                    if (!element.classList.contains("invalid")) element.classList.add("invalid");
                                     element.style.setProperty("--labelOpacity", .5);
                                 }
                             } else {
-                                element.classList.add("invalid");
+                                if (!element.classList.contains("invalid")) element.classList.add("invalid");
                                 element.style.setProperty("--labelOpacity", 0);
                             }
 
@@ -1474,17 +1553,113 @@ let loadModel;
                             ));
 
                             if (element.getAttribute("isPressable") === "true" || element.style.opacity !== 0) {
-                                const leftPx = truncate(( vector.x -  + (maps_locations[part.name]?.offset?.x || 0)) * widthHalf  + widthHalf  - element.offsetWidth  / 2);
-                                const topPx  = truncate((-vector.y -  + (maps_locations[part.name]?.offset?.y || 0)) * heightHalf + heightHalf - element.offsetHeight / 2);
+                                const labelChildWidths = [];
+                                let labelHeight = 0;
+                                let labelWidth  = 0;
+
+                                if (element.classList.contains("opened")) {
+                                    const childrens = Array.from(element.children).filter(child => !child.classList.contains("arrow"));
+                                    childrens.forEach(child => {
+                                        labelChildWidths.push(child.offsetWidth);
+                                        const style = window.getComputedStyle(element);
+                                        labelHeight = Math.max(
+                                            child.offsetTop +
+                                            child.getBoundingClientRect().height +
+                                            parseFloat(style.marginBottom),
+                                            parseFloat(style.marginTop),
+                                            labelHeight
+                                        );
+                                    });
+                                    labelWidth = Math.max(...labelChildWidths);
+                                } else {
+                                    const title = element.querySelector(".title");
+                                    if (title) {
+                                        labelWidth  = title.getBoundingClientRect().width;
+                                        labelHeight = title.getBoundingClientRect().height;
+                                    }
+                                }
+
+                                const labelWidthProperty = "--width";
+                                const labelHeightProperty = "--height";
+
+                                if (getComputedStyle(element).getPropertyValue(labelWidthProperty) !== labelWidth + "px") {
+                                    element.style.setProperty(labelWidthProperty,  labelWidth + "px");
+                                }
+                                if (getComputedStyle(element).getPropertyValue(labelHeightProperty) !== labelHeight + "px") {
+                                    element.style.setProperty(labelHeightProperty, labelHeight + "px");
+                                }
+
+                                const isAlwaysShow = maps_locations[part.name]?.isAlwaysShow;
+                                let leftPx = truncate( vector.x * rectWidthHalf  + rectWidthHalf  - element.offsetWidth  / 2);
+                                let topPx  = truncate(-vector.y * rectHeightHalf + rectHeightHalf - element.offsetHeight / 2);
+                                if (isAlwaysShow) {
+                                    const max = Math.max;
+                                    const min = Math.min;
+                                    // const margin = maps_camera.zoom * 20 + 5;
+                                    // const margin = 24;
+                                    // const margin = labelWidth;
+                                    const margin = 42;
+                                    const originalLeftPx = leftPx;
+                                    leftPx = min(
+                                        max(leftPx, margin),
+                                        rect.width - element.offsetWidth - margin
+                                    );
+                                    const originalTopPx = topPx;
+                                    topPx = min(
+                                        max(topPx, areaTopMargin + margin),
+                                        rect.height - element.offsetHeight - margin
+                                    );
+                                    const difference = {
+                                        left: (leftPx - originalLeftPx) || 0,
+                                        top:  (topPx - originalTopPx) || 0,
+                                    }
+                                    const getDeg = (x, y) => Math.atan2(y, x) * (180 / Math.PI);
+                                    element.style.setProperty("--differenceLeft", `${
+                                        difference.left
+                                    }px`);
+                                    element.style.setProperty("--differenceTop",  `${
+                                        difference.top
+                                    }px`);
+                                    const differenceDeg = getDeg(
+                                        difference.left,
+                                        difference.top,
+                                    );
+                                    element.style.setProperty("--differenceDeg",`${differenceDeg}deg`);
+                                    if (originalLeftPx - rectHeightHalf > 0) {
+                                        element.classList.add("left");
+                                        element.classList.remove("right");
+                                    } else {
+                                        element.classList.add("right");
+                                        element.classList.remove("left");
+                                    }
+
+                                    const isUpdated = (leftPx !== originalLeftPx) || (topPx !== originalTopPx);
+                                    if (isUpdated) {
+                                        if (!element.classList.contains("edge")) element.classList.add("edge");
+                                        if (part.name.includes("Arch")) {
+                                            console.log(
+                                                `${
+                                                    difference.left
+                                                }\n${
+                                                    difference.top
+                                                }`
+                                            );
+                                        }
+                                    } else {
+                                        if (element.classList.contains("edge")) element.classList.remove("edge");
+                                    }
+                                }
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > .1
                                 ) {
-                                    element.style.setProperty("--leftPx", leftPx + "px");
+                                    const setLeft = (value) => element.style.setProperty("--leftPx", value);
+                                    setLeft(`${leftPx}px`);
                                 }
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > .1
                                 ) {
-                                    element.style.setProperty("--topPx", topPx + "px");
+                                    const setTop = (value) => element.style.setProperty("--topPx", value);
+                                    setTop(`${topPx}px`);
                                 }
                                 if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > .1) {
                                     element.style.setProperty("--camDistance", camDistance);
@@ -1508,46 +1683,6 @@ let loadModel;
                                     element.style.minHeight = "1.2em";
                                 }
                                 // distaceTest();
-
-                                (() => {
-                                    const childWidths = [];
-                                    let height = 0;
-                                    let width  = 0;
-
-                                    if (element.classList.contains("opened")) {
-                                        const childrens = Array.from(element.children);
-                                        childrens.forEach(child => {
-                                            childWidths.push(child.offsetWidth);
-                                            const style = window.getComputedStyle(element);
-                                            height = Math.max(
-                                                child.offsetTop +
-                                                child.getBoundingClientRect().height +
-                                                parseFloat(style.marginBottom),
-                                                parseFloat(style.marginTop),
-                                                height
-                                            );
-                                        });
-                                        width = Math.max(...childWidths);
-                                    } else {
-                                        const title = element.querySelector(".title");
-                                        if (title) {
-                                            width  = title.getBoundingClientRect().width;
-                                            height = title.getBoundingClientRect().height;
-                                        }
-                                    }
-                                    width  += "px";
-                                    height += "px";
-
-                                    const widthProperty = "--width";
-                                    const heightProperty = "--height";
-
-                                    if (getComputedStyle(element).getPropertyValue(widthProperty) !== width) {
-                                        element.style.setProperty(widthProperty,  width);
-                                    }
-                                    if (getComputedStyle(element).getPropertyValue(heightProperty) !== height) {
-                                        element.style.setProperty(heightProperty, height);
-                                    }
-                                })();
                             }
                         });
                     }
@@ -1646,7 +1781,7 @@ let loadModel;
                         window.addEventListener("mouseup", barTouchEnd);
                     });
 
-                    const panLimit = 2.2;
+                    const panLimit = 5;
 
                     (() => { // 無効化済み
                         // Y=0 の水平面にグリッドを作成
