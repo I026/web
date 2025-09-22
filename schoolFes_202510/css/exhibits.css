@@ -394,10 +394,10 @@
     /* white-space: normal; */
 }
 .content.main .exhibits .tile .content > .mapsView {
-    height: calc(
+    /* height: calc(
         min(100vh - 200px, 1000px)
-    );
-    /* height: calc(100vh - 200px); */
+    ); */
+    height: calc(var(--bottomBarHeight) + var(--topMargin));
     padding-bottom: 0;
     /* height: min(
         calc(100vh - var(--topMargin))
