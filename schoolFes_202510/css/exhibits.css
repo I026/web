@@ -409,11 +409,11 @@
     bottom: 0;
     user-select: none;
 }
-@supports (-webkit-touch-callout: none) {
+/* @supports (-webkit-touch-callout: none) {
     .content.main .exhibits .tile .content > .mapsView {
         height: calc(100% - var(--topMargin)) !important;
     }
-}
+} */
 
 .content.main .exhibits .tile .content .mapsView .labelsArea {
     pointer-events: none;
