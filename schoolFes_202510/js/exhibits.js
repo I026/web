@@ -1872,9 +1872,9 @@ let loadModel;
                         // コンパスを回転
                         compass.style.transform = `rotate(${camHorizontal}deg)`;
 
-                        if (now - lastLabelUpdate > 50) {
-                            updateLabelsPosition();
+                        if (now - lastLabelUpdate > 25) {
                             lastLabelUpdate = now;
+                            updateLabelsPosition();
 
                             const button_dimension_text = isShow2DMap ? "3D" : "2D";
                             if (lastIsShow2DMap !== isShow2DMap) updateButtonText(button_dimension, button_dimension_text);
