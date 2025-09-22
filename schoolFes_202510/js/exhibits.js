@@ -1514,7 +1514,7 @@ let loadModel;
 
                     const getFmtedPx = (px) => px.replace("px", "");
                     function updateLabelsPosition() {
-                        const mapsView_rect = mapsView.getBoundingClientRect();
+                        const bottomBar_contents_rect = bottomBar_contents.getBoundingClientRect();
                         const maps_renderer_rect = maps_renderer.domElement.getBoundingClientRect();
                         Object.values(labels).forEach(({ element, part }, index) => {
                             const vector = new THREE.Vector3();
@@ -1606,14 +1606,14 @@ let loadModel;
                                 if (isAlwaysShow) {
                                     leftPx = min(
                                         max(leftPx, margin),
-                                        mapsView_rect.width - element.offsetWidth - margin
+                                        bottomBar_contents_rect.width - element.offsetWidth - margin
                                     );
                                 }
                                 const originalTopPx = topPx;
                                 if (isAlwaysShow) {
                                     topPx = min(
                                         max(topPx, (areaTopMargin + 100) + margin),
-                                        mapsView_rect.height - element.offsetHeight - margin + 30
+                                        bottomBar_contents_rect.height - element.offsetHeight - margin - 50
                                     );
                                 }
                                 const difference = {
