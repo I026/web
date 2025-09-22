@@ -441,7 +441,6 @@
     border-radius            var(--duration) ease-out,
     font-size                var(--duration) ease-out,
     color                    var(--duration) ease-out,
-    transform                var(--duration) ease-out,
     opacity                  var(--duration) ease-out;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition span {
