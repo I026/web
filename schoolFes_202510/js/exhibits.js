@@ -1351,7 +1351,7 @@ let loadModel;
                         }
 
                         if (maps_locations[partName]) {
-                            label.className = "mapsLabel";
+                            label.className = `mapsLabel${maps_locations[partName].isAlwaysShow ? " alwaysShow" : ""}`;
                             label.setAttribute("exhibits", partName);
 
                             setTagAttributes(maps_locations[partName].tag, label);
@@ -1589,77 +1589,69 @@ let loadModel;
                                     element.style.setProperty(labelHeightProperty, labelHeight + "px");
                                 }
 
-                                const isAlwaysShow = maps_locations[part.name]?.isAlwaysShow;
-                                let leftPx = truncate( vector.x * rectWidthHalf  + rectWidthHalf  - element.offsetWidth  / 2);
-                                let topPx  = truncate(-vector.y * rectHeightHalf + rectHeightHalf - element.offsetHeight / 2);
+                                const isAlwaysShow = maps_locations[part.name]?.isAlwaysShow || false;
+                                let leftPx = Math.floor(truncate( vector.x * rectWidthHalf  + rectWidthHalf  - element.offsetWidth  / 2) * 100) / 100;
+                                let topPx  = Math.floor(truncate(-vector.y * rectHeightHalf + rectHeightHalf - element.offsetHeight / 2) * 100) / 100;
+                                const max = Math.max;
+                                const min = Math.min;
+                                // const margin = maps_camera.zoom * 20 + 5;
+                                // const margin = 24;
+                                // const margin = labelWidth;
+                                const margin = 3;
+                                const originalLeftPx = leftPx;
                                 if (isAlwaysShow) {
-                                    const max = Math.max;
-                                    const min = Math.min;
-                                    // const margin = maps_camera.zoom * 20 + 5;
-                                    // const margin = 24;
-                                    // const margin = labelWidth;
-                                    const margin = 32;
-                                    const originalLeftPx = leftPx;
                                     leftPx = min(
                                         max(leftPx, margin),
                                         rect.width - element.offsetWidth - margin
                                     );
-                                    const originalTopPx = topPx;
+                                }
+                                const originalTopPx = topPx;
+                                if (isAlwaysShow) {
                                     topPx = min(
                                         max(topPx, areaTopMargin + margin),
                                         rect.height - element.offsetHeight - margin
                                     );
-                                    const difference = {
-                                        left: (leftPx - originalLeftPx) || 0,
-                                        top:  (topPx - originalTopPx) || 0,
-                                    }
-                                    const getDeg = (x, y) => Math.atan2(y, x) * (180 / Math.PI);
-                                    element.style.setProperty("--differenceLeft", `${
-                                        difference.left
-                                    }px`);
-                                    element.style.setProperty("--differenceTop",  `${
-                                        difference.top
-                                    }px`);
-                                    const differenceDeg = getDeg(
-                                        difference.left,
-                                        difference.top,
-                                    );
-                                    element.style.setProperty("--differenceDeg",`${differenceDeg}deg`);
-                                    if (originalLeftPx - rectHeightHalf > 0) {
-                                        element.classList.add("left");
-                                        element.classList.remove("right");
-                                    } else {
+                                }
+                                const difference = {
+                                    left: (leftPx - originalLeftPx) || 0,
+                                    top:  (topPx - originalTopPx) || 0,
+                                }
+                                const getDeg = (x, y) => Math.atan2(y, x) * (180 / Math.PI);
+                                const differenceDeg = getDeg(
+                                    difference.left,
+                                    difference.top,
+                                );
+                                element.style.setProperty("--differenceDeg",`${differenceDeg}deg`);
+                                if (originalLeftPx - rectHeightHalf > 0) {
+                                    if (!element.classList.contains("right")) {
                                         element.classList.add("right");
                                         element.classList.remove("left");
                                     }
-
-                                    const isUpdated = (leftPx !== originalLeftPx) || (topPx !== originalTopPx);
-                                    if (isUpdated) {
-                                        if (!element.classList.contains("edge")) element.classList.add("edge");
-                                        if (part.name.includes("Arch")) {
-                                            console.log(
-                                                `${
-                                                    difference.left
-                                                }\n${
-                                                    difference.top
-                                                }`
-                                            );
-                                        }
-                                    } else {
-                                        if (element.classList.contains("edge")) element.classList.remove("edge");
+                                } else {
+                                    if (!element.classList.contains("left")) {
+                                        element.classList.add("left");
+                                        element.classList.remove("right");
                                     }
                                 }
+
+                                const edgeThreshold = element.offsetWidth;
+                                if (Math.abs(difference.left) > edgeThreshold || Math.abs(difference.top) > edgeThreshold) {
+                                    if (!element.classList.contains("edge")) element.classList.add("edge");
+                                } else {
+                                    if (element.classList.contains("edge")) element.classList.remove("edge");
+                                }
+
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > .1
                                 ) {
                                     const setLeft = (value) => element.style.setProperty("--leftPx", value);
-                                    setLeft(`${leftPx}px`);
+                                    setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
                                 }
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > .1
                                 ) {
                                     const setTop = (value) => element.style.setProperty("--topPx", value);
-                                    setTop(`${topPx}px`);
+                                    setTop(`${isAlwaysShow ? topPx : originalTopPx}px`);
                                 }
                                 if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > .1) {
                                     element.style.setProperty("--camDistance", camDistance);
