@@ -690,11 +690,14 @@
             60 - var(--camDistance) * var(--camDistance) * .5
         ) * .08
     ), max(calc(
-        2 - (var(--camZoom) * var(--camZoom) * .5)
+        1 - (var(--camZoom) * var(--camZoom) * .5)
     ), .2));
     transition: opacity var(--transitionDuration) ease-in-out;
     display: flex;
     align-items: center;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.alwaysShow .title {
+    opacity: 1;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .title span {
