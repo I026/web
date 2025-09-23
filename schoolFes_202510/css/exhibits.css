@@ -506,7 +506,9 @@
     overflow: hidden;
     --transitionDuration: .5s;
     transition:
-    opacity   var(--transitionDuration) ease-out;
+    opacity          var(--transitionDuration) ease-out,
+    color            var(--transitionDuration) ease-out,
+    background-color var(--transitionDuration) ease-out;
     /* top : var(--topPx);
     left: var(--leftPx); */
     transform: translate3d(
@@ -574,6 +576,8 @@
     font-size: .5em;
     z-index: 10001;
     box-shadow: 0 0 10px gray;
+    color: black;
+    background-color: rgba(211, 211, 211, .75);
     transition: font-size var(--transitionDuration) ease-out;
     /* animation: label_edgeAnim .5s infinite; */
     /* margin-right: calc(var(--arrowScale) * 1); */
