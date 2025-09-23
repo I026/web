@@ -7,6 +7,15 @@ const mainContent  = d.querySelector(".main.content");
 let HTMLFileName = window.location.pathname.split("/").pop().split(".")[0];
 if (HTMLFileName == "") HTMLFileName = "index";
 
+async function getHashSHA256(message) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  // 16進数に変換
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 const titleMap = {
     index: "デジタルパンフレット",
     exhibits: "企画一覧",
@@ -66,16 +75,7 @@ const titleMap = {
     d.head.appendChild(link_font3);
 })();
 
-const isDevMode = (
-    (
-        navigator.userAgentData.platform === "Android" || navigator.userAgentData.platform === "macOS"
-    ) && (
-        localStorage.getItem("devMode") === "HelloWorld!"
-    )
-);
-
 function addGoogleTag () { // Google tag
-    if (isDevMode) return;
     const script1 = d.createElement("script");
     script1.setAttribute("async", "");
     script1.src = "https://www.googletagmanager.com/gtag/js?id=G-T9TS0VR3ED";
@@ -86,7 +86,20 @@ function addGoogleTag () { // Google tag
     d.head.appendChild(script1);
     d.head.appendChild(script2);
 };
-addGoogleTag();
+
+(async () => { // isDevMode?
+    const isDevMode = await getHashSHA256(localStorage.getItem("devMode")) === "729e344a01e52c822bdfdec61e28d6eda02658d2e7d2b80a9b9029f41e212dde";
+    if (isDevMode) {
+        const devNotice = d.createElement("span");
+        devNotice.textContent = " (HelloWorld!)";
+        devNotice.style.position = "absolute";
+        devNotice.style.right = "20px";
+        devNotice.style.opacity = .5;
+        footers.querySelector("span").appendChild(devNotice);
+    } else {
+        addGoogleTag();
+    }
+})();
 
 (() => { // favicon
     const link_favicon = d.createElement("link");
