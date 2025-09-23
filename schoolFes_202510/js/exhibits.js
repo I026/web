@@ -68,24 +68,24 @@ function queryParameter ({
 
 const exhibits = {
     J1_1: {
-        name: "(テスト文)",
-        description: "(テスト文)",
+        name: "テスト文",
+        description: "テスト文",
         tag: [
             "byClass",
             "J1",
         ],
     },
     J1_2: {
-        name: "(テスト文)",
-        description: "(テスト文)",
+        name: "テスト文",
+        description: "テスト文",
         tag: [
             "byClass",
             "J1",
         ],
     },
     J1_3: {
-        name: "(テスト文)",
-        description: "(テスト文)",
+        name: "テスト文",
+        description: "テスト文",
         tag: [
             "byClass",
             "J1",
@@ -102,7 +102,7 @@ const exhibits = {
     },
     J2_2: {
         name: "サービスエリア",
-        description: "(テスト文)",
+        description: "テスト文",
         tag: [
             "byClass",
             "J2",
@@ -113,7 +113,7 @@ const exhibits = {
     },
     J2_3: {
         name: "SASUKE",
-        description: "(テスト文)",
+        description: "テスト文",
         tag: [
             "byClass",
             "J2",
@@ -121,24 +121,24 @@ const exhibits = {
         ],
     },
     J3_1: {
-        name: "(テスト文)",
-        description: "(テスト文)",
+        name: "テスト文",
+        description: "テスト文",
         tag: [
             "byClass",
             "J3",
         ],
     },
     J3_2: {
-        name: "(テスト文)",
-        description: "(テスト文)",
+        name: "テスト文",
+        description: "テスト文",
         tag: [
             "byClass",
             "J3",
         ],
     },
     J3_3: {
-        name: "(テスト文)",
-        description: "(テスト文)",
+        name: "テスト文",
+        description: "テスト文",
         tag: [
             "byClass",
             "J3",
@@ -168,15 +168,6 @@ const maps_locations = {
         },
         isAlwaysShow: true,
     },
-    F1_Gym_Entrance: {
-        name: "体育館",
-    },
-    F1_Art: {
-        name: "美術棟",
-        offset: {
-            y: .5,
-        },
-    },
     F1_Dining004: {
         name: "食堂",
         offset: {
@@ -189,6 +180,15 @@ const maps_locations = {
         description: "金券",
         offset: {
             y: 0,
+        },
+    },
+    F1_Gym_Entrance: {
+        name: "体育館",
+    },
+    F1_Art: {
+        name: "美術棟",
+        offset: {
+            y: .5,
         },
     },
 
@@ -1390,7 +1390,7 @@ let loadModel;
 
                             const isHTMLTag = maps_locations[partName].name.includes("<");
 
-                            const titleText = isHTMLTag ? maps_locations[partName].name : truncateText(maps_locations[partName].name);
+                            const titleText = isHTMLTag ? maps_locations[partName].name : truncateText(maps_locations[partName].name, 10);
                             const descriptionText = maps_locations[partName]?.description;
                             const locationText = maps_locations[partName]?.location?.name;
                             const detailTile = exhibitsArea.querySelector(`.tile[exhibits=${getFmtedObjName(partName)}]`);
@@ -1590,7 +1590,7 @@ let loadModel;
                                 const labelChildWidths = [];
                                 let labelHeight = 0;
                                 let labelWidth  = 0;
-
+                                const title = element.querySelector(".title");
                                 if (element.classList.contains("opened")) {
                                     const childrens = Array.from(element.children).filter(child => !child.classList.contains("arrow"));
                                     childrens.forEach(child => {
@@ -1606,11 +1606,16 @@ let loadModel;
                                     });
                                     labelWidth = Math.max(...labelChildWidths);
                                 } else {
-                                    const title = element.querySelector(".title");
                                     if (title) {
                                         labelWidth  = title.getBoundingClientRect().width;
                                         labelHeight = title.getBoundingClientRect().height;
                                     }
+                                }
+
+                                if (element?.getBoundingClientRect().width < title?.getBoundingClientRect().width) {
+                                    element.classList.add("over");
+                                } else {
+                                    element.classList.remove("over");
                                 }
 
                                 const labelWidthProperty = "--width";

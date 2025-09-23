@@ -499,7 +499,7 @@
         ),
         1em
     ), 0em);
-    width:  var(--width);
+    width:  min(var(--width), 5.2em);
     height: var(--height);
     --labelBackgroundColor: rgba(128, 128, 128, .9);
     background-color: var(--labelBackgroundColor);
@@ -665,6 +665,22 @@
     color: white;
     opacity: 1;
     --webkit-backdrop-filter: blur(10px);
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.over::after {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    display: block;
+    top: 0;
+    right: 0;
+    width: 40%;
+    height: 100%;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.over::after {
+    background: linear-gradient(to left, var(--labelBackgroundColor) 0%, transparent 100%);
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened.over::after {
+    background: transparent;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations {
     position: relative;
