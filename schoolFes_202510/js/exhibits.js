@@ -1684,7 +1684,7 @@ let loadModel;
                                         (
                                             (1000 - window.innerWidth) * .0025 * (maps_camera.zoom - .5)
                                         ),
-                                        3.5
+                                        5
                                     ),
                                     1
                                 );
