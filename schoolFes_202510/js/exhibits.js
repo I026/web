@@ -1684,13 +1684,13 @@ let loadModel;
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > updateThreshold
                                 ) {
                                     const setLeft = (value) => element.style.setProperty("--leftPx", value);
-                                    // setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
+                                    setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
                                 }
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > updateThreshold
                                 ) {
                                     const setTop = (value) => element.style.setProperty("--topPx", value);
-                                    // setTop(`${isAlwaysShow ? topPx : originalTopPx}px`);
+                                    setTop(`${isAlwaysShow ? topPx : originalTopPx}px`);
                                 }
                                 if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > updateThreshold) {
                                     element.style.setProperty("--camDistance", camDistance);
