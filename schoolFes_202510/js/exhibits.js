@@ -1679,9 +1679,15 @@ let loadModel;
                                     if (element.classList.contains("edge")) element.classList.remove("edge");
                                 }
 
-                                const posUpdateThreshold = max(min((
-                                    (1000 - window.innerWidth) * .0025
-                                ), 3.5), 1.6);
+                                const posUpdateThreshold = max(
+                                    min(
+                                        (
+                                            (1000 - window.innerWidth) * .0025
+                                        ),
+                                        3.5
+                                    ),
+                                    1
+                                );
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > posUpdateThreshold
                                 ) {
@@ -1722,7 +1728,7 @@ let loadModel;
 
                     // 描画ループ
                     let lastAnimUpdateAt;
-                    const animUpdateThresholdMs = 25;
+                    const animUpdateThresholdMs = 28;
                     function animate() {
                         requestAnimationFrame(animate);
                         if ((Date.now() - lastAnimUpdateAt > animUpdateThresholdMs) || !lastAnimUpdateAt) {
