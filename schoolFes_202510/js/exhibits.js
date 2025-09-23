@@ -1446,8 +1446,9 @@ let loadModel;
                         let lastHandleEventAt;
 
                         function handleEvent(x, y) {
-                            if (Date.now() - lastHandleEventAt < 100) return;
-                            console.log("handleEvent", x, y);
+                            if ((Date.now() - lastHandleEventAt) < 100) return;
+                            lastHandleEventAt = Date.now();
+                            console.log("handleEvent", x, y, lastHandleEventAt);
                             
                             const candidateLabels = [];
 
@@ -1492,8 +1493,6 @@ let loadModel;
                                 topLabel.classList.toggle("opened");
                                 maps_addLabelTransition(topLabel);
                             }
-
-                            lastHandleEventAt = Date.now();
                         }
 
                         d.addEventListener("mousedown", (e) => touchStart = [e.clientX, e.clientY]);
