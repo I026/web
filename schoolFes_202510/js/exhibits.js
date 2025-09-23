@@ -1729,7 +1729,7 @@ let loadModel;
 
                     // 描画ループ
                     let lastAnimUpdateAt;
-                    const animUpdateThresholdMs = 28;
+                    const animUpdateThresholdMs = 18;
                     function animate() {
                         requestAnimationFrame(animate);
                         if ((Date.now() - lastAnimUpdateAt > animUpdateThresholdMs * .6) || !lastAnimUpdateAt) {
