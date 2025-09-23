@@ -66,20 +66,34 @@ const titleMap = {
     d.head.appendChild(link_font3);
 })();
 
-const isMyDevice = (
+const isDevMode = (
     (
-        window.innerWidth > 535 && window.innerWidth < 550
+        Math.abs(486 - window.screen.width) < 10
     ) && (
-        window.innerHeight > 1075 && window.innerHeight < 1085
+        Math.abs(1079 - window.screen.height) < 10
     ) && (
         ["Mozilla/", "Linux; Android ", "AppleWebKit/", "Chrome/"].every(keyword => navigator.userAgent.includes(keyword))
     ) && (
         navigator.userAgentData.platform === "Android"
+    ) && (
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+    )
+) || (
+    (
+        Math.abs(2560 - window.screen.width) < 10
+    ) && (
+        Math.abs(1440 - window.screen.height) < 10
+    ) && (
+        ["Mozilla/", "Macintosh", "Mac OS X", "AppleWebKit/", "Chrome/"].every(keyword => navigator.userAgent.includes(keyword))
+    ) && (
+        navigator.userAgentData.platform === "macOS"
+    ) && (
+        window.matchMedia("(prefers-color-scheme: dark)").matches
     )
 );
 
-(() => { // Google tag
-    if (isMyDevice) return;
+function addGoogleTag () { // Google tag
+    if (isDevMode) return;
     const script1 = d.createElement("script");
     script1.setAttribute("async", "");
     script1.src = "https://www.googletagmanager.com/gtag/js?id=G-T9TS0VR3ED";
@@ -89,7 +103,13 @@ const isMyDevice = (
 
     d.head.appendChild(script1);
     d.head.appendChild(script2);
-})();
+};
+
+if (isDevMode) {
+
+} else {
+    addGoogleTag();
+}
 
 (() => { // favicon
     const link_favicon = d.createElement("link");
