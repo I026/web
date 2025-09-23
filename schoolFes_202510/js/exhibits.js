@@ -1926,7 +1926,8 @@ let loadModel;
                     });
                 },
                 (xhr) => {
-                    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                    const loadPercentage = xhr.loaded / xhr.total * 100
+                    if (loadPercentage === 100) console.log("3DModel", loadPercentage + "% loaded");
                 },
                 (error) => {
                     console.error("モデル読み込みエラー", error);
