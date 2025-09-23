@@ -481,7 +481,8 @@ function maps_frameObject({
     camera: camera = maps_camera,
     controls: controls = maps_controls,
     duration: duration = 1,
-    isToCenter: isToCenter = true
+    isToCenter: isToCenter = true,
+    zoom: zoom = 3,
 }) {
     if (!target?.geometry) return;
 
@@ -499,7 +500,7 @@ function maps_frameObject({
 
     // ズームもスムーズに変更する場合
     gsap.to(camera, {
-        zoom: 2, // 目標ズーム値
+        zoom: zoom, // 目標ズーム値
         duration: duration,
         ease: "power2.inOut",
         onUpdate: () => camera.updateProjectionMatrix()
