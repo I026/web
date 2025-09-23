@@ -1656,7 +1656,7 @@ let loadModel;
                                 ) {
                                     const setLeft = (value) => element.style.setProperty("--leftPx", value);
                                     setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
-                                    console.log("updateThreshold : ", updateThreshold);
+                                    console.log(updateThreshold + "px");
                                 }
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > updateThreshold
