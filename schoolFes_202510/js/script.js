@@ -88,11 +88,15 @@ function addGoogleTag () { // Google tag
 };
 
 (async () => { // isDevMode?
-    const isDevMode = await getHashSHA256(localStorage.getItem("devMode")) === "729e344a01e52c822bdfdec61e28d6eda02658d2e7d2b80a9b9029f41e212dde";
-    if (isDevMode) {
-        titleMap.devMode = "(HelloWorld!)";
-    } else {
-        addGoogleTag();
+    try {
+        const isDevMode = await getHashSHA256(localStorage.getItem("devMode") || null) === "729e344a01e52c822bdfdec61e28d6eda02658d2e7d2b80a9b9029f41e212dde";
+        if (isDevMode) {
+            titleMap.devMode = "(HelloWorld!)";
+        } else {
+            addGoogleTag();
+        }
+    } catch (e) {
+        console.log(e);
     }
     updateFooterContents();
 })();
@@ -284,7 +288,7 @@ function setPathViewBox() {
     };
 });
 
-const isLocalFile = window.location.protocol === "file:";
+const isLocalFile = window.location.protocol !== "https:";
 
 const getHref = (item) => `${isLocalFile ? `${item}.html` : `${item === "index" ? "./" : item}`}`;
 
