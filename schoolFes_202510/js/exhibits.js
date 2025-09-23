@@ -1650,7 +1650,7 @@ let loadModel;
                                     if (element.classList.contains("edge")) element.classList.remove("edge");
                                 }
 
-                                const updateThreshold = window.innerWidth * .001;
+                                const updateThreshold = Math.min(window.innerWidth * .002, 2);
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > updateThreshold
                                 ) {
