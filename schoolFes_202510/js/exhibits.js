@@ -1682,7 +1682,7 @@ let loadModel;
                                 const posUpdateThreshold = max(
                                     min(
                                         (
-                                            (1000 - window.innerWidth) * .0025
+                                            (1000 - window.innerWidth) * .0025 * (maps_camera.zoom - .5)
                                         ),
                                         3.5
                                     ),
