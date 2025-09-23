@@ -666,7 +666,7 @@
     opacity: 1;
     --webkit-backdrop-filter: blur(10px);
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.over::after {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel::after {
     content: "";
     position: absolute;
     pointer-events: none;
@@ -675,11 +675,16 @@
     right: 0;
     width: 40%;
     height: 100%;
+    opacity: 0;
+    transition: opacity var(--transitionDuration) ease-in-out;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.over::after {
+    opacity: 1;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel::after {
     background: linear-gradient(to left, var(--labelBackgroundColor) 0%, transparent 100%);
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened.over::after {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened::after {
     background: transparent;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations {

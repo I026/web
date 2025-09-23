@@ -66,6 +66,18 @@ const titleMap = {
     d.head.appendChild(link_font3);
 })();
 
+(() => { // Google tag
+    const script1 = d.createElement("script");
+    script1.setAttribute("async", "");
+    script1.src = "https://www.googletagmanager.com/gtag/js?id=G-T9TS0VR3ED";
+    
+    const script2 = d.createElement("script");
+    script2.innerHTML = "window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-T9TS0VR3ED');";
+
+    d.head.appendChild(script1);
+    d.head.appendChild(script2);
+})();
+
 (() => { // favicon
     const link_favicon = d.createElement("link");
     
