@@ -1697,13 +1697,15 @@ let loadModel;
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > posUpdateThreshold
                                 ) {
-                                    const setLeft = (value) => element.style.setProperty("--leftPx", value);
+                                    // const setLeft = (value) => element.style.setProperty("--leftPx", value);
+                                    const setLeft = (value) => element.style.left = value;
                                     setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
                                 }
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > posUpdateThreshold
                                 ) {
-                                    const setTop = (value) => element.style.setProperty("--topPx", value);
+                                    // const setTop = (value) => element.style.setProperty("--topPx", value);
+                                    const setTop = (value) => element.style.top = value;
                                     setTop(`${isAlwaysShow ? topPx : originalTopPx}px`);
                                 }
                                 if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > posUpdateThreshold) {
