@@ -1447,6 +1447,7 @@ let loadModel;
 
                         function handleEvent(x, y) {
                             if (Date.now() - lastHandleEventAt < 100) return;
+                            console.log("handleEvent", x, y);
                             
                             const candidateLabels = [];
 
