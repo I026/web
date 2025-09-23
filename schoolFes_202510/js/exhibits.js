@@ -1679,20 +1679,22 @@ let loadModel;
                                     if (element.classList.contains("edge")) element.classList.remove("edge");
                                 }
 
-                                const updateThreshold = Math.min(window.innerWidth * .001, 2);
+                                const posUpdateThreshold = max(min((
+                                    (1000 - window.innerWidth) * .0025
+                                ), 3.5), 1.6);
                                 if (
-                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > updateThreshold
+                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > posUpdateThreshold
                                 ) {
                                     const setLeft = (value) => element.style.setProperty("--leftPx", value);
                                     setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
                                 }
                                 if (
-                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > updateThreshold
+                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > posUpdateThreshold
                                 ) {
                                     const setTop = (value) => element.style.setProperty("--topPx", value);
                                     setTop(`${isAlwaysShow ? topPx : originalTopPx}px`);
                                 }
-                                if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > updateThreshold) {
+                                if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > posUpdateThreshold) {
                                     element.style.setProperty("--camDistance", camDistance);
                                 }
                                 element.style.setProperty("--objPosX", objPos.x);
@@ -1720,7 +1722,7 @@ let loadModel;
 
                     // 描画ループ
                     let lastAnimUpdateAt;
-                    const animUpdateThresholdMs = 30;
+                    const animUpdateThresholdMs = 25;
                     function animate() {
                         requestAnimationFrame(animate);
                         if ((Date.now() - lastAnimUpdateAt > animUpdateThresholdMs) || !lastAnimUpdateAt) {
