@@ -425,7 +425,10 @@ function barTabClick (tabIndex) {
 }
 
 // カメラ
-const maps_renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+const maps_renderer = new THREE.WebGLRenderer({
+    antialias: false,
+    alpha: true
+});
 const maps_aspect = window.innerWidth / window.innerHeight;
 const maps_cameraSize = 1.2; // 表示範囲の大きさ（好みで調整）
 const maps_camera = new THREE.OrthographicCamera(
@@ -1036,9 +1039,8 @@ let loadModel;
         const scene = new THREE.Scene();
         scene.background = null; // 背景色
 
-        maps_renderer.setPixelRatio(window.devicePixelRatio * .9);
+        maps_renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         maps_renderer.shadowMap.enabled = false;
-        maps_renderer.setPixelRatio(window.devicePixelRatio * .9);
 
         // 描画領域を mapsView に追加
         mapsView.appendChild(maps_renderer.domElement);
@@ -1050,7 +1052,7 @@ let loadModel;
         
         // 太陽の位置を取得
         const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.castShadow = true;
+        light.castShadow = false;
         light.shadow.mapSize.width = 1024;
         light.shadow.mapSize.height = 1024;
         light.shadow.bias = -0.0001;
@@ -1131,15 +1133,47 @@ let loadModel;
 
                     const mergeObjs = [];
                     model.traverse(child => {
+                        // Skip adding objects with fully transparent materials or named "Transparent"
                         if (child.isMesh) {
+                            // Check for "Transparent" material name or full opacity 0
+                            let skip = false;
+                            let materials = Array.isArray(child.material) ? child.material : [child.material];
+                            for (const mat of materials) {
+                                if (
+                                    (mat && mat.name === "Transparent") ||
+                                    (mat && mat.transparent && mat.opacity === 0)
+                                ) {
+                                    skip = true;
+                                    break;
+                                }
+                            }
+                            if (skip) return; // Do not add to scene or maps_modelParts
                             maps_modelParts[child.name] = child;
                             child.castShadow = false;
                             child.receiveShadow = false;
+                            child.frustumCulled = true; // Explicitly enable frustum culling
                         }
                         if (child.type === "Object3D") {
                             const meshes = [];
                             child.traverse((sub) => {
-                                if (sub.isMesh) meshes.push(sub);
+                                // Only add meshes that are not fully transparent and not with "Transparent" material name
+                                if (sub.isMesh) {
+                                    let skipMesh = false;
+                                    let mats = Array.isArray(sub.material) ? sub.material : [sub.material];
+                                    for (const mat of mats) {
+                                        if (
+                                            (mat && mat.name === "Transparent") ||
+                                            (mat && mat.transparent && mat.opacity === 0)
+                                        ) {
+                                            skipMesh = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!skipMesh) {
+                                        sub.frustumCulled = true; // Enable frustum culling for each mesh
+                                        meshes.push(sub);
+                                    }
+                                }
                             });
                             if (meshes.length === 0) return;
 
@@ -1154,9 +1188,15 @@ let loadModel;
                             // ジオメトリ統合
                             const transformedGeometries = meshes
                                 .filter(mesh => {
-                                    // 特定の名前のマテリアルが適用されているメッシュを除外
+                                    // Exclude meshes with "Transparent" material or fully transparent
                                     const material = Array.isArray(mesh.material) ? mesh.material[0] : mesh.material;
-                                    return material?.name !== "Transparent";
+                                    if (
+                                        material?.name === "Transparent" ||
+                                        (material?.transparent && material?.opacity === 0)
+                                    ) {
+                                        return false;
+                                    }
+                                    return true;
                                 })
                                 .map(mesh => {
                                     let geom = mesh.geometry.clone();
