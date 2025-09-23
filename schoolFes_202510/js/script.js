@@ -66,7 +66,20 @@ const titleMap = {
     d.head.appendChild(link_font3);
 })();
 
+const isMyDevice = (
+    (
+        window.innerWidth > 535 && window.innerWidth < 550
+    ) && (
+        window.innerHeight > 1075 && window.innerHeight < 1085
+    ) && (
+        ["Mozilla/", "Linux; Android ", "AppleWebKit/", "Chrome/"].every(keyword => navigator.userAgent.includes(keyword))
+    ) && (
+        navigator.userAgentData.platform === "Android"
+    )
+);
+
 (() => { // Google tag
+    if (isMyDevice) return;
     const script1 = d.createElement("script");
     script1.setAttribute("async", "");
     script1.src = "https://www.googletagmanager.com/gtag/js?id=G-T9TS0VR3ED";
