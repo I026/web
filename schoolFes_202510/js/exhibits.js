@@ -1448,7 +1448,6 @@ let loadModel;
                         function handleEvent(x, y) {
                             if ((Date.now() - lastHandleEventAt) < 500) return;
                             lastHandleEventAt = Date.now();
-                            console.log("handleEvent", x, y, lastHandleEventAt);
                             
                             const candidateLabels = [];
 
@@ -1657,6 +1656,7 @@ let loadModel;
                                 ) {
                                     const setLeft = (value) => element.style.setProperty("--leftPx", value);
                                     setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
+                                    console.log("updateThreshold : ", updateThreshold);
                                 }
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > updateThreshold
