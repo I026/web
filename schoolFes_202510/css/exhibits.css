@@ -507,13 +507,13 @@
     --transitionDuration: .5s;
     transition:
     opacity   var(--transitionDuration) ease-out;
-    /* top : var(--topPx);
-    left: var(--leftPx); */
-    transform: translate3d(
+    top : var(--topPx);
+    left: var(--leftPx);
+    /* transform: translate3d(
         var(--leftPx),
         var(--topPx),
         0
-    );
+    ); */
 }
 @keyframes label_edgeAnim {
     from {
