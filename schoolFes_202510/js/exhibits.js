@@ -1719,10 +1719,15 @@ let loadModel;
                     }
 
                     // 描画ループ
+                    let lastAnimUpdateAt;
+                    const animUpdateThresholdMs = 30;
                     function animate() {
                         requestAnimationFrame(animate);
-                        maps_controls.update();
-                        maps_renderer.render(scene, maps_camera);
+                        if ((Date.now() - lastAnimUpdateAt > animUpdateThresholdMs) || !lastAnimUpdateAt) {
+                            maps_controls.update();
+                            maps_renderer.render(scene, maps_camera);
+                            lastAnimUpdateAt = Date.now();
+                        }
                     }
                     animate();
 
@@ -1917,30 +1922,6 @@ let loadModel;
                             if (lastIsShow2DMap !== isShow2DMap) updateButtonText(button_dimension, button_dimension_text);
 
                             lastIsShow2DMap = isShow2DMap;
-
-                            return;
-                            const is3D = (
-                                Math.abs(getCamHorizontalSnap(camHorizontal) - camHorizontal) > 1 ||
-                                (Math.round(Math.abs(camVertical)) < 85)
-                            );
-
-                            isShow2DMap = !is3D && button_dimensionMode_2D();
-
-                            if (isShow2DMap) {
-                                controlMethodUpdate({
-                                    touches: {
-                                        ONE: THREE.TOUCH.PAN,
-                                        TWO: THREE.TOUCH.DOLLY_PAN
-                                    },
-                                    mouseButtons: {
-                                        LEFT: THREE.MOUSE.PAN,
-                                        MIDDLE: THREE.MOUSE.NONE,
-                                        RIGHT: THREE.MOUSE.NONE
-                                    }
-                                });
-                            } else {
-                                controlMethodUpdate();
-                            }
                         }
                     });
                 },
