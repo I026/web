@@ -68,27 +68,9 @@ const titleMap = {
 
 const isDevMode = (
     (
-        Math.abs(486 - window.screen.width) < 10
+        navigator.userAgentData.platform === "Android" || navigator.userAgentData.platform === "macOS"
     ) && (
-        Math.abs(1079 - window.screen.height) < 10
-    ) && (
-        ["Mozilla/", "Linux; Android ", "AppleWebKit/", "Chrome/"].every(keyword => navigator.userAgent.includes(keyword))
-    ) && (
-        navigator.userAgentData.platform === "Android"
-    ) && (
-        window.matchMedia("(prefers-color-scheme: dark)").matches
-    )
-) || (
-    (
-        Math.abs(2560 - window.screen.width) < 10
-    ) && (
-        Math.abs(1440 - window.screen.height) < 10
-    ) && (
-        ["Mozilla/", "Macintosh", "Mac OS X", "AppleWebKit/", "Chrome/"].every(keyword => navigator.userAgent.includes(keyword))
-    ) && (
-        navigator.userAgentData.platform === "macOS"
-    ) && (
-        window.matchMedia("(prefers-color-scheme: dark)").matches
+        localStorage.getItem("devMode") === "HelloWorld!"
     )
 );
 
@@ -104,12 +86,7 @@ function addGoogleTag () { // Google tag
     d.head.appendChild(script1);
     d.head.appendChild(script2);
 };
-
-if (isDevMode) {
-
-} else {
-    addGoogleTag();
-}
+addGoogleTag();
 
 (() => { // favicon
     const link_favicon = d.createElement("link");
