@@ -1731,7 +1731,7 @@ let loadModel;
                     const animUpdateThresholdMs = 28;
                     function animate() {
                         requestAnimationFrame(animate);
-                        if ((Date.now() - lastAnimUpdateAt > animUpdateThresholdMs) || !lastAnimUpdateAt) {
+                        if ((Date.now() - lastAnimUpdateAt > animUpdateThresholdMs * .6) || !lastAnimUpdateAt) {
                             maps_controls.update();
                             maps_renderer.render(scene, maps_camera);
                             lastAnimUpdateAt = Date.now();
