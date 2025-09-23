@@ -1679,7 +1679,7 @@ let loadModel;
                                     if (element.classList.contains("edge")) element.classList.remove("edge");
                                 }
 
-                                const updateThreshold = Math.min(window.innerWidth * .002, 2);
+                                const updateThreshold = Math.min(window.innerWidth * .001, 2);
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > updateThreshold
                                 ) {
@@ -1914,7 +1914,7 @@ let loadModel;
                         // コンパスを回転
                         compassImg.style.transform = `rotate(${camHorizontal}deg)`;
 
-                        if (now - lastLabelUpdate > 27.5) {
+                        if (now - lastLabelUpdate > animUpdateThresholdMs) {
                             lastLabelUpdate = now;
                             updateLabelsPosition();
 
