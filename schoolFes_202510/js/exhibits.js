@@ -40,13 +40,11 @@ function queryParameter ({
     url: url = new URL(window.location.href),
 }) {
     let returnValue = null;
-    console.log("type : ", type);
     switch (type) {
         case "set":
             url.searchParams.set(key, value);
             break;
         case "append":
-            console.log("value : ", value);
             (value instanceof Array ? value : [value]).forEach(item => {
                 url.searchParams.append(key, item);
             });
@@ -635,7 +633,6 @@ for (let i = 0; i < exhibitsLength; i += 1) {
             getExhibits(i)[0].split("_")[1]
         );
     }
-    console.log("getExhibits(i)[1] : ", getExhibits(i)[1]);
 
     names.textContent = getExhibits(i)[1].name;
     names.classList.add("names");
@@ -780,16 +777,11 @@ function updateSort () {
 
         const targetElements = [];
         exhibitsArea.querySelectorAll(":scope > div.tile").forEach(tileItem => {
-            console.log(
-                "tileItem : ", tileItem.getAttribute("tag"),
-                "\nconditions : ", conditions
-            );
             // if (tileItem.getAttribute("tag").includes(conditions.join(","))) {
             if (getIsSortConforming(tileItem, conditions)) {
                 targetElements.push(tileItem);
             }
         });
-        console.log("targetElements : ", targetElements);
         targetElements.forEach(element => {
             setTileVisible(element, true);
             activeAllTiles.push(element);
@@ -937,7 +929,6 @@ let loadModel;
                 tag_isCheckeds.push(tag.classList.contains("checkedBox"));
             });
 
-            // console.log(tag_isCheckeds);
             const isAllSelected = tag_isCheckeds.every(item => item === false);
             if (isAllSelected) { // すべてのタグが選ばれていない
                 resetButton.classList.remove("checkedBox");
@@ -1297,8 +1288,6 @@ let loadModel;
                         }
                         blinkBrinkerLight("Bus_Body_6");
                     })();
-
-                    console.log("パーツ一覧:", maps_modelParts);
 
                     // エッジ線を追加（親レベルのメッシュのみ、子メッシュの内部構造は無視）
                     Object.values(maps_modelParts).forEach((mesh) => {
@@ -1696,7 +1685,6 @@ let loadModel;
                                 ) {
                                     const setLeft = (value) => element.style.setProperty("--leftPx", value);
                                     setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
-                                    console.log(updateThreshold + "px");
                                 }
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > updateThreshold
@@ -1749,8 +1737,6 @@ let loadModel;
                                 // センサーが存在しない場合は処理しない
                                 return;
                             }
-
-                            console.log("deviceHeading : ", deviceHeading);
                             updateCameraAngle({
                                 horizontal: -deviceHeading,
                                 duration: 0
@@ -2053,8 +2039,6 @@ let loadModel;
             duration = 1,
             onComplete: finish
         } = {}) {
-            console.log("updateCameraAngle : ", horizontal, vertical);
-
             // 回転禁止＆慣性無効化
             let prevDamping;
             setTimeout(() => {
@@ -2335,7 +2319,6 @@ let loadModel;
                 e.stopPropagation();
                 barHeightUpdate(!isNowOpen);
             } else if (isHolded) { // swipe
-                console.log("Math.abs(difference[1])", Math.abs(difference[1]));
                 const threshold = 100;
                 barHeightUpdate(isNowOpen ? difference[1] * -1 < threshold : difference[1] > threshold);
             }
