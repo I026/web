@@ -1697,26 +1697,24 @@ let loadModel;
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > posUpdateThreshold
                                 ) {
-                                    // const setLeft = (value) => element.style.setProperty("--leftPx", value);
-                                    const setLeft = (value) => element.style.left = value;
+                                    const setLeft = (value) => element.style.setProperty("--leftPx", value);
                                     setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
                                 }
                                 if (
                                     Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > posUpdateThreshold
                                 ) {
-                                    // const setTop = (value) => element.style.setProperty("--topPx", value);
-                                    const setTop = (value) => element.style.top = value;
+                                    const setTop = (value) => element.style.setProperty("--topPx", value);
                                     setTop(`${isAlwaysShow ? topPx : originalTopPx}px`);
                                 }
                                 if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > posUpdateThreshold) {
                                     element.style.setProperty("--camDistance", camDistance);
                                 }
-                                element.style.setProperty("--objPosX", objPos.x);
+                                /* element.style.setProperty("--objPosX", objPos.x);
                                 element.style.setProperty("--objPosZ", objPos.z);
                                 element.style.setProperty("--camPosX", camPos.x);
                                 element.style.setProperty("--camPosZ", camPos.z);
                                 
-                                element.style.setProperty("--camZoom", maps_camera.zoom);
+                                element.style.setProperty("--camZoom", maps_camera.zoom); */
                                 
                                 function distaceTest () {
                                     element.textContent = `${(
