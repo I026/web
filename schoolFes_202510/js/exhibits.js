@@ -1545,6 +1545,13 @@ let loadModel;
                     function updateLabelsPosition() {
                         const bottomBar_contents_rect = bottomBar_contents.getBoundingClientRect();
                         const maps_renderer_rect = maps_renderer.domElement.getBoundingClientRect();
+
+                        const camPos = maps_camera.position;
+
+                        mapsView.style.setProperty("--camPosX", camPos.x);
+                        mapsView.style.setProperty("--camPosZ", camPos.z);
+                        mapsView.style.setProperty("--camZoom", maps_camera.zoom);
+
                         Object.values(labels).forEach(({ element, part }, index) => {
                             const vector = new THREE.Vector3();
                             if (part.geometry) {
@@ -1566,7 +1573,6 @@ let loadModel;
                             const rectWidthHalf  = maps_renderer_rect.width  / 2;
                             const rectHeightHalf = maps_renderer_rect.height / 2;
 
-                            const camPos = maps_camera.position;
                             const objPos = part.userData?.originalTransform?.position.clone() || part.getWorldPosition(new THREE.Vector3());
                             const camDistance = camPos.distanceTo(objPos);
 
@@ -1709,12 +1715,8 @@ let loadModel;
                                 if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > posUpdateThreshold) {
                                     element.style.setProperty("--camDistance", camDistance);
                                 }
-                                /* element.style.setProperty("--objPosX", objPos.x);
+                                element.style.setProperty("--objPosX", objPos.x);
                                 element.style.setProperty("--objPosZ", objPos.z);
-                                element.style.setProperty("--camPosX", camPos.x);
-                                element.style.setProperty("--camPosZ", camPos.z);
-                                
-                                element.style.setProperty("--camZoom", maps_camera.zoom); */
                                 
                                 function distaceTest () {
                                     element.textContent = `${(
