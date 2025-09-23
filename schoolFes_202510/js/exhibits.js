@@ -1446,7 +1446,7 @@ let loadModel;
                         let lastHandleEventAt;
 
                         function handleEvent(x, y) {
-                            if ((Date.now() - lastHandleEventAt) < 100) return;
+                            if ((Date.now() - lastHandleEventAt) < 500) return;
                             lastHandleEventAt = Date.now();
                             console.log("handleEvent", x, y, lastHandleEventAt);
                             
