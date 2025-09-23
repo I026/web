@@ -482,7 +482,7 @@ function maps_frameObject({
     controls: controls = maps_controls,
     duration: duration = 1,
     isToCenter: isToCenter = true,
-    zoom: zoom = 2.1,
+    zoom: zoom = Math.max(2.1, maps_camera.zoom),
 }) {
     if (!target?.geometry) return;
 

@@ -91,7 +91,10 @@ function addGoogleTag () { // Google tag
     try {
         const isDevMode = await getHashSHA256(localStorage.getItem("devMode") || null) === "729e344a01e52c822bdfdec61e28d6eda02658d2e7d2b80a9b9029f41e212dde";
         if (isDevMode) {
-            titleMap.devMode = "(HelloWorld!)";
+            console.log("isDevMode");
+            // titleMap.devMode = "(HelloWorld!)";
+            const title = d.head.querySelector("title");
+            title.textContent = `D_ ${title.textContent}`;
         } else {
             addGoogleTag();
         }
