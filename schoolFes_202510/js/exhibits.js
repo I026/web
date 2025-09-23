@@ -1606,7 +1606,7 @@ let loadModel;
                                 if (isAlwaysShow) {
                                     leftPx = min(
                                         max(leftPx, margin),
-                                        bottomBar_contents_rect.width - element.offsetWidth - margin
+                                        maps_renderer_rect.width - element.offsetWidth - margin
                                     );
                                 }
                                 const originalTopPx = topPx;
@@ -2290,9 +2290,9 @@ let loadModel;
         const isNowOpen = exhibitsBottomBar.classList.contains("opened");
         if (Math.abs(difference[1]) !== 0 || e?.target === sortList_topBar) {
             if (e?.target === sortList_topBar && Math.abs(difference[1]) === 0) { // topBarTap
-                barHeightUpdate(!isNowOpen);
                 e.preventDefault();
                 e.stopPropagation();
+                barHeightUpdate(!isNowOpen);
             } else if (isHolded) { // swipe
                 console.log("Math.abs(difference[1])", Math.abs(difference[1]));
                 const threshold = 100;
