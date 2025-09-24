@@ -4,6 +4,7 @@ body {
     font-family: "Outfit", "Outfit_Local", "Noto Sans JP", "SF Pro JP", "Arial", sans-serif;
 }
 
+
 .content.top .topTitle svg {
     transform: translateY( calc(var(--scrollPx) * -1) );
 }
@@ -58,4 +59,108 @@ body {
     transform: rotate(-45deg);
     animation: arrow 2s ease-in-out infinite !important;
     animation-delay: 2.5s !important;
+}
+
+.content.main {
+    margin: 0;
+    padding: 0;
+    --pagesPadding: 20px;
+    --pageWidth : calc(100vw - var(--pagesPadding) * 2);
+    --pageHeight: calc(100vh - var(--topBarHeight) - var(--pagesPadding));
+    /* height: calc(100vw * var(--numOfPageContents)); */
+    /* (var(--pageWidth) + var(--pagesPadding)) * var(--numOfPageContents) */
+    /* height: calc(
+        (var(--pageWidth) + var(--pagesPadding)) / var(--pageSlideRatio) * var(--numOfPageContents)
+    ); */
+    height: var(--totalHeight);
+    max-width: 100vw;
+    position: relative;
+}
+@media (min-width: 800px) {
+    .content.main {
+        --pageWidth: calc(50vw - var(--pagesPadding) * 2);
+    }
+}
+
+.content.main .pages {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: sticky;
+    top: calc(var(--topBarHeight) - var(--pagesPadding));
+    /* padding-top: var(--topBarHeight); */
+    /* padding: var(--pagesPadding); */
+    left: 0;
+    --pageSlideThreshold: calc(100vh + var(--topBarHeight) * .5);
+    /* gap: var(--pagesPadding); */
+    width : 100vw;
+    height: 100vh;
+    /* transform: translateX(calc(
+        (max(var(--scrollPx), var(--pageSlideThreshold)) - var(--pageSlideThreshold)) * -1 * var(--pageSlideRatio)
+    )); */
+    overflow: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+.content.main .pages::-webkit-scrollbar {
+    display: none;
+}
+.content.main .pages .page {
+    position: relative;
+    /* margin-left: calc(var(--pageWidth) * var(--contentsIndex)); */
+    box-shadow: 0 0 10px gray;
+    border-radius: var(--pagesPadding);
+    flex-shrink: 0;
+    top: var(--pagesPadding);
+    margin-left: var(--pagesPadding);
+    padding: var(--pagesPadding);
+    width : calc(var(--pageWidth) - var(--pagesPadding) * 2);
+    height: calc(var(--pageHeight) - var(--pagesPadding) * 2);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    opacity: max(
+        calc(
+            var(--scrollLeftRatio) * var(--numOfPageContents) - var(--contentsIndex) + 1.5
+        ),
+        .2
+    );
+    transition: opacity .5s ease-in-out;
+}
+.content.main .pages .page:last-child {
+    margin-right: var(--pagesPadding);
+}
+
+.content.main .pages .page div {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.content.main .pages .page div svg, .content.main .pages .page div img {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+.content.main .pages .page div img {
+    --padding: 0;
+    object-fit: cover;
+    height: calc(100% + 50px);
+    width: calc(100% + 50px);
+}
+.content.main .pages .page svg {
+    transform: scaleY(-1);
+}
+.content.main .pages .page svg path {
+    stroke-width: 42;
+    /* stroke-dashoffset: var(--pathLength); */
+    transition: stroke-dashoffset .5s ease-in-out;
+}
+.content.main .pages .page.anim svg path {
+    stroke-dashoffset: 0;
+}
+.content.main .pages .page:not(.visible) > * {
+    display: none;
 }

@@ -246,7 +246,7 @@ function setPathViewBox() {
             path.style.setProperty("--pathLength_minus", length * -1);
             
             // アニメーションを設定（indexを使って遅延）
-            path.style.animationDelay = `${index * 0.05}s`;
+            path.style.animationDelay = `${index * (2 / paths.length)}s`;
             if (path.parentElement.parentElement.classList.contains("checkBox")) {
                 setTimeout(() => {
                     path.style.transition = "stroke-dashoffset .5s ease-in-out";

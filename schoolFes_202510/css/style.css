@@ -8,6 +8,7 @@
     --topBarMargin: 10px;
     --sortListArea_heightBase: 200px;
 
+    --topBarHeight: 100px;
     /* --checkPathLength: 849.9996337890625; */
 }
 body {
@@ -23,6 +24,7 @@ body {
     height: 50vh;
     width: 100vw;
     position: relative;
+    margin-bottom: 50px;
 }
 .content.top.fullSize {
     height: 100vh;
@@ -136,7 +138,7 @@ svg.anim path, svg.anim rect {
 }
 .topBars {
     width: 100vw;
-    height: 100px;
+    height: var(--topBarHeight);
     top: 0;
     position: fixed;
     display: flex;
