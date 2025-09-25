@@ -38,7 +38,7 @@
     margin-bottom: 0;
     width: calc(100% - var(--exhibitsTileMargin) * 2);
     height: var(--baseHeight);
-    border-radius: 10px;
+    border-radius: .9em;
     background-color: rgba(var(--baseBackgorundRGB), .25);
     box-shadow: 0 0 10px gray;
     display: flex;
@@ -117,6 +117,7 @@
     position: absolute;
     right: 10px;
     top: 10px;
+    border-radius: calc(.5em + 5px);
     font-size: .8em;
     display: flex;
     justify-content: center;
@@ -141,20 +142,23 @@
 .content.main .exhibits .tile .location span.locationText {
     transition: opacity .5s ease-in-out;
 }
-.content.main .exhibits .tile .location:hover span.locationText {
-    opacity: 0;
+@media (hover: hover) and (pointer: fine) {
+    .content.main .exhibits .tile .location:hover span.locationText {
+        opacity: 0;
+    }
+    .content.main .exhibits .tile .location:hover svg path {
+        stroke-dashoffset: var(--pathLength);
+        opacity: 0;
+    }
+    .content.main .exhibits .tile .location:hover span.text {
+        opacity: 1;
+    }
 }
-.content.main .exhibits .tile .location:hover svg path {
-    stroke-dashoffset: var(--pathLength);
-    opacity: 0;
-}
+
 .content.main .exhibits .tile .location span.text {
     position: absolute;
     opacity: 0;
     transition: opacity .5s ease-in-out;
-}
-.content.main .exhibits .tile .location:hover span.text {
-    opacity: 1;
 }
 
 .content.main .exhibits .tile.sortList * {
@@ -464,9 +468,9 @@
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.invalid {
     pointer-events: none;
     --labelOpacity: .5;
-    opacity: var(--labelOpacity);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
+    opacity: var(--labelOpacity);
     position: absolute;
     color: white;
     display: flex;
@@ -920,11 +924,14 @@
     flex-direction: row;
     color: white;
     background-color: black;
-    padding: .1em .2em .1em .1em;
+    padding-top: 0.1em;
+    padding-right: 0.25em;
+    padding-left : 0.25em;
+    padding-bottom: 0.1em;
     position: relative;
     font-weight: bold;
     margin: .25em;
-    border-radius: 5px;
+    border-radius: calc(.5em + 2.25px);
     height: 1.5em;
     width: max-content;
     align-items: center;

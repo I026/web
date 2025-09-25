@@ -59,24 +59,108 @@ setInterval(dateUpdate, 10000);
 
         function windowResize () {
             // 横スクロール総距離
+            const windowHeight = window.visualViewport?.height || window.innerHeight;
             pagesAreaWidth = pagesArea.scrollWidth - pagesArea.clientWidth;
             topBarHeight = parseFloat(getComputedStyle(d.body).getPropertyValue("--topBarHeight"));
-            pageSlideThreshold = window.innerHeight - (topBarHeight || 100) * .5;
+            pageSlideThreshold = windowHeight - (topBarHeight || 100) * .15;
             pageSlideRatio = 1;
             mainContent.style.setProperty("--pageSlideRatio", pageSlideRatio);
 
-            const totalHeight = pagesAreaWidth / pageSlideRatio + window.innerHeight;
+            const totalHeight = pagesAreaWidth / pageSlideRatio + windowHeight;
             mainContent.style.setProperty("--totalHeight", totalHeight + "px");
         }
-        window.addEventListener("resize", windowResize);
+        let lastTimeWindowHeight;
+        window.addEventListener("resize", () => {
+            if (Math.abs(lastTimeWindowHeight - window.innerHeight) > 100) windowResize();
+            lastTimeWindowHeight = window.innerHeight;
+        });
         windowResize();
 
-        // 横スクロール同期
-        pagesArea.addEventListener("scroll", () => {
-            window.scrollTo({
-                top: pageSlideThreshold + pagesArea.scrollLeft / pageSlideRatio
+        (() => {
+            let touchStartScrollY;
+            let touchStartPos = [];
+            let lastMoveTime = 0;
+            let lastMoveX = 0;
+            let velocityX = 0;
+
+            pagesArea.addEventListener("touchstart", e => {
+                const client = [e.touches[0].clientX, e.touches[0].clientY];
+                touchStartPos = [client[0], client[1]];
+                touchStartScrollY = window.scrollY;
+                lastMoveX = client[0];
+                lastMoveTime = Date.now();
+                velocityX = 0; // 初期化
             });
-        });
+
+            let isSlideValid = false;
+
+            pagesArea.addEventListener("touchmove", e => {
+                const client = [e.touches[0].clientX, e.touches[0].clientY];
+                const now = Date.now();
+
+                // 前回との距離と時間差で速度を計算
+                const deltaX = lastMoveX - client[0];
+                const deltaTime = now - lastMoveTime;
+
+                if (deltaTime > 0) {
+                    velocityX = deltaX / deltaTime; // px/ms
+                }
+
+                const difference = [
+                    touchStartPos[0] - client[0],
+                    touchStartPos[1] - client[1]
+                ];
+                if (!touchStartScrollY) touchStartScrollY = window.scrollY;
+                if (
+                    Math.abs(difference[0]) > 5 &&
+                    Math.abs(difference[1]) < 30
+                ) {
+                    isSlideValid = true;
+                    window.scrollTo({
+                        top: touchStartScrollY + difference[0] + (difference[0] > 0 ? -5 : 5)
+                    });
+                }
+            });
+
+            pagesArea.addEventListener("touchend", () => {
+                if (!isSlideValid) return;
+                touchStartScrollY = null;
+                isSlideValid = false;
+                const deceleration = 0.0035; // 減速率(px/ms²) 小さいほど長く続く
+                let lastTime = Date.now();
+                let currentVelocity = velocityX; // touchmoveで計算している速度(px/ms)
+
+                function inertiaScroll() {
+                    const now = Date.now();
+                    const deltaTime = now - lastTime;
+                    lastTime = now;
+
+                    // 距離 = 速度 × 時間
+                    const distance = currentVelocity * deltaTime;
+
+                    // 現在のスクロール位置を加算
+                    window.scrollTo({
+                        top: window.scrollY + distance
+                    });
+
+                    // 摩擦で徐々に減速
+                    if (currentVelocity > 0) {
+                        currentVelocity = Math.max(0, currentVelocity - deceleration * deltaTime);
+                    } else {
+                        currentVelocity = Math.min(0, currentVelocity + deceleration * deltaTime);
+                    }
+
+                    // 速度が小さくなったら終了
+                    if (Math.abs(currentVelocity) > 0.07) {
+                        requestAnimationFrame(inertiaScroll);
+                    }
+                }
+
+                if (Math.abs(currentVelocity) > .7) { // 一定速度以上なら惰性開始
+                    requestAnimationFrame(inertiaScroll);
+                }
+            });
+        })();
 
         function windowScroll () {
             const scrollY = window.scrollY;
@@ -113,39 +197,51 @@ setInterval(dateUpdate, 10000);
     }
 
     // SVGファイルのパス
-    const svgFilePaths = [
-        "medias/pages/0.svg",
-        "medias/pages/1.svg",
-        "medias/pages/1.svg",
-        "medias/pages/1.svg",
+    const filePaths = [
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
     ];
 
     // SVGファイルを読み込む
     let i = 0;
-    function loadFile (svgFilePath) {
-        fetch(svgFilePath).then(response => response.text()).then(svgText => {
-            // DOMParserで文字列をパースしてSVG要素にする
-            const parser = new DOMParser();
-            const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
-            
-            // <path>要素を取得
-            const paths = svgDoc.querySelectorAll("path");
-
-            const svg = genPageSvg();
-
-            // 例: ページ上の別のSVGに追加する
-            paths.forEach(path => {
-                svg.appendChild(path.cloneNode(true));
-            });
-            pageContents.push(svg);
-
-            if (svgFilePaths.length <= i + 1) {
-                loadComp();
-            } else {
-                loadFile(svgFilePaths[i + 1]);
-                i += 1;
-            }
-        }).catch(err => console.error(err));
+    function next () {
+        if (filePaths.length <= i + 1) {
+            loadComp();
+        } else {
+            loadFile(filePaths[i + 1]);
+            i += 1;
+        }
     }
-    loadFile(svgFilePaths[0]);
+
+    function loadFile (filePath) {
+        if (filePath.includes(".svg")) {
+            fetch(filePath).then(response => response.text()).then(svgText => {
+                // DOMParserで文字列をパースしてSVG要素にする
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgText, "image/svg+xml");
+
+                const svg = genPageSvg();
+
+                // <path>要素と<image>要素をまとめて取得
+                const elements = svgDoc.querySelectorAll("path, image");
+
+                // 取得した要素を追加
+                elements.forEach(el => {
+                    svg.appendChild(el.cloneNode(true));
+                });
+
+                pageContents.push(svg);
+                next();
+            }).catch(err => console.error(err));
+        } else {
+            setTimeout(() => {
+                const img = d.createElement("img");
+                img.src = filePath;
+                pageContents.push(img);
+                next();
+            });
+        }
+    }
+    loadFile(filePaths[0]);
 })();

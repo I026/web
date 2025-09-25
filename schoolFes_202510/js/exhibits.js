@@ -1045,8 +1045,8 @@ let loadModel;
         // 太陽の位置を取得
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.castShadow = false;
-        light.shadow.mapSize.width = 1024;
-        light.shadow.mapSize.height = 1024;
+        light.shadow.mapSize.width = 512;
+        light.shadow.mapSize.height = 512;
         light.shadow.bias = -0.0001;
         function matchSun () {
             const sunPos = SunCalc.getPosition(now, latitude, longitude);
@@ -1542,6 +1542,8 @@ let loadModel;
                     const areaTopMargin = getComputedStyle(exhibitsBottomBar).marginTop.replace("px", "") * 1;
 
                     const getFmtedPx = (px) => px.replace("px", "");
+
+
                     function updateLabelsPosition() {
                         const bottomBar_contents_rect = bottomBar_contents.getBoundingClientRect();
                         const maps_renderer_rect = maps_renderer.domElement.getBoundingClientRect();
@@ -1579,8 +1581,9 @@ let loadModel;
                             if ((gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1) || isAlwaysShow) {
                                 if (getIsSortConforming(element, getSortConditions())) {
                                     if (element.classList.contains("invalid")) element.classList.remove("invalid");
+                                    element.style.setProperty("--labelOpacity", 1);
                                 } else {
-                                    if (!element.classList.contains("invalid")) element.classList.add("invalid");
+                                    // if (!element.classList.contains("invalid")) element.classList.add("invalid");
                                     element.style.setProperty("--labelOpacity", .5);
                                 }
                             } else {
@@ -1691,57 +1694,35 @@ let loadModel;
                                     if (element.classList.contains("edge")) element.classList.remove("edge");
                                 }
 
-                                const posUpdateThreshold = max(
-                                    min(
-                                        (
-                                            (1000 - window.innerWidth) * .0025
-                                        ),
-                                        5
-                                    ),
-                                    1
-                                );
                                 if (
-                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > posUpdateThreshold
+                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > labelPosUpdateThreshold
                                 ) {
                                     const setLeft = (value) => element.style.setProperty("--leftPx", value);
                                     setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
                                 }
                                 if (
-                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > posUpdateThreshold
+                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > labelPosUpdateThreshold
                                 ) {
                                     const setTop = (value) => element.style.setProperty("--topPx", value);
                                     setTop(`${isAlwaysShow ? topPx : originalTopPx}px`);
                                 }
-                                if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > posUpdateThreshold) {
+                                if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > labelPosUpdateThreshold) {
                                     element.style.setProperty("--camDistance", camDistance);
                                 }
                                 element.style.setProperty("--objPosX", objPos.x);
                                 element.style.setProperty("--objPosZ", objPos.z);
-                                
-                                function distaceTest () {
-                                    element.textContent = `${(
-                                        (
-                                            98 - camDistance * camDistance
-                                        ) / 17
-                                    )}`;
-                                    // element.textContent = `${Math.floor(camDistance * 10000) / 10000}`;
-                                    // element.textContent = `${objPos.x}\n${objPos.z}`;
-                                    element.style.minWidth = "4em";
-                                    element.style.minHeight = "1.2em";
-                                }
-                                // distaceTest();
                             }
                         });
                     }
 
                     // 描画ループ
                     let lastAnimUpdateAt;
-                    const animUpdateThresholdMs = 18;
+                    const labelPosUpdateThreshold = 2;
                     function animate() {
                         requestAnimationFrame(animate);
-                        if ((Date.now() - lastAnimUpdateAt > animUpdateThresholdMs * .6) || !lastAnimUpdateAt) {
-                            maps_controls.update();
+                        if ((Date.now() - lastAnimUpdateAt > labelAnimUpdateThresholdMs * .6) || !lastAnimUpdateAt) {
                             maps_renderer.render(scene, maps_camera);
+                            maps_controls.update();
                             lastAnimUpdateAt = Date.now();
                         }
                     }
@@ -1930,7 +1911,7 @@ let loadModel;
                         // コンパスを回転
                         compassImg.style.transform = `rotate(${camHorizontal}deg)`;
 
-                        if (now - lastLabelUpdate > animUpdateThresholdMs) {
+                        if (now - lastLabelUpdate > labelAnimUpdateThresholdMs * 2) {
                             lastLabelUpdate = now;
                             updateLabelsPosition();
 
@@ -1952,6 +1933,8 @@ let loadModel;
         };
         loadModel();
 
+        let labelAnimUpdateThresholdMs;
+
         function windowResize() {
             const topMargin = (
                 parseFloat(getComputedStyle(mapsView).getPropertyValue("--topBarHeight")) +
@@ -1967,6 +1950,13 @@ let loadModel;
             maps_camera.updateProjectionMatrix();
 
             maps_renderer.setSize(mapsView.clientWidth, mapsView.clientHeight + topMargin);
+
+            labelAnimUpdateThresholdMs = Math.max(
+                Math.min(
+                    (4 - maps_camera.zoom) * 10, 80
+                ),
+                10
+            );
 
             barHeightUpdate();
         }
@@ -2337,8 +2327,6 @@ let lastScrollTime = Date.now();
 let lastScrollPx;
 
 window.addEventListener("scroll", () => { // sortListAreaHeight
-    const scrollRatio = window.scrollY / window.innerHeight;
-
     if (d.documentElement.scrollHeight < window.innerHeight + window.scrollY + 100) {
         exhibitsBottomBar.style.opacity = 0;
         exhibitsBottomBar.style.pointerEvents = "none";

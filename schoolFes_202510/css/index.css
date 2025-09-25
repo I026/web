@@ -66,7 +66,9 @@ body {
     padding: 0;
     --pagesPadding: 20px;
     --pageWidth : calc(100vw - var(--pagesPadding) * 2);
-    --pageHeight: calc(100vh - var(--topBarHeight) - var(--pagesPadding));
+    /* --pageHeight: calc(var(--pageWidth) * 1.4075829384); */
+    --pageHeight: calc(90vh - var(--topBarHeight) - var(--pagesPadding));
+
     /* height: calc(100vw * var(--numOfPageContents)); */
     /* (var(--pageWidth) + var(--pagesPadding)) * var(--numOfPageContents) */
     /* height: calc(
@@ -87,18 +89,18 @@ body {
     justify-content: flex-start;
     align-items: flex-start;
     position: sticky;
-    top: calc(var(--topBarHeight) - var(--pagesPadding));
+    top: calc(var(--topBarHeight) - var(--pagesPadding) * 2);
     /* padding-top: var(--topBarHeight); */
     /* padding: var(--pagesPadding); */
     left: 0;
     --pageSlideThreshold: calc(100vh + var(--topBarHeight) * .5);
     /* gap: var(--pagesPadding); */
     width : 100vw;
-    height: 100vh;
+    height: calc(100vh - var(--topBarHeight) + var(--pagesPadding) * 2);
     /* transform: translateX(calc(
         (max(var(--scrollPx), var(--pageSlideThreshold)) - var(--pageSlideThreshold)) * -1 * var(--pageSlideRatio)
     )); */
-    overflow: auto;
+    overflow: hidden;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
 }
@@ -111,7 +113,7 @@ body {
     box-shadow: 0 0 10px gray;
     border-radius: var(--pagesPadding);
     flex-shrink: 0;
-    top: var(--pagesPadding);
+    top: calc(var(--pagesPadding) + 30px);
     margin-left: var(--pagesPadding);
     padding: var(--pagesPadding);
     width : calc(var(--pageWidth) - var(--pagesPadding) * 2);
@@ -119,6 +121,7 @@ body {
     overflow: hidden;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
     opacity: max(
         calc(
             var(--scrollLeftRatio) * var(--numOfPageContents) - var(--contentsIndex) + 1.5
@@ -139,21 +142,25 @@ body {
     justify-content: center;
     align-items: center;
 }
-.content.main .pages .page div svg, .content.main .pages .page div img {
-    position: absolute;
+.content.main .pages .page svg,
+.content.main .pages .page img {
+    position: relative;
     height: 100%;
     width: 100%;
+    display: flex;
 }
-.content.main .pages .page div img {
+.content.main .pages .page img {
     --padding: 0;
     object-fit: cover;
     height: calc(100% + 50px);
     width: calc(100% + 50px);
 }
-.content.main .pages .page svg {
-    transform: scaleY(-1);
+.content.main .pages .page svg image {
+    height: 100%;
+    width: 100%;
 }
 .content.main .pages .page svg path {
+    transform: scaleY(-1);
     stroke-width: 42;
     /* stroke-dashoffset: var(--pathLength); */
     transition: stroke-dashoffset .5s ease-in-out;
