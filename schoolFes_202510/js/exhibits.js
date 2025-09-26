@@ -1678,7 +1678,7 @@ let loadModel;
                                     if (element.classList.contains("invalid")) element.classList.remove("invalid");
                                     element.style.setProperty("--labelOpacity", 1);
                                 } else {
-                                    if (!element.classList.contains("invalid")) element.classList.add("invalid");
+                                    // if (!element.classList.contains("invalid")) element.classList.add("invalid");
                                     element.style.setProperty("--labelOpacity", .5);
                                 }
                             } else {
@@ -1768,7 +1768,9 @@ let loadModel;
                                         difference[0],
                                     ) * (180 / Math.PI)}deg`);
                                 } else {
-                                    element.classList.remove("edge");
+                                    if (element.classList.contains("edge")) {
+                                        element.classList.remove("edge");
+                                    }
                                 }
                                 // element.style.setProperty("--camDistance", camDistance);
                             }
@@ -2037,17 +2039,18 @@ let loadModel;
         } = {}) {
             if (mesh.userData.edgeLine) {
                 const edgeMat = mesh.userData.edgeLine.material;
+                mesh.userData.edgeLine.visible = opacity !== 0;
                 gsap.to(edgeMat.color, {
                     r: new THREE.Color(color).r,
                     g: new THREE.Color(color).g,
                     b: new THREE.Color(color).b,
                     duration: duration,
-                    ease: "power2.inOut"
+                    ease: "power2.inOut",
                 });
                 gsap.to(edgeMat, {
                     opacity: opacity,
                     duration: duration,
-                    ease: "power2.inOut"
+                    ease: "power2.inOut",
                 });
             }
         }
@@ -2243,7 +2246,7 @@ let loadModel;
                         ease: "power2.inOut"
                     });
                     setEdgeStyle(part, {
-                        opacity: isPartActive ? 1 : .05
+                        opacity: isPartActive ? 1 : 0
                     });
                 });
 

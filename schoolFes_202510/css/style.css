@@ -326,7 +326,7 @@ svg.anim path, svg.anim rect {
     font-size: 75%;
 }
 .checkBox {
-    border-radius: 5px;
+    border-radius: 7.5px;
     position: absolute;
     border: var(--checkBox_borderWidth) solid white;
     height: calc(var(--checkBox_BaseWidth) - var(--checkBox_borderWidth) * 2);

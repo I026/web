@@ -547,6 +547,17 @@
     transition:
     opacity .5s ease-in-out;
 }
+@keyframes labelShowAnim {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: var(--labelOpacity);
+    }
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel:not(.edge) {
+    animation: labelShowAnim .5s ease-in-out;
+}
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.right {
     /* transform: translateX(-3.5em); */
     opacity: 1;

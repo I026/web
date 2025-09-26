@@ -322,6 +322,9 @@ setInterval(dateUpdate, 10000);
             lastTimeWindowHeight = window.innerHeight;
         });
         windowResize();
+        setTimeout(() => {
+            windowResize();
+        }, 100);
     }
 
     // SVGファイルのパス

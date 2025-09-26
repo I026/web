@@ -329,7 +329,7 @@ topBar.querySelector(".menuOpen_button").addEventListener("click", () => {
 });
 
 [
-    ["", "Home", "index"],
+    ["", "パンフレット", "index"],
     ["", "企画一覧", "exhibits"],
     ["", "歌詞", "lyrics"],
 ].forEach(item => {
@@ -358,7 +358,6 @@ topBar.querySelector(".menuOpen_button").addEventListener("click", () => {
 
 topBars.className = "topBars";
 topBar_filter.addEventListener("click", (e) => {
-    console.log(e.target);
     topBars.classList.remove("opened");
 });
 topBar.className = "topBar button hidden";
