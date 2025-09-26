@@ -51,6 +51,7 @@ const exhibits = {
             "byClass",
             "J1",
         ],
+        image: "medias/exhibits/J1_1.png",
     },
     J1_2: {
         name: "テスト文",
@@ -124,9 +125,6 @@ const exhibits = {
     H3_6: {
         name: "お化け屋敷(らしい)",
         description: "(らしいよ!! そうらしい!!!!!!!)",
-        location: {
-            name: "あなたのいえのてんじょうのうえらへん"
-        },
         tag: [
             "byClass",
             "H3",
@@ -444,6 +442,17 @@ const tagOrder = {
 
 function openTile (targetTile, isToOpen = !targetTile.classList.contains("opened")) {
     const allTiles = exhibitsArea.querySelectorAll(".tile");
+
+    targetTile.style.setProperty("--tileOpenHeight", (() => {
+        let height = 0;
+        Array.from(targetTile.children).forEach(child => {
+            height += (
+                child.scrollHeight
+            );
+        });
+        return height;
+    })() + "px");
+
     allTiles.forEach(element => {
         if (element !== targetTile) element.classList.remove("opened");
     });
@@ -529,6 +538,7 @@ const maps_camera = new THREE.OrthographicCamera(
     1,
     200
 );
+
 const maps_labelRenderer = new CSS2DRenderer();
 const maps_labelsArea = maps_labelRenderer.domElement;
 maps_labelsArea.style.position = "absolute";
@@ -700,6 +710,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     const location = d.createElement("div");
     const description = d.createElement("div");
     const tagsContent = d.createElement("div");
+    const images = d.createElement("div");
     const tags = d.createElement("div");
 
     tile.setAttribute("exhibits", getExhibits(i)[0]);
@@ -733,6 +744,14 @@ for (let i = 0; i < exhibitsLength; i += 1) {
 
     names.textContent = getExhibits(i)[1].name;
     names.classList.add("names");
+    
+    images.className = "images";
+    const image = d.createElement("img");
+    images.appendChild(image);
+    if (getExhibits(i)[1].image) {
+        image.src = getExhibits(i)[1].image;
+        images.appendChild(image);
+    }
 
     const locationText = d.createElement("span");
     locationText.className = "locationText";
@@ -801,6 +820,7 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     tile.appendChild(names);
     tile.appendChild(location);
     tile.appendChild(description);
+    tile.appendChild(images);
     tile.appendChild(tags);
     tags.appendChild(tagsContent);
     exhibitsArea.appendChild(tile);
@@ -813,14 +833,6 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     }
     scroll();
     tagsContent.addEventListener("scroll", scroll);
-
-    tile.style.setProperty("--tileOpenHeight", (() => {
-        let height = 20;
-        Array.from(tile.children).forEach(child => {
-            height += child.scrollHeight;
-        });
-        return height;
-    })() + "px");
 }
 
 function getSortConditions () {
@@ -1937,7 +1949,7 @@ let loadModel;
                         ) return;
                         const now = Date.now();
 
-                        maps_camera.zoom = THREE.MathUtils.clamp(maps_camera.zoom, .6, 5);
+                        maps_camera.zoom = THREE.MathUtils.clamp(maps_camera.zoom, .2, 5);
                         maps_camera.updateProjectionMatrix();
 
                         (() => {
