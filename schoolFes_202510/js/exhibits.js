@@ -134,9 +134,58 @@ const exhibits = {
 
 const maps_pointIcon = '<img src="medias/images/mapPoint.svg"/>';
 
+const maps_words = {
+    Subjects: {
+        Japanese: "日本語",
+        Math: "数学",
+        English: "英語",
+        Science: "理科",
+        SocialStudies: "社会",
+        Music: "音楽",
+        Life: "人間生活",
+        Art: "美術",
+        PhysicalEdu: "体育",
+        Information: "情報",
+        Woodworking: "木工",
+    },
+    Subject: "科",
+    Room: "室",
+    Laboratory: "研究",
+    Preparation: "準備",
+    NextTo: "の隣",
+    Inside: "の中",
+    Infront: "の前",
+};
+
+const maps_locationNames = {
+    Entrance: "入口",
+    Woodworking: `${maps_words.Subjects.Woodworking}${maps_words.Room}`,
+    Dining: "食堂",
+    Gym: `${maps_words.Subjects.PhysicalEdu}館`,
+    Art: `${maps_words.Subjects.Art}棟`,
+    Multipurpose: "多目的ホール",
+    Science_A: `${maps_words.Subjects.Science}${maps_words.Room}A`,
+    Science_B: `${maps_words.Subjects.Science}${maps_words.Room}B`,
+    Science_C: `${maps_words.Subjects.Science}${maps_words.Room}C`,
+    Science_D: `${maps_words.Subjects.Science}${maps_words.Room}D`,
+    Science_Preparation: `${maps_words.Subjects.Science}${maps_words.Preparation}${maps_words.Room}`,
+    Science_Laboratory: `${maps_words.Subjects.Science}${maps_words.Laboratory}${maps_words.Room}`,
+    SocialStudies_Laboratory: `${maps_words.Subjects.SocialStudies}${maps_words.Subject}${maps_words.Laboratory}${maps_words.Room}`,
+    English_Laboratory: `${maps_words.Subjects.English}${maps_words.Subject}${maps_words.Laboratory}${maps_words.Room}`,
+    Music_Small: `小${maps_words.Subjects.Music}${maps_words.Room}`,
+    Music_Large: `大${maps_words.Subjects.Music}${maps_words.Room}`,
+    Life_Laboratory: `${maps_words.Subjects.Life}${maps_words.Subject}${maps_words.Laboratory}${maps_words.Room}`,
+    Cooking: `調理${maps_words.Room}`,
+    Music_2: `第2${maps_words.Subjects.Music}${maps_words.Room}`,
+    Music_3: `第3${maps_words.Subjects.Music}${maps_words.Room}`,
+    Computers: `${maps_words.Subjects.Information}教${maps_words.Room}`,
+    Math_Laboratory: `${maps_words.Subjects.Math}${maps_words.Subject}${maps_words.Laboratory}${maps_words.Room}`,
+    Music_Laboratory: `${maps_words.Subjects.Music}${maps_words.Subject}${maps_words.Laboratory}${maps_words.Room}`,
+};
+
 const maps_locations = {
     F1_Entrance_Arch: {
-        name: "入口",
+        name: maps_locationNames.Entrance,
         emphasis: true,
         location: {
             name: "正面玄関"
@@ -144,12 +193,79 @@ const maps_locations = {
         isAlwaysShow: true,
     },
     Dining_Roof: {
-        name: "食堂",
+        name: maps_locationNames.Dining,
         offset: {
             y: .2,
         },
         isAlwaysShow: true,
     },
+
+    F1_Art_WC: {
+        location: {
+            name: `${maps_locationNames.Art}${maps_words.Inside}`,
+        }
+    },
+    F1_Dining_WC: {
+        location: {
+            name: `${maps_locationNames.Dining}${maps_words.Inside}`,
+        }
+    },
+    F1_J_WC: {
+        location: {
+            name: `${getClassName("J", 1, 3)}${maps_words.NextTo}`,
+        }
+    },
+    F2_J_WC: {
+        location: {
+            name: `${getClassName("J", 2, 3)}${maps_words.NextTo}`,
+        }
+    },
+    F3_J_WC: {
+        location: {
+            name: `${getClassName("J", 3, 3)}${maps_words.NextTo}`,
+        }
+    },
+    F1_H_WC: {
+        location: {
+            name: `${getClassName("H", 1, 4)}${maps_words.Infront}`,
+        }
+    },
+    F2_H_WC: {
+        location: {
+            name: `${getClassName("H", 2, 4)}${maps_words.Infront}`,
+        }
+    },
+    F3_H_WC: {
+        location: {
+            name: `${getClassName("H", 3, 4)}${maps_words.Infront}`,
+        }
+    },
+    F1_WC: {
+        location: {
+            name: `${maps_locationNames.Science_Preparation}${maps_words.NextTo}`,
+        }
+    },
+    F2_WC: {
+        location: {
+            name: `${maps_locationNames.Cooking}${maps_words.NextTo}`,
+        }
+    },
+    F3_WC: {
+        location: {
+            name: `${maps_locationNames.Computers}${maps_words.NextTo}`,
+        }
+    },
+    F1_Gym_WC: {
+        location: {
+            name: `${maps_locationNames.Gym}${maps_words.Inside}`,
+        }
+    },
+    F1_Gym_WC001: {
+        location: {
+            name: `${maps_locationNames.Gym}${maps_words.Inside}`,
+        }
+    },
+
     F1_Certificate_Table: {
         name: maps_pointIcon,
         description: "金券",
@@ -158,22 +274,22 @@ const maps_locations = {
         },
     },
     F1_Gym_Entrance: {
-        name: "体育館",
+        name: maps_locationNames.Gym,
     },
     F1_Art: {
-        name: "美術棟",
+        name: maps_locationNames.Art,
         offset: {
             y: .5,
         },
     },
     F1_Multipurpose: {
         location: {
-            name: "多目的ホール",
+            name: maps_locationNames.Multipurpose,
         },
     },
     F1_Woodworking: {
         location: {
-            name: "木工室",
+            name: maps_locationNames.Woodworking,
         },
         offset: {
             y: .5,
@@ -181,32 +297,32 @@ const maps_locations = {
     },
     F1_Science_A: {
         location: {
-            name: "理科室A",
+            name: maps_locationNames.Science_A,
         },
     },
     F1_Science_B: {
         location: {
-            name: "理科室B",
+            name: maps_locationNames.Science_B,
         },
     },
     F1_Science_C: {
         location: {
-            name: "理科室C",
+            name: maps_locationNames.Science_C,
         },
     },
     F1_Science_D: {
         location: {
-            name: "理科室D",
+            name: maps_locationNames.Science_D,
         },
     },
     F1_Science_Preparation: {
         location: {
-            name: "理科準備室",
+            name: maps_locationNames.Science_Preparation,
         },
     },
     F1_Science_Laboratory: {
         location: {
-            name: "理科研究室",
+            name: maps_locationNames.Science_Laboratory,
         },
         offset: {
             y: .5,
@@ -214,58 +330,58 @@ const maps_locations = {
     },
     F2_SocialStudies_Laboratory: {
         location: {
-            name: "社会科研究室",
+            name: maps_locationNames.SocialStudies_Laboratory,
         },
     },
     F2_English_Laboratory: {
         location: {
-            name: "英語科研究室",
+            name: maps_locationNames.English_Laboratory,
         },
     },
     F2_Music_Small: {
         location: {
-            name: "小音楽室",
+            name: maps_locationNames.Music_Small,
         },
     },
     F2_Music_Large: {
         location: {
-            name: "大音楽室",
+            name: maps_locationNames.Music_Large,
         },
     },
     F2_Life_Laboratory: {
         location: {
-            name: "人間生活科研究室",
+            name: maps_locationNames.Life_Laboratory,
         },
     },
     F2_Cooking: {
         location: {
-            name: "調理室",
+            name: maps_locationNames.Cooking,
         },
     },
 
     F3_Music_2: {
         location: {
-            name: "第2音楽室",
+            name: maps_locationNames.Music_2,
         },
     },
     F3_Music_3: {
         location: {
-            name: "第3音楽室",
+            name: maps_locationNames.Music_3,
         },
     },
     F3_Computers: {
         location: {
-            name: "情報教室",
+            name: maps_locationNames.Computers,
         },
     },
     F3_Math_Laboratory: {
         location: {
-            name: "数学科研究室",
+            name: maps_locationNames.Math_Laboratory,
         },
     },
     F3_Music_Laboratory: {
         location: {
-            name: "音楽科研究室",
+            name: maps_locationNames.Music_Laboratory,
         },
     },
 
@@ -1479,11 +1595,18 @@ let loadModel;
                     Object.keys(maps_modelParts).forEach((partName) => {
                         const part = maps_modelParts[partName];                        
 
-                        if (partName.includes("_WC")) {
+                        if (
+                            partName.includes("_WC") &&
+                            !maps_locations[partName]?.name
+                        ) {
+                            const locationName = maps_locations[partName]?.location.name;
                             maps_locations[partName] = {
                                 name: '<img src="medias/images/wc.svg"/>',
-                                description: `トイレ ${maps_getFloor(partName)[0]}階`
-                            }
+                                location: {
+                                    name: locationName
+                                },
+                                description: `トイレ ${maps_getFloor(partName)[0]}階`,
+                            };
                         }
 
                         if (!maps_locations[partName]) return;
