@@ -1,26 +1,3 @@
-import * as THREE from "three";
-import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { gsap } from "https://cdn.jsdelivr.net/npm/gsap@3.12.2/index.js";
-
-/**
- * @param {THREE.Object3D} target
- * @param {THREE.OrthographicCamera} camera
- * @param {THREE.OrbitControls} controls
- * @param {number} margin
- */
-
-/* 
-import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
-import { Line2 } from "three/examples/jsm/lines/Line2.js";
-import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
-import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
-*/
-
 const exhibitsBottomBar = d.querySelector(".exhibits .sortList");
 const exhibitsArea = d.querySelector(".exhibits .list");
 
@@ -168,7 +145,7 @@ const maps_locations = {
         },
         isAlwaysShow: true,
     },
-    F1_Dining004: {
+    Dining_Roof: {
         name: "食堂",
         offset: {
             y: .2,
@@ -189,6 +166,108 @@ const maps_locations = {
         name: "美術棟",
         offset: {
             y: .5,
+        },
+    },
+    F1_Multipurpose: {
+        location: {
+            name: "多目的ホール",
+        },
+    },
+    F1_Woodworking: {
+        location: {
+            name: "木工室",
+        },
+        offset: {
+            y: .5,
+        },
+    },
+    F1_Science_A: {
+        location: {
+            name: "理科室A",
+        },
+    },
+    F1_Science_B: {
+        location: {
+            name: "理科室B",
+        },
+    },
+    F1_Science_C: {
+        location: {
+            name: "理科室C",
+        },
+    },
+    F1_Science_D: {
+        location: {
+            name: "理科室D",
+        },
+    },
+    F1_Science_Preparation: {
+        location: {
+            name: "理科準備室",
+        },
+    },
+    F1_Science_Laboratory: {
+        location: {
+            name: "理科研究室",
+        },
+        offset: {
+            y: .5,
+        },
+    },
+    F2_SocialStudies_Laboratory: {
+        location: {
+            name: "社会科研究室",
+        },
+    },
+    F2_English_Laboratory: {
+        location: {
+            name: "英語科研究室",
+        },
+    },
+    F2_Music_Small: {
+        location: {
+            name: "小音楽室",
+        },
+    },
+    F2_Music_Large: {
+        location: {
+            name: "大音楽室",
+        },
+    },
+    F2_Life_Laboratory: {
+        location: {
+            name: "人間生活科研究室",
+        },
+    },
+    F2_Cooking: {
+        location: {
+            name: "調理室",
+        },
+    },
+
+    F3_Music_2: {
+        location: {
+            name: "第2音楽室",
+        },
+    },
+    F3_Music_3: {
+        location: {
+            name: "第3音楽室",
+        },
+    },
+    F3_Computers: {
+        location: {
+            name: "情報教室",
+        },
+    },
+    F3_Math_Laboratory: {
+        location: {
+            name: "数学科研究室",
+        },
+    },
+    F3_Music_Laboratory: {
+        location: {
+            name: "音楽科研究室",
         },
     },
 
@@ -422,6 +501,19 @@ function barTabClick (tabIndex) {
     barHeightUpdate(true);
 }
 
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { gsap } from "https://cdn.jsdelivr.net/npm/gsap@3.12.2/index.js";
+import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
+/**
+ * @param {THREE.Object3D} target
+ * @param {THREE.OrthographicCamera} camera
+ * @param {THREE.OrbitControls} controls
+ * @param {number} margin
+ */
+
 // カメラ
 const maps_renderer = new THREE.WebGLRenderer({
     antialias: false,
@@ -437,6 +529,11 @@ const maps_camera = new THREE.OrthographicCamera(
     1,
     200
 );
+const maps_labelRenderer = new CSS2DRenderer();
+const maps_labelsArea = maps_labelRenderer.domElement;
+maps_labelsArea.style.position = "absolute";
+maps_labelsArea.style.pointerEvents = "none";
+maps_labelsArea.className = "labelsArea";
 
 // OrbitControls 初期化
 const maps_controls = new OrbitControls(maps_camera, maps_renderer.domElement);
@@ -533,7 +630,6 @@ function maps_frameObject({
 let maps_modelParts = {};
 
 const mapsView = d.createElement("div");
-const maps_labelsArea = d.createElement("div");
 
 function maps_addLabelTransition (label, transitionDuration = .5) {
     label.style.setProperty("--duration", `${transitionDuration}s`)
@@ -1020,7 +1116,6 @@ let loadModel;
         maps_buttons_top.appendChild(top_button);
 
         mapsView.className = "mapsView";
-        maps_labelsArea.className = "labelsArea";
         compassBar.className = "compassBar";
         compass.className = "compass button";
         
@@ -1357,12 +1452,20 @@ let loadModel;
                         });
                     }
 
+                    mapsView.appendChild(maps_labelRenderer.domElement);
+
+                    function setTagAttributes (tags, element) {
+                        if (!Array.isArray(tags)) return;
+                        const tagAttributes = [];
+                        tags.forEach(tag => {
+                            tagAttributes.push(tag);
+                        });
+                        element.setAttribute("tag", tagAttributes.join(","));
+                    }
+
                     const labels = {};
                     Object.keys(maps_modelParts).forEach((partName) => {
-                        const part = maps_modelParts[partName];
-                        const label = document.createElement("div");
-
-                        // part.material.color.set("lightgreen");
+                        const part = maps_modelParts[partName];                        
 
                         if (partName.includes("_WC")) {
                             maps_locations[partName] = {
@@ -1370,17 +1473,12 @@ let loadModel;
                                 description: `トイレ ${maps_getFloor(partName)[0]}階`
                             }
                         }
-                        
-                        getExhibits();
 
-                        function setTagAttributes (tags, element) {
-                            if (!Array.isArray(tags)) return;
-                            const tagAttributes = [];
-                            tags.forEach(tag => {
-                                tagAttributes.push(tag);
-                            });
-                            element.setAttribute("tag", tagAttributes.join(","));
-                        }
+                        if (!maps_locations[partName]) return;
+
+                        const label = document.createElement("div");
+                        label.className = `mapsLabel${maps_locations[partName].isAlwaysShow ? " alwaysShow" : ""}`;
+                        label.setAttribute("exhibits", partName);
 
                         if (maps_locations[partName]) {
                             label.className = `mapsLabel${maps_locations[partName].isAlwaysShow ? " alwaysShow" : ""}`;
@@ -1388,7 +1486,9 @@ let loadModel;
 
                             setTagAttributes(maps_locations[partName].tag, label);
 
-                            const isHTMLTag = maps_locations[partName].name.includes("<");
+                            if (!maps_locations[partName]?.name) maps_locations[partName].name = maps_pointIcon;
+
+                            const isHTMLTag = maps_locations[partName]?.name?.includes("<");
 
                             const titleText = isHTMLTag ? maps_locations[partName].name : truncateText(maps_locations[partName].name, 10);
                             const descriptionText = maps_locations[partName]?.description;
@@ -1431,8 +1531,6 @@ let loadModel;
                                 }
                                 informations.appendChild(detail);
                             }
-
-                            maps_labelsArea.appendChild(label);
                         }
 
                         (() => {
@@ -1462,7 +1560,29 @@ let loadModel;
                             label.appendChild(arrowBox);
                         })();
 
-                        labels[partName] = { element: label, part: part };
+                        const labelObject = new CSS2DObject(label);
+                        
+                        const vector = new THREE.Vector3();
+                        if (part.geometry) {
+                            part.geometry.computeBoundingBox();
+                            part.geometry.boundingBox.getCenter(vector);
+
+                            const offset = maps_locations[part.name]?.offset;
+                            vector.x += offset?.x || 0;
+                            vector.y += offset?.y || 0;
+                            vector.z += offset?.z || 0;
+
+                            if (part.userData?.originalTransform?.position) {
+                                // モデル回転を考慮
+                                const rotationMatrix = new THREE.Matrix4().makeRotationY(model.rotation.y * -1);
+                                vector.applyMatrix4(rotationMatrix);   
+                                part.localToWorld(vector);
+                            }
+                        }
+                        labelObject.position.copy(vector);
+                        part.add(labelObject);
+
+                        labels[partName] = { object: labelObject, element: label, part: part };
                     });
 
                     (() => {
@@ -1497,11 +1617,7 @@ let loadModel;
                                 target: maps_modelParts[candidateLabels[0]?.getAttribute("exhibits")]
                             });
 
-                            const topLabel = candidateLabels
-                                .sort((a, b) => 
-                                    (parseFloat(getComputedStyle(b).getPropertyValue("--zIndex")) || 0) -
-                                    (parseFloat(getComputedStyle(a).getPropertyValue("--zIndex")) || 0)
-                                )[0] || null;
+                            const topLabel = candidateLabels[0];
 
                             if (
                                 Math.abs(x - touchStart[0]) < 5 &&
@@ -1545,9 +1661,6 @@ let loadModel;
 
 
                     function updateLabelsPosition() {
-                        const bottomBar_contents_rect = bottomBar_contents.getBoundingClientRect();
-                        const maps_renderer_rect = maps_renderer.domElement.getBoundingClientRect();
-
                         const camPos = maps_camera.position;
 
                         mapsView.style.setProperty("--camPosX", camPos.x);
@@ -1555,35 +1668,17 @@ let loadModel;
                         mapsView.style.setProperty("--camZoom", maps_camera.zoom);
 
                         Object.values(labels).forEach(({ element, part }, index) => {
-                            const vector = new THREE.Vector3();
-                            if (part.geometry) {
-                                part.geometry.computeBoundingBox();
-                                part.geometry.boundingBox.getCenter(vector);
+                            // const objPos = part.userData?.originalTransform?.position.clone() || part.getWorldPosition(new THREE.Vector3());
+                            // const camDistance = camPos.distanceTo(objPos);
 
-                                // offset分だけ3D空間で位置をずらす
-                                const offset = maps_locations[part.name]?.offset;
-                                vector.x += offset?.x || 0;
-                                vector.y += offset?.y || 0;
-                                vector.z += offset?.z || 0;
-
-                                part.localToWorld(vector);
-                            }
                             const isAlwaysShow = maps_locations[part.name]?.isAlwaysShow || false;
-
-                            vector.project(maps_camera);
-
-                            const rectWidthHalf  = maps_renderer_rect.width  / 2;
-                            const rectHeightHalf = maps_renderer_rect.height / 2;
-
-                            const objPos = part.userData?.originalTransform?.position.clone() || part.getWorldPosition(new THREE.Vector3());
-                            const camDistance = camPos.distanceTo(objPos);
 
                             if ((gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1) || isAlwaysShow) {
                                 if (getIsSortConforming(element, getSortConditions())) {
                                     if (element.classList.contains("invalid")) element.classList.remove("invalid");
                                     element.style.setProperty("--labelOpacity", 1);
                                 } else {
-                                    // if (!element.classList.contains("invalid")) element.classList.add("invalid");
+                                    if (!element.classList.contains("invalid")) element.classList.add("invalid");
                                     element.style.setProperty("--labelOpacity", .5);
                                 }
                             } else {
@@ -1637,80 +1732,45 @@ let loadModel;
                                     element.style.setProperty(labelHeightProperty, labelHeight + "px");
                                 }
 
-                                let leftPx = Math.floor(truncate( vector.x * rectWidthHalf  + rectWidthHalf  - element.offsetWidth  / 2) * 100) / 100;
-                                let topPx  = Math.floor(truncate(-vector.y * rectHeightHalf + rectHeightHalf - element.offsetHeight / 2) * 100) / 100;
-                                const max = Math.max;
-                                const min = Math.min;
-                                // const margin = maps_camera.zoom * 20 + 5;
-                                // const margin = 24;
-                                // const margin = labelWidth;
-                                const margin = 3;
-                                const originalLeftPx = leftPx;
-                                if (isAlwaysShow) {
-                                    leftPx = min(
-                                        max(leftPx, margin),
-                                        maps_renderer_rect.width - element.offsetWidth - margin
-                                    );
-                                }
-                                const originalTopPx = topPx;
-                                if (isAlwaysShow) {
-                                    topPx = min(
-                                        max(topPx, (areaTopMargin + 100) + margin),
-                                        bottomBar_contents_rect.height - element.offsetHeight - margin - 50
-                                    );
-                                }
-                                const difference = {
-                                    left: (leftPx - originalLeftPx) || 0,
-                                    top:  (topPx - originalTopPx) || 0,
-                                }
-                                const getDeg = (x, y) => Math.atan2(y, x) * (180 / Math.PI);
-                                const differenceDeg = getDeg(
-                                    difference.left,
-                                    difference.top,
-                                );
-                                element.style.setProperty("--arrowScale", min(
-                                    min(
-                                        Math.abs(difference.left) + Math.abs(difference.top),
-                                    ) * .2,
-                                    35
-                                ) + "px");
-                                element.style.setProperty("--differenceDeg",`${differenceDeg}deg`);
-                                if (originalLeftPx - rectHeightHalf > 0) {
-                                    if (!element.classList.contains("right")) {
+                                const match = element.style.transform.match(/translate\((-?\d+\.?\d*)px,\s*(-?\d+\.?\d*)px\)/);
+                                const labelXPx = parseFloat(match[1]);
+                                const labelYPx = parseFloat(match[2]);
+                                const labelXRatio = labelXPx / mapsView.scrollWidth;
+                                const labelYRatio = labelYPx / mapsView.scrollHeight;
+                                const labelEdgeMargin = 5;
+
+                                const isXOver = labelXRatio > 1 || labelXRatio < 0;
+                                const isYOver = labelYRatio > 1 || labelYRatio < 0;
+
+                                if (isXOver || isYOver) {
+                                    element.classList.add("edge");
+                                    element.style.setProperty("--labelXPx", Math.min(
+                                        Math.max(labelXPx, labelEdgeMargin),
+                                        mapsView.scrollWidth - labelWidth - 8 - labelEdgeMargin
+                                    ) + "px");
+                                    element.style.setProperty("--labelYPx", Math.min(
+                                        Math.max(labelYPx, barTopMargin + 50 + labelEdgeMargin),
+                                        mapsView.scrollHeight - labelHeight - 4 - labelEdgeMargin
+                                    ) + "px");
+                                    if (labelXRatio > .5) {
                                         element.classList.add("right");
                                         element.classList.remove("left");
-                                    }
-                                } else {
-                                    if (!element.classList.contains("left")) {
+                                    } else {
                                         element.classList.add("left");
                                         element.classList.remove("right");
                                     }
-                                }
-
-                                const edgeThreshold = element.offsetWidth;
-                                if (Math.abs(difference.left) > edgeThreshold || Math.abs(difference.top) > edgeThreshold) {
-                                    if (!element.classList.contains("edge")) element.classList.add("edge");
+                                    const difference = [
+                                        .5 - labelXRatio,
+                                        .5 - labelYRatio,
+                                    ];
+                                    element.style.setProperty("--differenceDeg",`${Math.atan2(
+                                        difference[1],
+                                        difference[0],
+                                    ) * (180 / Math.PI)}deg`);
                                 } else {
-                                    if (element.classList.contains("edge")) element.classList.remove("edge");
+                                    element.classList.remove("edge");
                                 }
-
-                                if (
-                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--leftPx")) - leftPx) > labelPosUpdateThreshold
-                                ) {
-                                    const setLeft = (value) => element.style.setProperty("--leftPx", value);
-                                    setLeft(`${isAlwaysShow ? leftPx : originalLeftPx}px`);
-                                }
-                                if (
-                                    Math.abs(getFmtedPx(element.style.getPropertyValue("--topPx")) - topPx) > labelPosUpdateThreshold
-                                ) {
-                                    const setTop = (value) => element.style.setProperty("--topPx", value);
-                                    setTop(`${isAlwaysShow ? topPx : originalTopPx}px`);
-                                }
-                                if (Math.abs(element.style.getPropertyValue("--camDistance") - camDistance) > labelPosUpdateThreshold) {
-                                    element.style.setProperty("--camDistance", camDistance);
-                                }
-                                element.style.setProperty("--objPosX", objPos.x);
-                                element.style.setProperty("--objPosZ", objPos.z);
+                                // element.style.setProperty("--camDistance", camDistance);
                             }
                         });
                     }
@@ -1722,6 +1782,7 @@ let loadModel;
                         requestAnimationFrame(animate);
                         if ((Date.now() - lastAnimUpdateAt > labelAnimUpdateThresholdMs * .6) || !lastAnimUpdateAt) {
                             maps_renderer.render(scene, maps_camera);
+                            maps_labelRenderer.render(scene, maps_camera);
                             maps_controls.update();
                             lastAnimUpdateAt = Date.now();
                         }
@@ -1911,7 +1972,7 @@ let loadModel;
                         // コンパスを回転
                         compassImg.style.transform = `rotate(${camHorizontal}deg)`;
 
-                        if (now - lastLabelUpdate > labelAnimUpdateThresholdMs * 2) {
+                        if (now - lastLabelUpdate > labelAnimUpdateThresholdMs * 8) {
                             lastLabelUpdate = now;
                             updateLabelsPosition();
 
@@ -1935,8 +1996,10 @@ let loadModel;
 
         let labelAnimUpdateThresholdMs;
 
+        let barTopMargin;
+
         function windowResize() {
-            const topMargin = (
+            barTopMargin = (
                 parseFloat(getComputedStyle(mapsView).getPropertyValue("--topBarHeight")) +
                 parseFloat(getComputedStyle(mapsView).getPropertyValue("--tabsHeight"))
             );
@@ -1945,11 +2008,14 @@ let loadModel;
 
             maps_camera.left   = -maps_cameraSize * aspect;
             maps_camera.right  = maps_cameraSize * aspect;
-            maps_camera.top    = maps_cameraSize + topMargin / mapsView.clientHeight * maps_cameraSize * 2; // topMarginをカメラの高さに換算
+            maps_camera.top    = maps_cameraSize + barTopMargin / mapsView.clientHeight * maps_cameraSize * 2; // topMarginをカメラの高さに換算
             maps_camera.bottom = -maps_cameraSize;
             maps_camera.updateProjectionMatrix();
 
-            maps_renderer.setSize(mapsView.clientWidth, mapsView.clientHeight + topMargin);
+            maps_renderer.setSize(mapsView.clientWidth, mapsView.clientHeight + barTopMargin);
+            maps_renderer.domElement.style.top = `${barTopMargin * -1}px`;
+            maps_labelRenderer.setSize(mapsView.clientWidth, mapsView.clientHeight + barTopMargin);
+            maps_labelsArea.style.top = 0;
 
             labelAnimUpdateThresholdMs = Math.max(
                 Math.min(
@@ -2232,7 +2298,6 @@ let loadModel;
         })();
 
         // mapsView.appendChild(compassBar);
-        mapsView.appendChild(maps_labelsArea);
         mapsView.appendChild(maps_buttons_left);
         mapsView.appendChild(maps_buttons_right);
         mapsView.appendChild(maps_buttons_top);

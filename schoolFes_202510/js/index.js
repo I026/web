@@ -15,6 +15,16 @@ dateUpdate();
 setInterval(dateUpdate, 10000);
 
 (() => {
+    const arrow = d.querySelector(".top.content .bottomBar svg");
+    arrow.addEventListener("click", () => {
+        window.scrollTo({
+            top: window.innerHeight - 50,
+            behavior: "smooth",
+        });
+    });
+})();
+
+(() => {
     const entries = performance.getEntriesByType("resource");
     const currentScript = entries.find(entry => entry.name.includes("script.js"));
 
@@ -42,39 +52,40 @@ setInterval(dateUpdate, 10000);
         mainContent.style.setProperty("--numOfPageContents", pageContents.length);
         const pageEls = [];
         pageContents.forEach((newContentEl, i) => {
+            const newPageSet = d.createElement("div");
+            newPageSet.className = "pageSet";
+            newPageSet.style.setProperty("--contentsIndex", i);
+            pagesArea.appendChild(newPageSet);
+
             const newPage = d.createElement("div");
             newPage.className = "page";
             newPage.appendChild(newContentEl);
+            newPageSet.appendChild(newPage);
 
-            newPage.style.setProperty("--contentsIndex", i);
-            pagesArea.appendChild(newPage);
-            pageEls.push(newPage);
+            const newNoble = d.createElement("div");
+            newNoble.className = "noble";
+            newPageSet.appendChild(newNoble);
+
+            const newNobleText = d.createElement("span");
+            newNobleText.textContent = `P${i + 1}`;
+            newNoble.appendChild(newNobleText);
+
+            pageEls.push(newPageSet);
         });
         pagesArea.style.position = "sticky";
 
-        let pagesAreaWidth;
         let topBarHeight;
-        let pageSlideThreshold;
-        let pageSlideRatio;
+        const getPagesAreaWidth = () => pagesArea.scrollWidth - pagesArea.clientWidth;
+        let windowHeight;
+        const getWindowHeight = () => windowHeight;
+        const getPageSlideThreshold = () => getWindowHeight() - (topBarHeight || 100) * .1;
+        const pageSlideRatio = 1;
 
-        function windowResize () {
-            // 横スクロール総距離
-            const windowHeight = window.visualViewport?.height || window.innerHeight;
-            pagesAreaWidth = pagesArea.scrollWidth - pagesArea.clientWidth;
-            topBarHeight = parseFloat(getComputedStyle(d.body).getPropertyValue("--topBarHeight"));
-            pageSlideThreshold = windowHeight - (topBarHeight || 100) * .15;
-            pageSlideRatio = 1;
-            mainContent.style.setProperty("--pageSlideRatio", pageSlideRatio);
+        let scrollLeftPx;
+        let scrollLeftRatio;
 
-            const totalHeight = pagesAreaWidth / pageSlideRatio + windowHeight;
-            mainContent.style.setProperty("--totalHeight", totalHeight + "px");
-        }
-        let lastTimeWindowHeight;
-        window.addEventListener("resize", () => {
-            if (Math.abs(lastTimeWindowHeight - window.innerHeight) > 100) windowResize();
-            lastTimeWindowHeight = window.innerHeight;
-        });
-        windowResize();
+        let isSlideNow = false;
+        const getCurrentPageIdx = () => Math.round(scrollLeftRatio * pageContents.length);
 
         (() => {
             let touchStartScrollY;
@@ -115,9 +126,11 @@ setInterval(dateUpdate, 10000);
                     Math.abs(difference[0]) > 5 &&
                     Math.abs(difference[1]) < 30
                 ) {
+                    e.preventDefault();
                     isSlideValid = true;
                     window.scrollTo({
-                        top: touchStartScrollY + difference[0] + (difference[0] > 0 ? -5 : 5)
+                        top: touchStartScrollY + difference[0] + (difference[0] > 0 ? -5 : 5),
+                        behavior: "smooth"
                     });
                 }
             });
@@ -138,9 +151,12 @@ setInterval(dateUpdate, 10000);
                     // 距離 = 速度 × 時間
                     const distance = currentVelocity * deltaTime;
 
+                    const scrollY = window.scrollY;
+
                     // 現在のスクロール位置を加算
                     window.scrollTo({
-                        top: window.scrollY + distance
+                        top: scrollY + distance,
+                        behavior: "smooth"
                     });
 
                     // 摩擦で徐々に減速
@@ -151,8 +167,8 @@ setInterval(dateUpdate, 10000);
                     }
 
                     // 速度が小さくなったら終了
-                    if (Math.abs(currentVelocity) > 0.07) {
-                        requestAnimationFrame(inertiaScroll);
+                    if (Math.abs(currentVelocity) > 0.07 && (scrollY / window.innerHeight > 1)) {
+                        // requestAnimationFrame(inertiaScroll);
                     }
                 }
 
@@ -160,12 +176,98 @@ setInterval(dateUpdate, 10000);
                     requestAnimationFrame(inertiaScroll);
                 }
             });
+        });
+
+        const getScrollLeftPx     = (scrollY) => (Math.max(scrollY, getPageSlideThreshold()) - getPageSlideThreshold()) * pageSlideRatio;
+        const getScrollYFromRatio = (ratio)   => (ratio * (pagesArea.scrollWidth - pagesArea.clientWidth) / pageSlideRatio) + getPageSlideThreshold();
+
+        const pageButtons = pagesArea.querySelectorAll(".buttons .button");
+
+        let lastSlideAt = 0;
+        function pageSlide (isToNext = true) {
+            // 現在ページを基準に移動
+            const currentIndex = getCurrentPageIdx();
+            const nextIndex = Math.max(Math.min(currentIndex + (isToNext ? 1 : -1), pageContents.length - 1), 0);
+            let targetIndex = currentIndex;
+            targetIndex += isToNext ? 1 : -1;      // 次のページ
+
+            // ページ範囲内に収める
+            targetIndex = Math.max(0, Math.min(pageContents.length - 1, targetIndex));
+
+            const getIsSlideValid = (index = currentIndex) => (
+                (!isToNext && index !== 0) || (isToNext && index !== pageContents.length)
+            );
+
+            if (getIsSlideValid()) {
+                if ((Date.now() - lastSlideAt) > 100) {
+                    // スクロール位置をスナップ
+                    window.scrollTo({
+                        top: getScrollYFromRatio(targetIndex / pageContents.length),
+                        behavior: "smooth"
+                    });
+                    lastSlideAt = Date.now();
+                }
+            }
+        }
+
+        (() => {
+            let touchStartScrollY;
+            let touchStartPos = [];
+            let lastMoveX = 0;
+            let velocityX = 0;
+            let isSlideValid = false;
+            let difference;
+
+            pagesArea.addEventListener("touchstart", e => {
+                const client = [e.touches[0].clientX, e.touches[0].clientY];
+                difference = [0, 0];
+                touchStartPos = [client[0], client[1]];
+                touchStartScrollY = window.scrollY;
+                lastMoveX = client[0];
+                velocityX = 0; // 初期化
+            });
+
+            pagesArea.addEventListener("touchmove", e => {
+                const client = [e.touches[0].clientX, e.touches[0].clientY];
+
+                difference = [
+                    touchStartPos[0] - client[0],
+                    touchStartPos[1] - client[1]
+                ];
+                if (!touchStartScrollY) touchStartScrollY = window.scrollY;
+            });
+
+            pagesArea.addEventListener("touchend", () => {
+                const difX = difference?.[0];
+                const difY = difference?.[1];
+
+                if (
+                    Math.abs(difX) > 50 &&
+                    difY < 50 &&
+                    window.innerWidth < 800
+                ) {
+                    pageSlide(difX > 50)
+                }
+            });
         })();
+
+        pageButtons.forEach((button, i) => {
+            if (i === 0) {
+                button.addEventListener("click", () => {
+                    pageSlide(false);
+                });
+            }
+            if (i === 1) {
+                button.addEventListener("click", () => {
+                    pageSlide(true);
+                });
+            }
+        });
 
         function windowScroll () {
             const scrollY = window.scrollY;
-            const scrollLeft = (Math.max(scrollY, pageSlideThreshold) - pageSlideThreshold) * pageSlideRatio;
-            const scrollLeftRatio = scrollLeft / pagesAreaWidth || 0;
+            scrollLeftPx = getScrollLeftPx(scrollY);
+            scrollLeftRatio = scrollLeftPx / getPagesAreaWidth() || 0;
 
             pageEls[Math.round(scrollLeftRatio * pageContents.length + .45)]?.classList.add("anim");
 
@@ -185,19 +287,48 @@ setInterval(dateUpdate, 10000);
                         pageEl.classList.remove("visible");
                     }
                 });
-            })();
+            });
 
             pagesArea.scrollTo({
-                left: scrollLeft
+                left: scrollLeftPx
             });
+            pagesArea.style.setProperty("--scrollLeftPx", scrollLeftPx + "px");
             pagesArea.style.setProperty("--scrollLeftRatio", scrollLeftRatio);
+
+            pageButtons[0].classList.remove("invalid");
+            pageButtons[1].classList.remove("invalid");
+            if (getCurrentPageIdx() >= pageContents.length - 1) {
+                pageButtons[1].classList.add("invalid");
+            }
+            if (getCurrentPageIdx() <= 0) {
+                pageButtons[0].classList.add("invalid");
+            }
         }
         window.addEventListener("scroll", windowScroll);
         windowScroll();
+
+        function windowResize () {
+            if (isSlideNow) return;
+            // 横スクロール総距離
+            windowHeight = window.visualViewport?.height || window.innerHeight;
+            topBarHeight = parseFloat(getComputedStyle(d.body).getPropertyValue("--topBarHeight"));
+            mainContent.style.setProperty("--pageSlideRatio", pageSlideRatio);
+            const totalHeight = getPagesAreaWidth() / pageSlideRatio + getWindowHeight();
+            mainContent.style.setProperty("--totalHeight", totalHeight + "px");
+        }
+        let lastTimeWindowHeight;
+        window.addEventListener("resize", () => {
+            if (Math.abs(lastTimeWindowHeight - window.innerHeight) > 100) windowResize();
+            lastTimeWindowHeight = window.innerHeight;
+        });
+        windowResize();
     }
 
     // SVGファイルのパス
     const filePaths = [
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
         "./medias/pages/0.png",
         "./medias/pages/0.png",
         "./medias/pages/0.png",

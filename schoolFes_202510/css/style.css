@@ -394,6 +394,7 @@ svg.anim path, svg.anim rect {
     font-size: .6em;
     position: absolute;
     bottom: 20px;
+    opacity: .35;
 }
 .footers .footer .footer_partition {
     background-color: black;

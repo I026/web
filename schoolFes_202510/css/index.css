@@ -66,8 +66,9 @@ body {
     padding: 0;
     --pagesPadding: 20px;
     --pageWidth : calc(100vw - var(--pagesPadding) * 2);
-    /* --pageHeight: calc(var(--pageWidth) * 1.4075829384); */
-    --pageHeight: calc(90vh - var(--topBarHeight) - var(--pagesPadding));
+    --pageHeight: calc(var(--pageWidth) * 1.4075829384);
+    --pageSetWidth: calc(var(--pageWidth)  + var(--pagesPadding) * 2);
+    /* --pageHeight: calc(90vh - var(--topBarHeight) - var(--pagesPadding)); */
 
     /* height: calc(100vw * var(--numOfPageContents)); */
     /* (var(--pageWidth) + var(--pagesPadding)) * var(--numOfPageContents) */
@@ -82,6 +83,48 @@ body {
     .content.main {
         --pageWidth: calc(50vw - var(--pagesPadding) * 2);
     }
+    .content.main .pages .buttons .button {
+        opacity: 0 !important;
+        pointer-events: none;
+    }
+}
+
+.content.main .pages .buttons {
+    position: absolute;
+    width: 100%;
+    top: calc(var(--pageHeight) + 35px);
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    z-index: 10;
+    /* transform: translateX(var(--scrollLeftPx)); */
+    transform: translateX(calc(
+        (min(var(--scrollLeftRatio), 1) * var(--numOfPageContents)) * var(--pageSetWidth)
+    ));
+}
+.content.main .pages .buttons .button {
+    width: min-content;
+    margin: 20px;   
+    user-select: none;
+    --buttonScale: 1.3em;
+    width : var(--buttonScale);
+    height: var(--buttonScale);
+    transition: opacity .5s ease-in-out;
+}
+.content.main .pages .buttons .button.invalid {
+    opacity: .5;
+    pointer-events: none;
+}
+.content.main .pages .buttons .button svg {
+    width: 100%;
+    height: 100%;
+    transform: translateX(15%) rotate(45deg);
+}
+.content.main .pages .buttons .button svg path {
+    stroke-width: 100;
+}
+.content.main .pages .buttons .button:last-child {
+    transform: scale(-1);
 }
 
 .content.main .pages {
@@ -93,13 +136,14 @@ body {
     /* padding-top: var(--topBarHeight); */
     /* padding: var(--pagesPadding); */
     left: 0;
-    --pageSlideThreshold: calc(100vh + var(--topBarHeight) * .5);
     /* gap: var(--pagesPadding); */
     width : 100vw;
     height: calc(100vh - var(--topBarHeight) + var(--pagesPadding) * 2);
+    /* --pageSlideThreshold: calc(100vh + var(--topBarHeight) * .5); */
     /* transform: translateX(calc(
         (max(var(--scrollPx), var(--pageSlideThreshold)) - var(--pageSlideThreshold)) * -1 * var(--pageSlideRatio)
     )); */
+    scroll-snap-type: x mandatory;
     overflow: hidden;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
@@ -107,14 +151,23 @@ body {
 .content.main .pages::-webkit-scrollbar {
     display: none;
 }
+.content.main .pages .pageSet {
+    user-select: none;
+    position: relative;
+    top: 0;
+    width : var(--pageSetWidth);
+    height: calc(var(--pageHeight) + var(--pagesPadding) * 2 + 35px);
+    flex-shrink: 0;
+}
 .content.main .pages .page {
     position: relative;
+    /* scroll-snap-align: start; */
     /* margin-left: calc(var(--pageWidth) * var(--contentsIndex)); */
     box-shadow: 0 0 10px gray;
     border-radius: var(--pagesPadding);
     flex-shrink: 0;
-    top: calc(var(--pagesPadding) + 30px);
-    margin-left: var(--pagesPadding);
+    top: calc(var(--pagesPadding) * 2);
+    left: var(--pagesPadding);
     padding: var(--pagesPadding);
     width : calc(var(--pageWidth) - var(--pagesPadding) * 2);
     height: calc(var(--pageHeight) - var(--pagesPadding) * 2);
@@ -134,14 +187,6 @@ body {
     margin-right: var(--pagesPadding);
 }
 
-.content.main .pages .page div {
-    position: relative;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 .content.main .pages .page svg,
 .content.main .pages .page img {
     position: relative;
@@ -152,8 +197,8 @@ body {
 .content.main .pages .page img {
     --padding: 0;
     object-fit: cover;
-    height: calc(100% + 50px);
-    width: calc(100% + 50px);
+    height: calc(100% - 5px);
+    width: calc(100% - 5px);
 }
 .content.main .pages .page svg image {
     height: 100%;
@@ -165,9 +210,11 @@ body {
     /* stroke-dashoffset: var(--pathLength); */
     transition: stroke-dashoffset .5s ease-in-out;
 }
-.content.main .pages .page.anim svg path {
-    stroke-dashoffset: 0;
-}
-.content.main .pages .page:not(.visible) > * {
-    display: none;
+.content.main .pages .pageSet .noble {
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding-right: var(--pageSetWidth);
 }
