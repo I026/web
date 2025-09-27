@@ -16,6 +16,43 @@ async function getHashSHA256(message) {
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
+function queryParameter ({
+    type: type = "set",
+    key: key,
+    value: value,
+    url: url = new URL(window.location.href),
+}) {
+    let returnValue = null;
+    const updateUrl = () => window.history.pushState({}, "", url);
+    switch (type) {
+        case "set":
+            url.searchParams.set(key, value);
+            updateUrl();
+            break;
+        case "append":
+            (value instanceof Array ? value : [value]).forEach(item => {
+                url.searchParams.append(key, item);
+            });
+            updateUrl();
+            break;
+        case "delete":
+            url.searchParams.delete(key);
+            updateUrl();
+            break;
+        case "get":
+            returnValue = url.searchParams.getAll(key);
+            break;
+        case "entries":
+            returnValue = Object.fromEntries(
+            Array.from(url.searchParams.entries())
+                .filter(([key, value]) => value !== undefined && value !== "undefined")
+            )
+            updateUrl();
+            break;
+    }
+    return returnValue;
+}
+
 const titleMap = {
     index: "デジタルパンフレット",
     exhibits: "企画一覧",

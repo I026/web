@@ -85,7 +85,7 @@ setInterval(dateUpdate, 10000);
         let scrollLeftRatio;
 
         let isSlideNow = false;
-        const getCurrentPageIdx = () => Math.round(scrollLeftRatio * pageContents.length);
+        const getCurrentPageIdx = () => (scrollLeftRatio * (pageContents.length + 1));
 
         (() => {
             let touchStartScrollY;
@@ -178,15 +178,16 @@ setInterval(dateUpdate, 10000);
             });
         });
 
-        const getScrollLeftPx     = (scrollY) => (Math.max(scrollY, getPageSlideThreshold()) - getPageSlideThreshold()) * pageSlideRatio;
-        const getScrollYFromRatio = (ratio)   => (ratio * (pagesArea.scrollWidth - pagesArea.clientWidth) / pageSlideRatio) + getPageSlideThreshold();
+        const getScrollLeftPx     = (scrollY = window.scrollY) => (Math.max(scrollY, getPageSlideThreshold()) - getPageSlideThreshold()) * pageSlideRatio;
+        // const getScrollYFromRatio = (ratio) => (ratio * (pagesArea.scrollWidth - pagesArea.clientWidth) / pageSlideRatio) + getPageSlideThreshold();
+        const getPageWidth = () => (pagesArea.querySelector(".pageSet").clientWidth || window.innerWidth - 20);
+        const getScrollYFromRatio = (ratio) => (ratio * (pagesArea.scrollWidth - getPageWidth()) / pageSlideRatio) + getPageSlideThreshold();
 
         const pageButtons = pagesArea.querySelectorAll(".buttons .button");
 
-        let lastSlideAt = 0;
         function pageSlide (isToNext = true) {
             // 現在ページを基準に移動
-            const currentIndex = getCurrentPageIdx();
+            const currentIndex = Math.round(getCurrentPageIdx());
             const nextIndex = Math.max(Math.min(currentIndex + (isToNext ? 1 : -1), pageContents.length - 1), 0);
             let targetIndex = currentIndex;
             targetIndex += isToNext ? 1 : -1;      // 次のページ
@@ -197,18 +198,38 @@ setInterval(dateUpdate, 10000);
             const getIsSlideValid = (index = currentIndex) => (
                 (!isToNext && index !== 0) || (isToNext && index !== pageContents.length)
             );
-
             if (getIsSlideValid()) {
-                if ((Date.now() - lastSlideAt) > 100) {
-                    // スクロール位置をスナップ
-                    window.scrollTo({
-                        top: getScrollYFromRatio(targetIndex / pageContents.length),
-                        behavior: "smooth"
-                    });
-                    lastSlideAt = Date.now();
-                }
+                // スクロール位置をスナップ
+                window.scrollTo({
+                    top: window.scrollY
+                });
+                // window.scrollTo({
+                //     top: getScrollYFromRatio(targetIndex / pageContents.length),
+                //     behavior: "smooth"
+                // });
+                pagesArea.scrollTo({
+                    left: (targetIndex * getPageWidth()),
+                    behavior: "smooth"
+                });
             }
         }
+
+        let pageRestored = false;
+
+        setTimeout(() => {
+            window.scrollTo({
+                top: getScrollYFromRatio(
+                    queryParameter({
+                        type: "get",
+                        key: "page",
+                    })[0] * 1 / pageContents.length
+                ),
+                behavior: "smooth"
+            });
+            pageRestored = true;
+        }, 100);
+
+        let isPageShowNow = false;;
 
         (() => {
             let touchStartScrollY;
@@ -237,14 +258,42 @@ setInterval(dateUpdate, 10000);
                 if (!touchStartScrollY) touchStartScrollY = window.scrollY;
             });
 
+            function scrollEnd () {
+                if (isPageShowNow) {
+                    window.scrollTo({
+                        top: getScrollYFromRatio(
+                            pagesArea.scrollLeft / (pagesArea.scrollWidth - getPageWidth()),
+                        )
+                    });
+                }
+            }
+
+            let lastScrollLeft;
+            let scrollCheckInterval;
+            pagesArea.addEventListener("scroll", () => {
+                if (!scrollCheckInterval) {
+                    scrollCheckInterval = setInterval(() => {
+                        const isScrollNow = lastScrollLeft !== pagesArea.scrollLeft;
+                        console.log("isScrollNow?", isScrollNow);
+                        if (!isScrollNow) {
+                            scrollEnd();
+                        }
+                        lastScrollLeft = pagesArea.scrollLeft;
+                    }, 100);
+                }
+            });
+
             pagesArea.addEventListener("touchend", () => {
                 const difX = difference?.[0];
                 const difY = difference?.[1];
 
+                // scrollEnd();
+
+                return;
                 if (
                     Math.abs(difX) > 50 &&
-                    difY < 50 &&
-                    window.innerWidth < 800
+                    Math.abs(difY) < 50 &&
+                    Math.abs(touchStartScrollY - window.scrollY) < 10
                 ) {
                     pageSlide(difX > 50)
                 }
@@ -267,7 +316,8 @@ setInterval(dateUpdate, 10000);
         function windowScroll () {
             const scrollY = window.scrollY;
             scrollLeftPx = getScrollLeftPx(scrollY);
-            scrollLeftRatio = scrollLeftPx / getPagesAreaWidth() || 0;
+            // scrollLeftRatio = scrollLeftPx / getPagesAreaWidth() || 0;
+            scrollLeftRatio = (scrollLeftPx / pagesArea.scrollWidth) || 0;
 
             pageEls[Math.round(scrollLeftRatio * pageContents.length + .45)]?.classList.add("anim");
 
@@ -297,11 +347,37 @@ setInterval(dateUpdate, 10000);
 
             pageButtons[0].classList.remove("invalid");
             pageButtons[1].classList.remove("invalid");
-            if (getCurrentPageIdx() >= pageContents.length - 1) {
+            const currentIndex = Math.round(getCurrentPageIdx());
+            if (currentIndex >= pageContents.length - 1) {
                 pageButtons[1].classList.add("invalid");
             }
-            if (getCurrentPageIdx() <= 0) {
+            if (currentIndex <= 0) {
                 pageButtons[0].classList.add("invalid");
+            }
+
+            isPageShowNow = (
+                scrollY >= window.innerHeight - 20
+            ) && (
+                currentIndex < pageContents.length
+            )
+
+            if (isPageShowNow) {
+                pagesArea.classList.add("showNow");
+                if (pageRestored) {
+                    queryParameter({
+                        type: "set",
+                        key: "page",
+                        value: currentIndex
+                    });
+                }
+            } else {
+                pagesArea.classList.remove("showNow");
+                if (pageRestored) {
+                    queryParameter({
+                        type: "delete",
+                        key: "page"
+                    });
+                }
             }
         }
         window.addEventListener("scroll", windowScroll);
@@ -329,6 +405,24 @@ setInterval(dateUpdate, 10000);
 
     // SVGファイルのパス
     const filePaths = [
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
+        "./medias/pages/0.png",
         "./medias/pages/0.png",
         "./medias/pages/0.png",
         "./medias/pages/0.png",

@@ -66,9 +66,9 @@ body {
     padding: 0;
     --pagesPadding: 20px;
     --pageWidth : calc(100vw - var(--pagesPadding) * 2);
-    --pageHeight: calc(var(--pageWidth) * 1.4075829384);
-    --pageSetWidth: calc(var(--pageWidth)  + var(--pagesPadding) * 2);
-    /* --pageHeight: calc(90vh - var(--topBarHeight) - var(--pagesPadding)); */
+    --pageSetWidth: calc(var(--pageWidth) + var(--pagesPadding) * 2);
+    /* --pageHeight: calc(var(--pageWidth) * 1.4075829384); */
+    --pageHeight: calc((100vh - 150px) - var(--topBarHeight) - var(--pagesPadding));
 
     /* height: calc(100vw * var(--numOfPageContents)); */
     /* (var(--pageWidth) + var(--pagesPadding)) * var(--numOfPageContents) */
@@ -81,26 +81,30 @@ body {
 }
 @media (min-width: 800px) {
     .content.main {
-        --pageWidth: calc(50vw - var(--pagesPadding) * 2);
-    }
-    .content.main .pages .buttons .button {
-        opacity: 0 !important;
-        pointer-events: none;
+        --pageWidth : calc(50vw - var(--pagesPadding) * 2);
     }
 }
 
+.content.main .pages.showNow .buttons {
+    opacity: 1;
+    pointer-events: auto;
+}
 .content.main .pages .buttons {
-    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
     width: 100%;
-    top: calc(var(--pageHeight) + 35px);
+    top: calc(var(--pageHeight) + 100px);
     display: flex;
     justify-content: space-between;
     flex-direction: row;
     z-index: 10;
+    transition: opacity .5s ease-in-out;
+
     /* transform: translateX(var(--scrollLeftPx)); */
-    transform: translateX(calc(
+    /* transform: translateX(calc(
         (min(var(--scrollLeftRatio), 1) * var(--numOfPageContents)) * var(--pageSetWidth)
-    ));
+    )); */
 }
 .content.main .pages .buttons .button {
     width: min-content;
@@ -144,7 +148,7 @@ body {
         (max(var(--scrollPx), var(--pageSlideThreshold)) - var(--pageSlideThreshold)) * -1 * var(--pageSlideRatio)
     )); */
     scroll-snap-type: x mandatory;
-    overflow: hidden;
+    overflow: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
 }
@@ -175,12 +179,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    opacity: max(
+    /* opacity: max(
         calc(
             var(--scrollLeftRatio) * var(--numOfPageContents) - var(--contentsIndex) + 1.5
         ),
         .2
-    );
+    ); */
     transition: opacity .5s ease-in-out;
 }
 .content.main .pages .page:last-child {
@@ -193,10 +197,10 @@ body {
     height: 100%;
     width: 100%;
     display: flex;
+    object-fit: contain;
 }
 .content.main .pages .page img {
     --padding: 0;
-    object-fit: cover;
     height: calc(100% - 5px);
     width: calc(100% - 5px);
 }
