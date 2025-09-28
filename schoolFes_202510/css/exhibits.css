@@ -426,17 +426,16 @@
     margin-left: .5em;
     margin-right: .5em;
 }
-.content.main .searchBars * {
+.content.main .searchArea * {
     transition: opacity .5s ease-in-out;
 }
 .content.main .searchBars {
-    position: sticky;
-    top: calc(var(--topBarHeight));
-    --baseScale: 3em;
-    width : var(--baseScale);
-    height: var(--baseScale);
+    position: relative;
+    top: 0;
+    width : var(--baseIconScale);
+    height: var(--baseIconScale);
     margin-bottom: 20px;
-    left: 100%;
+    left: 0;
     margin-right: 10px;
     display: flex;
     justify-content: flex-end;
@@ -453,80 +452,104 @@
     color .5s ease-in-out;
 }
 .content.main .searchBars svg {
+    transform: translateX(calc(
+        var(--scrollLeft)
+    ));
     position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 10001;
-    --baseScale: 3em;
-    height: var(--baseScale);
-    width: var(--baseScale);
+    height: var(--baseIconScale);
+    width: var(--baseIconScale);
     cursor: pointer;
     border-radius: 3em;
 }
 .content.main .searchBars .searchBar,
 .content.main .searchBars .searchBarDisplay {
-    overflow: hidden;
-    height: calc(100% - 5px);
-    width: calc(100% - 2.5em - 10px);
-    padding-right: 2.5em;
+    position: relative;
+    height: 100%;
+    width: calc(100% - var(--baseIconScale) - 10px);
     font-size: 1.25em;
     display: flex;
     justify-content: flex-start;
     align-items: center;
     background-color: transparent;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-.content.main .searchBars.opened {
-    color: black;
-    pointer-events: auto;
     overflow: visible;
-    width: min(
+    flex-shrink: 0;
+    padding: 0;
+    padding-left: 10px;
+    right: var(--baseIconScale);
+}
+.content.main .searchArea {
+    position: sticky;
+    width: 100%;
+    z-index: 10;
+    overflow: visible;
+    --baseIconScale: 3em;
+    --searchBarsWidth: min(
         calc(100% - var(--exhibitsTileMargin) * 2),
         700px
     );
+    top: var(--topBarHeight);
+    right: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+.content.main .searchArea.opened .searchBars {
+    color: black;
+    pointer-events: auto;
+    max-width: 100%;
+    padding-left: 0;
+    width: var(--searchBarsWidth);
 }
 .content.main .searchBars.focus .sagests {
     opacity: 1;
     pointer-events: auto;
 }
-.content.main .searchBars .sagests {
+.content.main .searchArea .sagests {
+    display: flex;
+    flex-direction: column;
     opacity: 0;
     pointer-events: none;
-    top: calc(var(--baseScale) + 5px);
+    top: var(--baseIconScale);
     position: absolute;
-    width: calc(100% + 20px);
-    height: min-content;
+    right: 30px;
+    width: var(--searchBarsWidth);
     max-height: calc(100vh - var(--topBarHeight) - 400px);
-    right: 0;
     overflow-y: auto;
 }
-.content.main .searchBars .sagests > div {
+.content.main .searchArea.opened .sagests {
+    opacity: 1;
+    pointer-events: auto;
+}
+.content.main .searchArea .sagests > div {
     position: relative;
     left: 20px;
     width: calc(100% - 20px);
     opacity: 0;
-    opacity: 0;
+    gap: 5px;
     display: flex;
-    gap: 10px;
 }
-.content.main .searchBars .sagests > div:last-child {
+.content.main .searchArea .sagests > div:last-child {
     margin-bottom: 20px;
 }
-.content.main .searchBars.opened .sagests > div {
+.content.main .searchArea.opened .sagests > div {
     opacity: 1;
     pointer-events: none;
 }
-.content.main .searchBars .sagests > div > div:first-child {
+.content.main .searchArea .sagests > div > div:first-child {
     border-bottom-right-radius: 10px;
     border-top-right-radius: 10px;
 }
-.content.main .searchBars .sagests > div > div:last-child {
+.content.main .searchArea .sagests > div > div:last-child {
     border-bottom-left-radius: 10px;
     border-top-left-radius: 10px;
 }
-.content.main .searchBars .sagests > div > div {
+.content.main .searchArea .sagests > div > div {
     opacity: 0;
     position: relative;
     display: flex;
@@ -538,63 +561,66 @@
     box-shadow: 0 0 10px gray;
     backdrop-filter: blur(5px) !important;
     --webkit-backdrop-filter: blur(5px) !important;
-    background-color: white;
+    background-color: rgba(255, 255, 255, .1);
     /* width: calc(100% - 10px); */
     width: max-content;
     padding-right: 10px;
-    border-radius: 2em;
+    border-radius: 1em;
     margin-top: 5px;
     cursor: pointer;
     pointer-events: auto;
-    z-index: 10;
 }
-.content.main .searchBars.opened .sagests > div > div {
+.content.main .searchArea.opened .sagests > div > div {
     opacity: 1;
 }
-.content.main .searchBars.opened .sagests > div > div.exhibitName {
+.content.main .searchArea.opened .sagests > div > div.exhibitName {
     min-width: min-content;
     opacity: 1;
 }
-.content.main .searchBars.opened .sagests > div > div span {
-    opacity: 1;
+.content.main .searchArea.opened .sagests > div > div span {
+    opacity: .25;
 }
-.content.main .searchBars .sagests > div > div.exhibitName {
+.content.main .searchArea .sagests > div > div.exhibitName {
     opacity: 0;
 }
-.content.main .searchBars .sagests > div > div span {
+.content.main .searchArea .sagests > div > div span {
     opacity: 0;
 }
-.content.main .searchBars.opened .searchBar::placeholder {
+.content.main .searchArea.opened .searchBar::placeholder {
     color: rgba(0, 0, 0, .25)
 }
 .content.main .searchBars .searchBar::placeholder {
     color: transparent;
     transition: color .5s ease-in-out;
 }
-.content.main .searchBars.opened .searchBar {
-    pointer-events: auto;
-}
 .content.main .searchBars .searchBar {
     pointer-events: none;
-    transform: translateX(var(--spanWidth));
-}
-.content.main .searchBars .searchBar {
     color: black;
     pointer-events: none;
     font-family: var(--baseFonts);
-    position: relative;
+    position: absolute;
     border: none;
     text-align: left;
-    padding-left: 0;
     outline: none;
-}
-.content.main .searchBars .searchBar {
     opacity: 0;
+    overflow: visible !important;
+    text-overflow: clip;
+    white-space: nowrap;
+    transform: translateX(calc(
+        var(--span0Width) +
+        var(--barShift)
+    ));
+    margin: 0;
+    left: 0;
+    width: var(--searchBarDisplayWidth);
+    /* width: calc(100% - var(--baseIconScale) - 10px - var(--span0Width)); */
+    /* width: calc(100% - var(--baseIconScale)); */
 }
-.content.main .searchBars.opened .searchBar {
+.content.main .searchArea.opened .searchBar {
     opacity: 1;
+    pointer-events: auto;
 }
-.content.main .searchBars.opened .searchBarDisplay {
+.content.main .searchArea.opened .searchBarDisplay {
     opacity: .25;
 }
 .content.main .searchBars .searchBarDisplay {
@@ -603,6 +629,7 @@
     background-color: transparent;
     position: absolute;
     white-space: nowrap;
+    transform: translateX(var(--barShift));
 }
 .content.main .exhibits .tile .content > div {
     /* height: calc(100% - 16px); */
