@@ -516,13 +516,13 @@
     display: flex;
     flex-direction: column;
     opacity: 0;
-    pointer-events: none;
     top: var(--baseIconScale);
     position: absolute;
     right: 30px;
     width: var(--searchBarsWidth);
     max-height: calc(100vh - var(--topBarHeight) - 400px);
     overflow-y: auto;
+    pointer-events: none;
 }
 .content.main .searchArea.opened .sagests {
     opacity: 1;
@@ -570,10 +570,11 @@
     border-radius: 1em;
     margin-top: 5px;
     cursor: pointer;
-    pointer-events: auto;
+    pointer-events: none;
 }
 .content.main .searchArea.opened .sagests > div > div {
     opacity: 1;
+    pointer-events: auto;
 }
 .content.main .searchArea.opened .sagests > div > div.exhibitName {
     min-width: min-content;
