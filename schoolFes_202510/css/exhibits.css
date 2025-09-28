@@ -467,10 +467,11 @@
 }
 .content.main .searchBars .searchBar,
 .content.main .searchBars .searchBarDisplay {
-    position: relative;
+    position: absolute;
     height: 100%;
     width: calc(100% - var(--baseIconScale) - 10px);
     font-size: 1.25em;
+    top: 0;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -480,6 +481,7 @@
     padding: 0;
     padding-left: 10px;
     right: var(--baseIconScale);
+    white-space: nowrap;
 }
 .content.main .searchArea {
     position: sticky;
@@ -594,6 +596,12 @@
     transition: color .5s ease-in-out;
 }
 .content.main .searchBars .searchBar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    vertical-align: bottom;
+    display: table-cell;
+    top: 0;
     pointer-events: none;
     color: black;
     pointer-events: none;
@@ -606,15 +614,36 @@
     overflow: visible !important;
     text-overflow: clip;
     white-space: nowrap;
-    transform: translateX(calc(
+    /* transform: translateX(calc(
         var(--span0Width) +
         var(--barShift)
-    ));
+    )) translateY(0); */
     margin: 0;
     left: 0;
     width: var(--searchBarDisplayWidth);
+    padding-left: calc(
+            var(--span0Width) +
+            var(--barShift) + 10px
+        );
     /* width: calc(100% - var(--baseIconScale) - 10px - var(--span0Width)); */
     /* width: calc(100% - var(--baseIconScale)); */
+}
+.content.main .searchBars .searchBarDisplay span {
+    letter-spacing: 0;
+    font-kerning: none;
+    font-feature-settings: "liga" 0, "kern" 0;
+    height: min-content;
+    display: flex;
+    align-items: flex-end;
+}
+.content.main .searchBars .searchBarDisplay span span {
+    margin: 0;
+    padding: 0;
+    display: inline;
+    line-height: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    transform: scale(1);
 }
 .content.main .searchArea.opened .searchBar {
     opacity: 1;

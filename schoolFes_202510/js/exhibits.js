@@ -1347,16 +1347,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
         (getScrollWidth(spans[0]) + getScrollWidth(spans[1])) * -1 + ((
             Math.min(window.innerWidth, 700)
         ) * .5) + (
-            spans[1] ?
-            (() => {
-                const inputedSpans = spans[1].querySelectorAll("span");
-                let width = 0;
-                console.log("");
-                for (let i = 0; i < Math.abs(barSelectionIndex); i += 1) {
-                    width += inputedSpans[inputedSpans.length - i - 1].offsetWidth || 0;
-                }
-                return width;
-            })() : 0
+            spans[1] ? Math.abs(barSelectionIndex) / spans[1].textContent.length * spans[1].scrollWidth : 0
         );
         searchBarsEl.style.setProperty("--barShift", value + "px");
     }
@@ -1436,7 +1427,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                 newSearchBarDisplayEl.innerHTML = `<span>${
                     getFmtedHTML(sagestResults?.[0]?.[0])
                 }</span><span>${
-                    getFmtedHTML(searchWord.split("").map(char => `<span>${char}</span>`).join(""))
+                    getFmtedHTML(searchWord)
                 }</span><span>${
                     getFmtedHTML(sagestResults?.[0]?.[2])
                 }</span>`;
