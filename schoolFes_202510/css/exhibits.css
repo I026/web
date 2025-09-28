@@ -487,7 +487,13 @@
         700px
     );
 }
+.content.main .searchBars.focus .sagests {
+    opacity: 1;
+    pointer-events: auto;
+}
 .content.main .searchBars .sagests {
+    opacity: 0;
+    pointer-events: none;
     top: calc(var(--baseScale) + 5px);
     position: absolute;
     width: calc(100% + 20px);
@@ -495,7 +501,6 @@
     max-height: calc(100vh - var(--topBarHeight) - 400px);
     right: 0;
     overflow-y: auto;
-    pointer-events: auto;
 }
 .content.main .searchBars .sagests > div {
     position: relative;
