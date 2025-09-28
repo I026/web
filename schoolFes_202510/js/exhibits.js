@@ -777,7 +777,7 @@ d.addEventListener("click", e => {
             openTile(tile);
         }
     }
-    if (!searchBarsEl.contains(e.target)) {
+    if (!searchBarsEl.contains(e.target) && !exhibitsBottomBar.contains(e.target)) {
         searchBarsEl.classList.remove("opened");
         updateSort("");
     }
@@ -936,6 +936,8 @@ for (let i = 0; i < exhibitsLength; i += 1) {
     tagsContent.addEventListener("scroll", scroll);
 }
 
+const getEscapeReg = (string) => string[0] ? string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : null;
+
 function getSortConditions () {
     let conditions = [];
     const checkedTags = exhibitsBottomBar.querySelectorAll(".tag.checkedBox:not([isButton])");
@@ -945,10 +947,45 @@ function getSortConditions () {
     return conditions;
 }
 
+const existingSearchValue = queryParameter({
+    type: "get",
+    key: "search",
+}) || "";
 
-let searchHits = [];
+function toKatakana(input, {normalizeHalfwidth = true} = {}) {
+    let s = String(input);
+    if (normalizeHalfwidth) s = s.normalize('NFKC'); // 半角カナを全角にする（必要なら false に）
+    const H_START = 0x3041, H_END = 0x3096;
+    const OFFSET = 0x60; // 96
+
+    return Array.from(s).map(ch => {
+        const cp = ch.codePointAt(0);
+        if (cp >= H_START && cp <= H_END) {
+            return String.fromCodePoint(cp + OFFSET);
+        }
+        // そのほかはそのまま（長音記号や記号、漢字、英数字など）
+        return ch;
+    }).join('');
+}
+
+function toHiragana(input, {normalizeHalfwidth = true} = {}) {
+    let s = String(input);
+    if (normalizeHalfwidth) s = s.normalize('NFKC'); // 半角カナを全角にする
+    const K_START = 0x30A1, K_END = 0x30F6;
+    const OFFSET = 0x60; // 96
+
+    return Array.from(s).map(ch => {
+        const cp = ch.codePointAt(0);
+        if (cp >= K_START && cp <= K_END) {
+        return String.fromCodePoint(cp - OFFSET);
+        }
+        return ch;
+    }).join('');
+}
+
 // 検索
 function getExhibitsSearch (exhibit, searchWord = getSearchValue()) {
+    let searchHits = [];
     const exhibitItem = exhibit;
     const targets = [
         exhibitItem?.name,
@@ -960,11 +997,18 @@ function getExhibitsSearch (exhibit, searchWord = getSearchValue()) {
     });
     let isHit = false;
     searchHits = [];
-    targets.forEach((target, i) => {
+    const spliteds = [];
+    targets?.forEach((target, i) => {
+        const splited = target.split(
+            new RegExp(
+                `(${getEscapeReg(searchWord)}|${getEscapeReg(toHiragana(searchWord))}|${getEscapeReg(toKatakana(searchWord))})`
+            )
+        );
+        spliteds.push(splited);
         if (
             !searchWord ||
             searchWord === "" ||
-            target?.includes(searchWord)
+            splited.length > 1
         ) {
             isHit = true;
             searchHits.push([target, i]);
@@ -972,7 +1016,8 @@ function getExhibitsSearch (exhibit, searchWord = getSearchValue()) {
     });
     return {
         isHit: isHit,
-        hits: searchHits
+        hits: searchHits,
+        spliteds: spliteds
     };
 }
 
@@ -999,6 +1044,7 @@ function getIsSortConforming (exhibit, conditions = getSortConditions(), searchW
     return {
         isConforming: isConforming,
         searchHits: searchHits,
+        spliteds: searchRes.spliteds,
     };
 }
 
@@ -1063,6 +1109,7 @@ function updateSort (searchWord = getSearchValue()) {
 
     const targetElements = [];
     const targetExhibits = [];
+    const spliteds = [];
     const searchHits = [];
     exhibitsArea.querySelectorAll(":scope > div.tile").forEach(tileItem => {
         const exhibit = exhibits[tileItem.getAttribute("exhibits")];
@@ -1071,6 +1118,7 @@ function updateSort (searchWord = getSearchValue()) {
             searchHits.push(conforming.searchHits);
             targetElements.push(tileItem);
             targetExhibits.push(exhibit);
+            spliteds.push(conforming.spliteds);
         }
     });
 
@@ -1125,7 +1173,8 @@ function updateSort (searchWord = getSearchValue()) {
     return {
         elements: targetElements,
         exhibits: targetExhibits,
-        searchHits: searchHits
+        searchHits: searchHits,
+        spliteds: spliteds
     };
 }
 
@@ -1201,7 +1250,7 @@ let loadModel;
     exhibitsBottomBar.appendChild(bottomBar_contents);
 })();
 
-function scrollToTile(value) {
+function scrollToTile(value, offsetY) {
     const targetTile = value instanceof Element ? (
         value
     ) : (
@@ -1235,7 +1284,7 @@ function scrollToTile(value) {
     });
     const rect = targetTile.getBoundingClientRect();
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const targetY = rect.top + scrollTop - 120;
+    const targetY = rect.top + scrollTop - 120 + offsetY;
     scrollToAndThen(targetY, () => {
         exhibitsArea.querySelectorAll(".tile").forEach(tileItem => {
             tileItem.style.transition = existingTransition;
@@ -1258,13 +1307,14 @@ const getSearchValue = () => searchBarsEl.classList.contains("opened") ? newSear
 
     newSearchBarEl.className = "searchBar";
     newSearchBarEl.type = "text";
-    newSearchBarEl.placeholder = "検索できます";
-    newSearchBarEl.value = queryParameter({
-        type: "get",
-        key: "search",
-    });
-    newSearchBarEl.addEventListener("input", () => {
+    newSearchBarEl.value = existingSearchValue;
+    const getSearchWord = () => newSearchBarEl.value;
+    const getFmtedHTML = (str) => str.replaceAll(" ", "&nbsp;");
+    const getIsOpened = () => searchBarsEl.classList.contains("opened") ? true : false;
+    function searchInput () {
+        const searchWord = getSearchWord();
         const sortResult = updateSort();
+        // console.log("sortResult", sortResult);
         queryParameter({
             type: "delete",
             key: "search"
@@ -1276,43 +1326,63 @@ const getSearchValue = () => searchBarsEl.classList.contains("opened") ? newSear
                 value: newSearchBarEl.value
             });
         }
-        const searchWord = newSearchBarEl.value;
-        const displayText = sortResult.searchHits?.[0]?.[0]?.[0][0];
-        const isSagestVaild = displayText && searchWord;
-        console.log("");
         sagests.innerHTML = "";
-        const sagestSplit = displayText?.split(new RegExp(`(${searchWord})`));
-        const sagestTexts = [
-            sagestSplit?.[0] || "",
-            sagestSplit?.[1] || "",
-            sagestSplit?.slice(2).join("") || ""
-        ];
-        if (isSagestVaild) {
-            sortResult.searchHits.forEach((hitItem, i) => {
+        newSearchBarDisplayEl.innerHTML = "";
+        const isSagestVaild = searchWord && searchWord !== "" && searchWord.length !== 0;
+        const sagestResults = [];
+        sortResult.searchHits.forEach((hitItem, i) => {
+            if (isSagestVaild) {
+                const sagestSplit = sortResult.spliteds[i][hitItem?.[0]?.[0][1]];
+                // const sagestSplit = hitItem?.[0]?.[0]?.[0]?.split(
+                //     new RegExp(`(${getEscapeReg(searchWord)})`)
+                // );
+                const sagestTexts = [
+                    sagestSplit?.[0] || "",
+                    sagestSplit?.[1] || "",
+                    sagestSplit?.slice(2).join("") || ""
+                ];
+                sagestResults.push(sagestTexts);
                 const newSet = d.createElement("div");
                 newSet.addEventListener("click", () => {
                     const targetEl = sortResult.elements[i];
-                    scrollToTile(targetEl);
+                    scrollToTile(targetEl, -100);
                 });
 
                 const newSagest = d.createElement("div");
-                // newSagest.textContent = hitItem?.[0]?.[0][0];
-                newSagest.innerHTML = `<span>${sagestTexts[0]}</span>${searchWord}<span>${sagestTexts[2]}</span>`;
+                newSagest.innerHTML = `<span>${getFmtedHTML(sagestTexts[0])}</span>${getFmtedHTML(sagestTexts[1])}<span>${getFmtedHTML(sagestTexts[2])}</span>`;
                 
-                const newSagestSub = d.createElement("div");
-                newSagestSub.textContent = sortResult.exhibits[i].name;
+                const newExhibitName = d.createElement("div");
+                newExhibitName.textContent = sortResult.exhibits[i].name;
+                newExhibitName.className = "exhibitName";
                 
                 sagests.appendChild(newSet);
                 newSet.appendChild(newSagest);
-                newSet.appendChild(newSagestSub);
-            });
+                newSet.appendChild(newExhibitName);
+            }
+        });
+        if (isSagestVaild) {
+            if (sagestResults.length !== 0) {
+                newSearchBarDisplayEl.innerHTML = `<span>${
+                    isSagestVaild ? getFmtedHTML(sagestResults?.[0]?.[0]) : ""
+                }</span>${
+                    getFmtedHTML(searchWord)
+                }${
+                    isSagestVaild ? getFmtedHTML(sagestResults?.[0]?.[2]) : ""
+                }`;
+            }
+            mainContent.style.setProperty("--sagestsHeight", getIsOpened() ? sagests.clientHeight + "px" : 0);
+            newSearchBarEl.style.setProperty("--spanWidth", (newSearchBarDisplayEl.querySelector("span")?.scrollWidth || 0) + "px");
+        } else {
+            newSearchBarDisplayEl.innerHTML = "検索できます";
+            newSearchBarEl.style.setProperty("--spanWidth", 0);
         }
-        newSearchBarDisplayEl.innerHTML = `<span>${isSagestVaild ? sagestTexts[0] : ""}</span>${searchWord}${isSagestVaild ? sagestTexts[2] : ""}`;
-        newSearchBarEl.style.setProperty("--spanWidth", newSearchBarDisplayEl.querySelector("span").scrollWidth + "px");
-    });
+    }
+    searchInput();
+    newSearchBarEl.addEventListener("input", searchInput);
     searchBarsEl.querySelector("svg").addEventListener("click", () => {
         searchBarsEl.classList.toggle("opened");
         updateSort(getSearchValue());
+        searchInput();
     });
     searchBarsEl.appendChild(newSearchBarEl);
     searchBarsEl.appendChild(newSearchBarDisplayEl);

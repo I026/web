@@ -5,6 +5,8 @@
     /* display: flex;
     justify-content: center;
     flex-direction: column; */
+    margin-top: var(--sagestsHeight);
+    transition: margin-top .5s ease-in-out;
     min-height: 100vh;
 }
 .content.main .exhibits .list {
@@ -424,6 +426,9 @@
     margin-left: .5em;
     margin-right: .5em;
 }
+.content.main .searchBars * {
+    transition: opacity .5s ease-in-out;
+}
 .content.main .searchBars {
     position: sticky;
     top: calc(var(--topBarHeight));
@@ -431,7 +436,8 @@
     width : var(--baseScale);
     height: var(--baseScale);
     margin-bottom: 20px;
-    left: 100vw;
+    left: 100%;
+    margin-right: 10px;
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -481,21 +487,46 @@
         700px
     );
 }
-.content.main .searchBars.opened .sagests {
+.content.main .searchBars .sagests {
     top: calc(var(--baseScale) + 5px);
     position: absolute;
-    width: calc(100%);
+    width: calc(100% + 20px);
+    height: min-content;
+    max-height: calc(100vh - var(--topBarHeight) - 400px);
     right: 0;
+    overflow-y: auto;
+    pointer-events: auto;
 }
-.content.main .searchBars.opened .sagests > div {
+.content.main .searchBars .sagests > div {
+    position: relative;
+    left: 20px;
+    width: calc(100% - 20px);
+    opacity: 0;
+    opacity: 0;
     display: flex;
     gap: 10px;
 }
-.content.main .searchBars.opened .sagests > div > div {
-    overflow: visible;
+.content.main .searchBars .sagests > div:last-child {
+    margin-bottom: 20px;
+}
+.content.main .searchBars.opened .sagests > div {
+    opacity: 1;
+}
+.content.main .searchBars .sagests > div > div:first-child {
+    border-bottom-right-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.content.main .searchBars .sagests > div > div:last-child {
+    border-bottom-left-radius: 10px;
+    border-top-left-radius: 10px;
+}
+.content.main .searchBars .sagests > div > div {
+    opacity: 0;
     position: relative;
     display: flex;
     align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
     height: 2em;
     padding-left: 10px;
     box-shadow: 0 0 10px gray;
@@ -505,13 +536,26 @@
     /* width: calc(100% - 10px); */
     width: max-content;
     padding-right: 10px;
-    border-radius: 100vh;
+    border-radius: 2em;
     margin-top: 5px;
     cursor: pointer;
     z-index: 10;
 }
+.content.main .searchBars.opened .sagests > div > div {
+    opacity: 1;
+}
+.content.main .searchBars.opened .sagests > div > div.exhibitName {
+    min-width: min-content;
+    opacity: 1;
+}
 .content.main .searchBars.opened .sagests > div > div span {
-    opacity: .25;
+    opacity: 1;
+}
+.content.main .searchBars .sagests > div > div.exhibitName {
+    opacity: 0;
+}
+.content.main .searchBars .sagests > div > div span {
+    opacity: 0;
 }
 .content.main .searchBars.opened .searchBar::placeholder {
     color: rgba(0, 0, 0, .25)
@@ -522,6 +566,9 @@
 }
 .content.main .searchBars.opened .searchBar {
     pointer-events: auto;
+}
+.content.main .searchBars .searchBar {
+    pointer-events: none;
     transform: translateX(var(--spanWidth));
 }
 .content.main .searchBars .searchBar {
@@ -534,8 +581,17 @@
     padding-left: 0;
     outline: none;
 }
-.content.main .searchBars .searchBarDisplay {
+.content.main .searchBars .searchBar {
+    opacity: 0;
+}
+.content.main .searchBars.opened .searchBar {
+    opacity: 1;
+}
+.content.main .searchBars.opened .searchBarDisplay {
     opacity: .25;
+}
+.content.main .searchBars .searchBarDisplay {
+    opacity: 0;
     pointer-events: none;
     background-color: transparent;
     position: absolute;
