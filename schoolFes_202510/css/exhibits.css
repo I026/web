@@ -516,6 +516,7 @@
 }
 .content.main .searchBars.opened .sagests > div {
     opacity: 1;
+    pointer-events: none;
 }
 .content.main .searchBars .sagests > div > div:first-child {
     border-bottom-right-radius: 10px;
@@ -544,6 +545,7 @@
     border-radius: 2em;
     margin-top: 5px;
     cursor: pointer;
+    pointer-events: auto;
     z-index: 10;
 }
 .content.main .searchBars.opened .sagests > div > div {

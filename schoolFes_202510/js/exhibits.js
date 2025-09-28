@@ -774,10 +774,10 @@ d.addEventListener("click", e => {
         const tile = e.target.closest(".tile");
         if (tile) openTile(tile);
     }
-    // if (!searchBarsEl.contains(e.target) && !exhibitsBottomBar.contains(e.target)) {
-    //     searchBarsEl.classList.remove("opened");
-    //     updateSort("");
-    // }
+    if (!searchBarsEl.contains(e.target) && !exhibitsBottomBar.contains(e.target)) {
+        searchBarsEl.classList.remove("opened");
+        updateSort("");
+    }
 });
 
 function startObserve({ target, callback, once = true, threshold = 0 }) {
@@ -1290,7 +1290,7 @@ function scrollToTile(value, offsetY = 0) {
     requestAnimationFrame(() => {
         const rect = targetTile.getBoundingClientRect();
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const targetY = rect.top + scrollTop - 120 + offsetY;
+        const targetY = rect.top + scrollTop - 170 + offsetY;
 
         allTiles.forEach((tileItem, i) => {
             if (tileOpenDatas[i]) tileItem.classList.add("opened");
@@ -1329,14 +1329,6 @@ const getSearchValue = () => searchBarsEl.classList.contains("opened") ? newSear
     const getIsOpened = () => searchBarsEl.classList.contains("opened") ? true : false;
     const getIsFocus = () => searchBarsEl.classList.contains("focus") ? true : false;
 
-    // sagests.addEventListener("click", e => {
-    //     console.log(
-    //         Array.from(sagests.children).indexOf(e.target.closest(".main.content .sagests > div")),
-    //     );
-    //     // const targetEl = sortResult.elements[i];
-    //     // scrollToTile(targetEl, -100);
-    // });
-
     function searchInput () {
         const searchWord = getSearchWord();
         const sortResult = updateSort();
@@ -1369,10 +1361,15 @@ const getSearchValue = () => searchBarsEl.classList.contains("opened") ? newSear
                 ];
                 sagestResults.push(sagestTexts);
                 const newSet = d.createElement("div");
-                newSet.addEventListener("click", () => {
-                    const targetEl = sortResult.elements[i];
-                    // openTile(targetEl, true);
-                    scrollToTile(targetEl, sagestsHeight * -1 - 50);
+                newSet.addEventListener("click", e => {
+                    if (
+                        e.target === newSagest ||
+                        e.target === newExhibitName
+                    ) {
+                        searchBarsEl.classList.remove("opened");
+                        const targetEl = sortResult.elements[i];
+                        scrollToTile(targetEl);
+                    }
                 });
 
                 const newSagest = d.createElement("div");
@@ -1409,7 +1406,6 @@ const getSearchValue = () => searchBarsEl.classList.contains("opened") ? newSear
 
     newSearchBarEl.addEventListener("focus", () => {
         searchBarsEl.classList.add("focus");
-        searchInput();
     });
     // newSearchBarEl.addEventListener("blur", () => {
     //     searchBarsEl.classList.remove("focus");
