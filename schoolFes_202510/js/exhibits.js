@@ -151,10 +151,13 @@ const maps_locationNames = {
 };
 
 const maps_locations = {
-    F1_F2_F3_currentLocationPoint: {
+    currentLocationPoint: {
         name: "現在地",
         description: "おおよその現在地",
-        isAlwaysShow: true,
+        isEdgeShow: true,
+        offset: {
+            y: .1,
+        },
     },
 
     F1_Entrance_Arch: {
@@ -164,6 +167,7 @@ const maps_locations = {
             name: "正面玄関"
         },
         isAlwaysShow: true,
+        isEdgeShow: true,
     },
     Dining_Roof: {
         name: maps_locationNames.Dining,
@@ -171,6 +175,7 @@ const maps_locations = {
             y: .2,
         },
         isAlwaysShow: true,
+        isEdgeShow: true,
     },
 
     F1_Art_WC: {
@@ -368,6 +373,7 @@ const maps_locations = {
             y: .1,
         },
         isAlwaysShow: true,
+        isEdgeShow: true,
     },
 
     F1_J1_1: exhibits.J1_1,
@@ -1682,7 +1688,14 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
         // 3Dモデル読み込み
         const loader = new GLTFLoader();
         let model; // モデルを外で保持
-        
+        const currentLocationPointMesh = new THREE.Mesh(
+            new THREE.BoxGeometry(
+                .01,
+                .01,
+                .01,
+            )
+        );
+
         const getFmtedObjName = (name) => name.replace("F" + maps_getFloor(name) + "_", "");
 
         loadModel = () => {
@@ -1695,117 +1708,13 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                     model.rotation.y = THREE.MathUtils.degToRad(135);
                     scene.add(model);
 
-                    (() => {
-                        const isGeolocationVaild = "geolocation" in navigator;
-                        console.log("isGeolocationVaild : ", isGeolocationVaild);
-                        if (!isGeolocationVaild) return;
-
-                        const currentLocationPoint = new THREE.BoxGeometry(
-                            .02,
-                            .02,
-                            .02,
-                        );
-                        const pointMesh = new THREE.Mesh(
-                            currentLocationPoint,
-                            new THREE.MeshStandardMaterial({ color: "red" })
-                        );
-
-                        const baseLocation = [ // 0, 0, 0に対応する場所
-                            35.860550,
-                            139.269142
-                        ];
-
-                        function isPointInArea(point, quad = [
-                            [35.862096, 139.269525],
-                            [35.859773, 139.266558],
-                            [35.858807, 139.269504],
-                            [35.860690, 139.271212]
-                        ]) {
-                        // 三角形内判定（バリセンター法）
-                            function pointInTriangle(p, a, b, c) {
-                                const det = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]);
-                                const l1 = ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) / det;
-                                const l2 = ((c[0] - a[0]) * (p[1] - a[1]) - (c[1] - a[1]) * (p[0] - a[0])) / -det;
-                                const l3 = 1 - l1 - l2;
-                                return l1 >= 0 && l2 >= 0 && l3 >= 0;
-                            }
-                            // 四角形を2つの三角形に分けて判定
-                            return pointInTriangle(point, quad[0], quad[1], quad[2]) || pointInTriangle(point, quad[0], quad[2], quad[3]);
-                        }
-                        
-                        function latlonToXYZ(baseLat, baseLon){
-                            const lat = baseLat - baseLocation[0];
-                            const lon = baseLon - baseLocation[1];
-                            const M = [
-                                [866.69667299, 1236.85206018], // row for x
-                                [0.0, 0.0],                    // row for y
-                                [-2161.60126554, 20.85725703], // row for z
-                            ];
-                            const x = M[0][0]*lat + M[0][1]*lon;
-                            const y = M[1][0]*lat + M[1][1]*lon;
-                            const z = M[2][0]*lat + M[2][1]*lon;
-                            return { x, y, z };
-                        }
-                        model.add(pointMesh);
-                        pointMesh.name = "F1_F2_F3_currentLocationPoint";
-                        pointMesh.visible = false;
-
-                        const watchId = navigator.geolocation.watchPosition(
-                            (position) => {
-                                const latitude  = 35.860550  || position.coords.latitude;
-                                const longitude = 139.269142 || position.coords.longitude;
-
-                                console.log("Updated location:", latitude, longitude);
-
-                                if (latitude && longitude && isPointInArea([
-                                    latitude, longitude
-                                ])) {
-                                    const pos = latlonToXYZ(latitude, longitude);
-                                    pointMesh.position.set(
-                                        pos.x,
-                                        1,
-                                        pos.z,
-                                    );
-                                }
-                            },
-                            (error) => {
-                                console.log("Error getting location:", error);
-                            },
-                            {
-                                enableHighAccuracy: true,
-                                timeout: 5000,
-                                maximumAge: 0
-                            }
-                        );
-
-                        // 監視を停止したい場合は以下を実行
-                        // navigator.geolocation.clearWatch(watchId);
-
-                        /* 
-                        
-                         0, 0,  0 : 35.860550, 139.269142
-                         1, 0,  0 : 35.860467, 139.269696
-                        -1, 0,  0 : 35.860490, 139.268412
-
-                         0, 0,  1 : 35.860096, 139.269190
-                         0, 0, -1 : 35.860991, 139.269053
-
-                         ___
-
-                         0, 0,  0 :  0,         0
-                         1, 0,  0 : -0.000083,  0.000554
-                        -1, 0,  0 : -0.00006,  -0.00073
-
-                         0, 0,  1 : -0.000454,  0.000048
-                         0, 0, -1 :  0.000441, -0.000641
-
-                        敷地内 :
-                            35.862096, 139.269525
-                            35.859773, 139.266558
-                            35.858807, 139.269504
-                            35.860690, 139.271212
-                        */
-                    })();
+                    model.add(currentLocationPointMesh);
+                    currentLocationPointMesh.position.set(
+                        0, 0, 0
+                    );
+                    currentLocationPointMesh.name = "currentLocationPoint";
+                    currentLocationPointMesh.visible = false;
+                    currentLocationPointMesh.material.opacity = 0;
 
                     // モデルが読み込まれたら OrbitControls の注視点をモデル中心に設定
                     function setCamFocus(x = 0, y = 0, z = 0) {
@@ -2047,11 +1956,11 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         if (!maps_locations[partName]) return;
 
                         const label = document.createElement("div");
-                        label.className = `mapsLabel${maps_locations[partName].isAlwaysShow ? " alwaysShow" : ""}`;
+                        label.className = `mapsLabel${maps_locations[partName].isAlwaysShow ? " alwaysShow" : ""}${maps_locations[partName].isEdgeShow ? " edgeShow" : ""}`;
                         label.setAttribute("exhibits", partName);
 
                         if (maps_locations[partName]) {
-                            label.className = `mapsLabel${maps_locations[partName].isAlwaysShow ? " alwaysShow" : ""}`;
+                            label.className = `mapsLabel${maps_locations[partName].isAlwaysShow ? " alwaysShow" : ""}${maps_locations[partName].isEdgeShow ? " edgeShow" : ""}`;
                             label.setAttribute("exhibits", partName);
 
                             setTagAttributes(maps_locations[partName].tag, label);
@@ -2250,7 +2159,9 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                             const isAlwaysShow = maps_locations[part.name]?.isAlwaysShow || false;
 
-                            if ((gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1) || isAlwaysShow) {
+                            if (
+                                (gsap.getProperty(Array.isArray(part.material) ? part.material[0] : part.material, "opacity") === 1 || isAlwaysShow)
+                            ) {
                                 if (getIsSortConforming(maps_locations[part.name], getSortConditions(), getSearchValue()).isConforming) {
                                     if (element.classList.contains("invalid")) element.classList.remove("invalid");
                                     element.style.setProperty("--labelOpacity", 1);
@@ -2734,33 +2645,27 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
         }
 
         const button_dimension = d.createElement("div");
-        function button_dimensionMode_2D (isAdd) {
-            if (isAdd === true) {
-                button_dimension.classList.add("mode_2D");
-            } else if (isAdd === false) {
-                button_dimension.classList.remove("mode_2D");
-            } else {
-                return button_dimension.classList.contains("mode_2D");
-            }
-        }
         button_dimension.className = "dimension button";
+
+        const button_currentPos = d.createElement("div");
+        button_currentPos.className = "button";
 
         const floors = {
             f1: {
-                name: "1階"
+                name: "1"
             },
             f2: {
-                name: "2階"
+                name: "2"
             },
             f3: {
-                name: "3階"
+                name: "3"
             },
         };
 
-        Object.values(floors).slice().reverse().forEach((floor, index) => {
+        Object.values(floors).forEach((floor, index) => {
             const button = d.createElement("div");
             
-            button.textContent = floor.name;
+            button.innerHTML = `<span>F</span>${floor.name}`;
             button.setAttribute("floor", Object.keys(floors)[Object.keys(floors).length - index - 1]);
             button.className = "button";
 
@@ -2812,14 +2717,16 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         part.material.depthWrite = isPartActive;
                     }
 
-                    gsap.to(part.material, {
-                        duration: 0.5,
-                        opacity: isPartActive ? 1 : .05,
-                        ease: "power2.inOut"
-                    });
-                    setEdgeStyle(part, {
-                        opacity: isPartActive ? 1 : 0
-                    });
+                    if (part.visible) {
+                        gsap.to(part.material, {
+                            duration: 0.5,
+                            opacity: isPartActive ? 1 : .05,
+                            ease: "power2.inOut"
+                        });
+                        setEdgeStyle(part, {
+                            opacity: isPartActive ? 1 : 0
+                        });
+                    }
                 });
 
                 // updateBottomText(activeFloors.length === 1 ? activeFloors[0] : null);
@@ -2868,7 +2775,113 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                 if (get_isEveryFloorValid()) maps_changeFloor(1);
             });
 
+            const currentPosTextEl = d.createElement("span");
+            currentPosTextEl.textContent = "現在地";
+            button_currentPos.appendChild(currentPosTextEl);
+            let geoWatchId;
+            button_currentPos.addEventListener("click", () => {
+                button_currentPos.classList.toggle("currentPos");
+                if (button_currentPos.classList.contains("currentPos")) {
+                    currentLocationPointMesh.material.opacity = 1;
+                    const isGeolocationVaild = "geolocation" in navigator;
+                    console.log("isGeolocationVaild : ", isGeolocationVaild);
+                    if (!isGeolocationVaild) return;
+
+                    const baseLocation = [ // 0, 0, 0に対応する場所
+                        35.860550,
+                        139.269142
+                    ];
+
+                    function isPointInArea(point, quad = [
+                        [35.862096, 139.269525],
+                        [35.859773, 139.266558],
+                        [35.858807, 139.269504],
+                        [35.860690, 139.271212]
+                    ]) {
+                    // 三角形内判定（バリセンター法）
+                        function pointInTriangle(p, a, b, c) {
+                            const det = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]);
+                            const l1 = ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) / det;
+                            const l2 = ((c[0] - a[0]) * (p[1] - a[1]) - (c[1] - a[1]) * (p[0] - a[0])) / -det;
+                            const l3 = 1 - l1 - l2;
+                            return l1 >= 0 && l2 >= 0 && l3 >= 0;
+                        }
+                        // 四角形を2つの三角形に分けて判定
+                        return pointInTriangle(point, quad[0], quad[1], quad[2]) || pointInTriangle(point, quad[0], quad[2], quad[3]);
+                    }
+                    
+                    function latlonToXYZ(baseLat, baseLon){
+                        const lat = baseLat - baseLocation[0];
+                        const lon = baseLon - baseLocation[1];
+                        const M = [
+                            [866.69667299, 1236.85206018], // row for x
+                            [0.0, 0.0],                    // row for y
+                            [-2161.60126554, 20.85725703], // row for z
+                        ];
+                        const x = M[0][0]*lat + M[0][1]*lon;
+                        const y = M[1][0]*lat + M[1][1]*lon;
+                        const z = M[2][0]*lat + M[2][1]*lon;
+                        return { x, y, z };
+                    }
+
+                    geoWatchId = navigator.geolocation.watchPosition(
+                        (position) => {
+                            const latitude  = 35.860540  || position.coords.latitude;
+                            const longitude = 139.269142 || position.coords.longitude;
+
+                            console.log("Updated location:", latitude, longitude);
+
+                            if (latitude && longitude && isPointInArea([
+                                latitude, longitude
+                            ])) {
+                                const pos = latlonToXYZ(latitude, longitude);
+                                currentLocationPointMesh.position.set(
+                                    pos.x,
+                                    0,
+                                    pos.z,
+                                );
+                            }
+                        }, (error) => {
+                            console.log("Error getting location:", error);
+                        }, {
+                            enableHighAccuracy: true,
+                            timeout: 5000,
+                            maximumAge: 0
+                        }
+                    );
+                } else {
+                    currentLocationPointMesh.material.opacity = 0;
+                    navigator.geolocation.clearWatch(geoWatchId);
+                }
+
+                /* 
+                
+                    0, 0,  0 : 35.860550, 139.269142
+                    1, 0,  0 : 35.860467, 139.269696
+                -1, 0,  0 : 35.860490, 139.268412
+
+                    0, 0,  1 : 35.860096, 139.269190
+                    0, 0, -1 : 35.860991, 139.269053
+
+                    ___
+
+                    0, 0,  0 :  0,         0
+                    1, 0,  0 : -0.000083,  0.000554
+                -1, 0,  0 : -0.00006,  -0.00073
+
+                    0, 0,  1 : -0.000454,  0.000048
+                    0, 0, -1 :  0.000441, -0.000641
+
+                敷地内 :
+                    35.862096, 139.269525
+                    35.859773, 139.266558
+                    35.858807, 139.269504
+                    35.860690, 139.271212
+                */
+            });
+
             maps_buttons_right.appendChild(button_dimension);
+            maps_buttons_right.appendChild(button_currentPos);
             maps_buttons_top.appendChild(compass);
         })();
 

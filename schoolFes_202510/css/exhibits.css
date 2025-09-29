@@ -742,6 +742,10 @@
     pointer-events: none;
     --labelOpacity: .5;
 }
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel[exhibits="currentLocationPoint"] {
+    z-index: 10001 !important;
+    background-color: rgb(220, 80, 110);
+}
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
     opacity: var(--labelOpacity);
     position: absolute;
@@ -855,7 +859,7 @@
     opacity: 0;
 }
 
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.edgeShow {
     /* --arrowScale: 25px; */
     transform: translate(var(--labelXPx), var(--labelYPx)) !important;
     opacity: 1;
@@ -864,17 +868,17 @@
     z-index: 10001 !important;
     box-shadow: 0 0 10px gray;
     color: black;
-    background-color: rgba(211, 211, 211, .75);
+    opacity: .8;
     transition:
     font-size var(--transitionDuration) ease-out,
     transform .5s ease-out;
     /* animation: label_edgeAnim .5s infinite; */
     /* margin-right: calc(var(--arrowScale) * 1); */
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow .title {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.edgeShow .title {
     opacity: 1;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow .arrow {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.edgeShow .arrow {
     transform: rotate(
         calc(
             var(--differenceDeg) + 45deg
@@ -891,7 +895,7 @@
     /* background-color: transparent; */
     color: black;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow .arrow svg {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.edgeShow .arrow svg {
     width : 80%;
     height: 80%;
 }
@@ -913,7 +917,7 @@
         opacity: 0;
     }
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.alwaysShow .arrow svg path {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.edgeShow .arrow svg path {
     stroke-width: 90;
     transform: translate(
          10%,
@@ -1136,14 +1140,20 @@
 .content.main .exhibits .tile .content .buttons.left {
     top: var(--topPos);
 }
+.content.main .exhibits .tile .content .buttons {
+    flex-direction: row;
+}
 .content.main .exhibits .tile .content .buttons.right {
     right: 5px;
-    justify-content: flex-end;
+    justify-content: flex-start;
 }
 .content.main .exhibits .tile .content .buttons.left {
     left: 5px;
-    flex-direction: row-reverse;
     justify-content: flex-start;
+}
+.content.main .exhibits .tile .content .buttons.left span {
+    font-size: .5em;
+    margin-bottom: .25em;
 }
 .content.main .exhibits .tile .content .buttons.top {
     display: flex;
@@ -1177,12 +1187,12 @@
     padding: 5px;
     margin: 2.5px;
     border-radius: .5em;
-    min-width: 2.5em;
+    min-width: 1.25em;
     font-size: 1.2em;
     position: relative;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
     text-align: center;
     background-color: white;
     --maxBorderRadius: .75em;
@@ -1193,22 +1203,13 @@
     box-shadow .5s ease-in-out;
 }
 
-.content.main .exhibits .tile .content .buttons.right .button:first-child {
-    border-top-left-radius : var(--maxBorderRadius);
-    border-top-right-radius: var(--maxBorderRadius);
-}
-.content.main .exhibits .tile .content .buttons.right .button:last-child {
-    border-bottom-left-radius : var(--maxBorderRadius);
-    border-bottom-right-radius: var(--maxBorderRadius);
-}
-
-.content.main .exhibits .tile .content .buttons.left .button:first-child {
-    border-top-right-radius: var(--maxBorderRadius);
-    border-bottom-right-radius: var(--maxBorderRadius);
-}
-.content.main .exhibits .tile .content .buttons.left .button:last-child {
+.content.main .exhibits .tile .content .buttons .button:first-child {
     border-top-left-radius : var(--maxBorderRadius);
     border-bottom-left-radius : var(--maxBorderRadius);
+}
+.content.main .exhibits .tile .content .buttons .button:last-child {
+    border-top-right-radius: var(--maxBorderRadius);
+    border-bottom-right-radius: var(--maxBorderRadius);
 }
 .content.main .exhibits .tile .content .buttons.top .button {
     border-radius : var(--maxBorderRadius);
