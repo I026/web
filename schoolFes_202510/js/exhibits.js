@@ -151,7 +151,7 @@ const maps_locationNames = {
 };
 
 const maps_locations = {
-    currentLocationPoint: {
+    F1_F2_F3_currentLocationPoint: {
         name: "現在地",
         description: "おおよその現在地",
         isAlwaysShow: true,
@@ -1747,13 +1747,13 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             return { x, y, z };
                         }
                         scene.add(pointMesh);
-                        pointMesh.name = "currentLocationPoint";
+                        pointMesh.name = "F1_F2_F3_currentLocationPoint";
                         pointMesh.visible = false;
 
                         const watchId = navigator.geolocation.watchPosition(
                             (position) => {
-                                const latitude  = position.coords.latitude;
-                                const longitude = position.coords.longitude;
+                                const latitude  = 35.860550  || position.coords.latitude;
+                                const longitude = 139.269142 || position.coords.longitude;
 
                                 console.log("Updated location:", latitude, longitude);
 
