@@ -767,7 +767,10 @@
         ) * .000075em
     ), max(1vw, 1.5vh)); */
     --fontSize: calc(
-        .65em
+        max(
+            .5em,
+            .5vw
+        )
     );
     font-size: var(--fontSize);
     /* font-size: max(min(
@@ -1154,6 +1157,7 @@
 .content.main .exhibits .tile .content .buttons.left span {
     font-size: .5em;
     margin-bottom: .25em;
+    margin-right: .1em;
 }
 .content.main .exhibits .tile .content .buttons.top {
     display: flex;

@@ -2880,8 +2880,8 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                 */
             });
 
-            maps_buttons_right.appendChild(button_dimension);
             maps_buttons_right.appendChild(button_currentPos);
+            maps_buttons_right.appendChild(button_dimension);
             maps_buttons_top.appendChild(compass);
         })();
 
