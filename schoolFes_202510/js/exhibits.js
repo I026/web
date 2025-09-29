@@ -1354,13 +1354,6 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
     }
 
     function searchBarScroll () {
-        // console.log(
-        //     newSearchBarEl.scrollLeft + "\n",
-        //     newSearchBarEl.getBoundingClientRect().right -
-        //     newSearchBarDisplayEl.getBoundingClientRect().right
-        // );
-        // newSearchBarEl.scrollWidth - newSearchBarEl.clientWidth
-
         const offsetPx = newSearchBarEl.scrollLeft;
         console.log("offsetPx : ", offsetPx);
         newSearchBarDisplayEl.style.setProperty("--barScrollPx", (
@@ -1713,10 +1706,9 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         ];
 
                         let currentLocation = [
-                            35.860450, 139.268797
+                            // 35.860450, 139.268797
                         ];
 
-                        alert("geolocation" in navigator);
                         if ("geolocation" in navigator) {
                             navigator.geolocation.getCurrentPosition(
                                 (position) => {
@@ -1756,7 +1748,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             1,
                             pos.z,
                         );
-                        console.log(pos);
+                        alert(pos);
                         scene.add(cube);
                         /* 
                          0, 0,  0 : 35.860550, 139.269142
