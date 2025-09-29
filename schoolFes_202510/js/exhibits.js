@@ -1709,8 +1709,6 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             139.269142
                         ];
 
-                        // 35.860450, 139.268797
-
                         function isPointInArea(point, quad = [
                             [35.862096, 139.269525],
                             [35.859773, 139.266558],
@@ -1733,9 +1731,9 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             const lat = baseLat - baseLocation[0];
                             const lon = baseLon - baseLocation[1];
                             const M = [
-                                [866.69667299, 1236.85206018],  // row for x
-                                [0.0, 0.0],                      // row for y
-                                [-2161.60126554, 20.85725703],   // row for z
+                                [866.69667299, 1236.85206018], // row for x
+                                [0.0, 0.0],                    // row for y
+                                [-2161.60126554, 20.85725703], // row for z
                             ];
                             const x = M[0][0]*lat + M[0][1]*lon;
                             const y = M[1][0]*lat + M[1][1]*lon;
@@ -1746,8 +1744,8 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                         const watchId = navigator.geolocation.watchPosition(
                             (position) => {
-                                const latitude  = position.coords.latitude;
-                                const longitude = position.coords.longitude;
+                                const latitude  = 35.860550 || position.coords.latitude;
+                                const longitude = 139.269142 || position.coords.longitude;
 
                                 console.log("Updated location:", latitude, longitude);
 
@@ -1776,6 +1774,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         // navigator.geolocation.clearWatch(watchId);
 
                         /* 
+                        
                          0, 0,  0 : 35.860550, 139.269142
                          1, 0,  0 : 35.860467, 139.269696
                         -1, 0,  0 : 35.860490, 139.268412
