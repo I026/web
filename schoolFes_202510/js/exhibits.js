@@ -1746,7 +1746,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             const z = M[2][0]*lat + M[2][1]*lon;
                             return { x, y, z };
                         }
-                        scene.add(pointMesh);
+                        model.add(pointMesh);
                         pointMesh.name = "F1_F2_F3_currentLocationPoint";
                         pointMesh.visible = false;
 
