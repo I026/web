@@ -1690,6 +1690,8 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                     scene.add(model);
 
                     (() => {
+                        if (!"geolocation" in navigator) return;
+
                         const currentLocationPoint = new THREE.BoxGeometry(
                             .02,
                             .02,
@@ -1709,25 +1711,30 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             // 35.860450, 139.268797
                         ];
 
-                        if ("geolocation" in navigator) {
-                            navigator.geolocation.getCurrentPosition(
-                                (position) => {
-                                    const latitude  = position.coords.latitude;   // 緯度
-                                    const longitude = position.coords.longitude; // 経度
-                                    currentLocation[0] = latitude;
-                                    currentLocation[1] = longitude;
-                                    alert(currentLocation);
-                                },
-                                (error) => {
-                                    console.log("Error getting location:", error);
-                                },
-                                {
-                                    enableHighAccuracy: true, // 高精度を使用
-                                    timeout: 5000,           // タイムアウト時間（ms）
-                                    maximumAge: 0            // キャッシュしない
-                                }
-                            );
+                        function isPointInArea(point, quad = [
+                            [35.862096, 139.269525],
+                            [35.859773, 139.266558],
+                            [35.858807, 139.269504],
+                            [35.860690, 139.271212]
+                        ]) {
+                        // 三角形内判定（バリセンター法）
+                            function pointInTriangle(p, a, b, c) {
+                                const det = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]);
+                                const l1 = ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) / det;
+                                const l2 = ((c[0] - a[0]) * (p[1] - a[1]) - (c[1] - a[1]) * (p[0] - a[0])) / -det;
+                                const l3 = 1 - l1 - l2;
+                                return l1 >= 0 && l2 >= 0 && l3 >= 0;
+                            }
+                            // 四角形を2つの三角形に分けて判定
+                            return pointInTriangle(point, quad[0], quad[1], quad[2]) || pointInTriangle(point, quad[0], quad[2], quad[3]);
                         }
+
+                        /* 
+                        35.862096, 139.269525
+                        35.859773, 139.266558
+                        35.858807, 139.269504
+                        35.860690, 139.271212
+                        */
                         
                         function latlonToXYZ(baseLat, baseLon){
                             const lat = baseLat - baseLocation[0];
@@ -1742,14 +1749,40 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             const z = M[2][0]*lat + M[2][1]*lon;
                             return { x, y, z };
                         }
-                        const pos = latlonToXYZ(currentLocation[0], currentLocation[1]);
-                        cube.position.set(
-                            pos.x,
-                            1,
-                            pos.z,
-                        );
-                        alert(pos);
                         scene.add(cube);
+
+                        const watchId = navigator.geolocation.watchPosition(
+                            (position) => {
+                                const latitude  = position.coords.latitude;
+                                const longitude = position.coords.longitude;
+                                currentLocation[0] = latitude;
+                                currentLocation[1] = longitude;
+
+                                if (latitude && longitude && isPointInArea([
+                                    latitude, longitude
+                                ])) {
+                                    console.log("Updated location:", currentLocation);
+                                    const pos = latlonToXYZ(latitude, longitude);
+                                    cube.position.set(
+                                        pos.x,
+                                        1,
+                                        pos.z,
+                                    );
+                                }
+                            },
+                            (error) => {
+                                console.log("Error getting location:", error);
+                            },
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 5000,
+                                maximumAge: 0
+                            }
+                        );
+
+                        // 監視を停止したい場合は以下を実行
+                        // navigator.geolocation.clearWatch(watchId);
+
                         /* 
                          0, 0,  0 : 35.860550, 139.269142
                          1, 0,  0 : 35.860467, 139.269696
