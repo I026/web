@@ -2826,8 +2826,10 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                     geoWatchId = navigator.geolocation.watchPosition(
                         (position) => {
-                            const latitude  = 35.860540  || position.coords.latitude;
-                            const longitude = 139.269142 || position.coords.longitude;
+                            // 35.860540  || 
+                            // 139.269142 || 
+                            const latitude  = position.coords.latitude;
+                            const longitude = position.coords.longitude;
 
                             console.log("Updated location:", latitude, longitude);
 
