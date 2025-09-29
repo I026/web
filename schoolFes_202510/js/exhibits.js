@@ -1690,7 +1690,9 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                     scene.add(model);
 
                     (() => {
-                        if (!"geolocation" in navigator) return;
+                        const isGeolocationVaild = "geolocation" in navigator;
+                        console.log("isGeolocationVaild : ", isGeolocationVaild);
+                        if (!isGeolocationVaild) return;
 
                         const currentLocationPoint = new THREE.BoxGeometry(
                             .02,
