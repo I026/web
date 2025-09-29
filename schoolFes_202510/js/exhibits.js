@@ -1696,6 +1696,87 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                     model.rotation.y = THREE.MathUtils.degToRad(135);
                     scene.add(model);
 
+                    (() => {
+                        const currentLocationPoint = new THREE.BoxGeometry(
+                            .02,
+                            .02,
+                            .02,
+                        );
+                        const cube = new THREE.Mesh(
+                            currentLocationPoint,
+                            new THREE.MeshStandardMaterial({ color: "red" })
+                        );
+
+                        const baseLocation = [ // 0, 0, 0に対応する場所
+                            35.860550,
+                            139.269142
+                        ];
+
+                        let currentLocation = [
+                            35.860450, 139.268797
+                        ];
+
+                        alert("geolocation" in navigator);
+                        if ("geolocation" in navigator) {
+                            navigator.geolocation.getCurrentPosition(
+                                (position) => {
+                                    const latitude  = position.coords.latitude;   // 緯度
+                                    const longitude = position.coords.longitude; // 経度
+                                    currentLocation[0] = latitude;
+                                    currentLocation[1] = longitude;
+                                    alert(currentLocation);
+                                },
+                                (error) => {
+                                    console.log("Error getting location:", error);
+                                },
+                                {
+                                    enableHighAccuracy: true, // 高精度を使用
+                                    timeout: 5000,           // タイムアウト時間（ms）
+                                    maximumAge: 0            // キャッシュしない
+                                }
+                            );
+                        }
+                        
+                        function latlonToXYZ(baseLat, baseLon){
+                            const lat = baseLat - baseLocation[0];
+                            const lon = baseLon - baseLocation[1];
+                            const M = [
+                                [866.69667299, 1236.85206018],  // row for x
+                                [0.0, 0.0],                      // row for y
+                                [-2161.60126554, 20.85725703],   // row for z
+                            ];
+                            const x = M[0][0]*lat + M[0][1]*lon;
+                            const y = M[1][0]*lat + M[1][1]*lon;
+                            const z = M[2][0]*lat + M[2][1]*lon;
+                            return { x, y, z };
+                        }
+                        const pos = latlonToXYZ(currentLocation[0], currentLocation[1]);
+                        cube.position.set(
+                            pos.x,
+                            1,
+                            pos.z,
+                        );
+                        console.log(pos);
+                        scene.add(cube);
+                        /* 
+                         0, 0,  0 : 35.860550, 139.269142
+                         1, 0,  0 : 35.860467, 139.269696
+                        -1, 0,  0 : 35.860490, 139.268412
+
+                         0, 0,  1 : 35.860096, 139.269190
+                         0, 0, -1 : 35.860991, 139.269053
+
+                         ___
+
+                         0, 0,  0 :  0,         0
+                         1, 0,  0 : -0.000083,  0.000554
+                        -1, 0,  0 : -0.00006,  -0.00073
+
+                         0, 0,  1 : -0.000454,  0.000048
+                         0, 0, -1 :  0.000441, -0.000641
+                        */
+                    })();
+
                     // モデルが読み込まれたら OrbitControls の注視点をモデル中心に設定
                     function setCamFocus(x = 0, y = 0, z = 0) {
                         maps_controls.target.set(x, y, z);

@@ -763,7 +763,7 @@
         ) * .000075em
     ), max(1vw, 1.5vh)); */
     --fontSize: calc(
-        .75em
+        .65em
     );
     font-size: var(--fontSize);
     /* font-size: max(min(
@@ -772,7 +772,7 @@
         ),
         1em
     ), 0em); */
-    --labelMinScale: .8em;
+    --labelMinScale: .4em;
     width:  max(min(var(--width), 5.2em), var(--labelMinScale));
     height: max(var(--height), var(--labelMinScale));
     --labelBackgroundColor: rgba(128, 128, 128, .9);
