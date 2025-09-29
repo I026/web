@@ -1709,9 +1709,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             139.269142
                         ];
 
-                        let currentLocation = [
-                            // 35.860450, 139.268797
-                        ];
+                        // 35.860450, 139.268797
 
                         function isPointInArea(point, quad = [
                             [35.862096, 139.269525],
@@ -1750,10 +1748,8 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             (position) => {
                                 const latitude  = position.coords.latitude;
                                 const longitude = position.coords.longitude;
-                                currentLocation[0] = latitude;
-                                currentLocation[1] = longitude;
 
-                                console.log("Updated location:", currentLocation);
+                                console.log("Updated location:", latitude, longitude);
 
                                 if (latitude && longitude && isPointInArea([
                                     latitude, longitude
