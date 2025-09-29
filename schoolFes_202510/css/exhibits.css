@@ -768,9 +768,9 @@
     ), max(1vw, 1.5vh)); */
     --fontSize: calc(
         max(
-            .5em,
-            .5vw
-        )
+            .2em,
+            .2vw
+        ) * (var(--camZoom) + 0.5)
     );
     font-size: var(--fontSize);
     /* font-size: max(min(
