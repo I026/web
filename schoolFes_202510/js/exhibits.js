@@ -151,6 +151,12 @@ const maps_locationNames = {
 };
 
 const maps_locations = {
+    currentLocationPoint: {
+        name: "現在地",
+        description: "おおよその現在地",
+        isAlwaysShow: true,
+    },
+
     F1_Entrance_Arch: {
         name: maps_locationNames.Entrance,
         emphasis: true,
@@ -1699,7 +1705,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             .02,
                             .02,
                         );
-                        const cube = new THREE.Mesh(
+                        const pointMesh = new THREE.Mesh(
                             currentLocationPoint,
                             new THREE.MeshStandardMaterial({ color: "red" })
                         );
@@ -1740,12 +1746,14 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             const z = M[2][0]*lat + M[2][1]*lon;
                             return { x, y, z };
                         }
-                        scene.add(cube);
+                        scene.add(pointMesh);
+                        pointMesh.name = "currentLocationPoint";
+                        pointMesh.visible = false;
 
                         const watchId = navigator.geolocation.watchPosition(
                             (position) => {
-                                const latitude  = 35.860550 || position.coords.latitude;
-                                const longitude = 139.269142 || position.coords.longitude;
+                                const latitude  = position.coords.latitude;
+                                const longitude = position.coords.longitude;
 
                                 console.log("Updated location:", latitude, longitude);
 
@@ -1753,7 +1761,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                                     latitude, longitude
                                 ])) {
                                     const pos = latlonToXYZ(latitude, longitude);
-                                    cube.position.set(
+                                    pointMesh.position.set(
                                         pos.x,
                                         1,
                                         pos.z,
@@ -1950,6 +1958,8 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         item.parent.remove(item.original);
                         maps_modelParts[item.original.name] = item.merged;
                     });
+
+                    console.log("maps_modelParts : \n", maps_modelParts);
 
                     (() => {
                         function blinkBrinkerLight(objectName, blinkInterval = 500, targetMaterialName = "Bus_BrinkerLight") {
