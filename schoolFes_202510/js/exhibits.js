@@ -1728,13 +1728,6 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             // 四角形を2つの三角形に分けて判定
                             return pointInTriangle(point, quad[0], quad[1], quad[2]) || pointInTriangle(point, quad[0], quad[2], quad[3]);
                         }
-
-                        /* 
-                        35.862096, 139.269525
-                        35.859773, 139.266558
-                        35.858807, 139.269504
-                        35.860690, 139.271212
-                        */
                         
                         function latlonToXYZ(baseLat, baseLon){
                             const lat = baseLat - baseLocation[0];
@@ -1758,10 +1751,11 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                                 currentLocation[0] = latitude;
                                 currentLocation[1] = longitude;
 
+                                console.log("Updated location:", currentLocation);
+
                                 if (latitude && longitude && isPointInArea([
                                     latitude, longitude
                                 ])) {
-                                    console.log("Updated location:", currentLocation);
                                     const pos = latlonToXYZ(latitude, longitude);
                                     cube.position.set(
                                         pos.x,
@@ -1799,6 +1793,12 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                          0, 0,  1 : -0.000454,  0.000048
                          0, 0, -1 :  0.000441, -0.000641
+
+                        敷地内 :
+                            35.862096, 139.269525
+                            35.859773, 139.266558
+                            35.858807, 139.269504
+                            35.860690, 139.271212
                         */
                     })();
 
