@@ -446,7 +446,7 @@
     backdrop-filter: blur(5px);
     --webkit-backdrop-filter: blur(5px);
     background-color: rgba(255, 255, 255, .1);
-    overflow: hidden;
+    overflow-x: auto;
     transition:
     width .5s ease-in-out,
     color .5s ease-in-out;
@@ -468,7 +468,7 @@
 .content.main .searchBars .searchBar,
 .content.main .searchBars .searchBarDisplay {
     position: absolute;
-    height: 100%;
+    height: calc(100% - 1px);
     width: calc(100% - var(--baseIconScale) - 10px);
     font-size: 1.25em;
     top: 0;
@@ -478,8 +478,9 @@
     background-color: transparent;
     overflow: visible;
     flex-shrink: 0;
-    padding: 0;
-    padding-left: 10px;
+    padding-top: 0;
+    padding-left: 0;
+    left: 0;
     right: var(--baseIconScale);
     white-space: nowrap;
 }
@@ -518,8 +519,11 @@
     opacity: 0;
     top: var(--baseIconScale);
     position: absolute;
-    right: 30px;
-    width: var(--searchBarsWidth);
+    /* right: 30px; */
+    right: 0;
+    padding-right: 10px;
+    /* left: 0; */
+    width: calc(var(--searchBarsWidth) + 20px);
     max-height: calc(100vh - var(--topBarHeight) - 400px);
     overflow-y: auto;
     pointer-events: none;
@@ -560,9 +564,9 @@
     overflow: hidden;
     height: 2em;
     padding-left: 10px;
-    box-shadow: 0 0 10px gray;
-    backdrop-filter: blur(5px) !important;
-    --webkit-backdrop-filter: blur(5px) !important;
+    box-shadow: 0 0 20px gray;
+    backdrop-filter: blur(20px);
+    --webkit-backdrop-filter: blur(20px);
     background-color: rgba(255, 255, 255, .1);
     /* width: calc(100% - 10px); */
     width: max-content;
@@ -612,22 +616,23 @@
     text-align: left;
     outline: none;
     opacity: 0;
-    overflow: visible !important;
-    text-overflow: clip;
-    white-space: nowrap;
-    /* transform: translateX(calc(
-        var(--span0Width) +
-        var(--barShift)
-    )) translateY(0); */
-    margin: 0;
+    overflow: auto;
+    width: calc(
+        var(--searchBarsWidth) + var(--baseIconScale)
+    );
     left: 0;
-    width: var(--searchBarDisplayWidth);
     padding-left: calc(
-            var(--span0Width) +
-            var(--barShift) + 10px
-        );
-    /* width: calc(100% - var(--baseIconScale) - 10px - var(--span0Width)); */
-    /* width: calc(100% - var(--baseIconScale)); */
+        var(--span0Width) + var(--barShift)
+    );
+}
+.content.main .searchBars .searchInputs {
+    position: relative;
+    height: 100%;
+    width: calc(100% - var(--baseIconScale) - 10px);
+    right: var(--baseIconScale);
+    overflow: hidden;
+    display: flex;
+    justify-content: flex-start;
 }
 .content.main .searchBars .searchBarDisplay span {
     letter-spacing: 0;
@@ -659,7 +664,13 @@
     background-color: transparent;
     position: absolute;
     white-space: nowrap;
-    transform: translateX(var(--barShift));
+    left: 0;
+    transform: translateX(
+        var(--barScrollPx)
+    );
+    padding-left: calc(
+        var(--barShift)
+    );
 }
 .content.main .exhibits .tile .content > div {
     /* height: calc(100% - 16px); */
@@ -682,23 +693,10 @@
     height: calc(
         min(100vh - 200px, 1000px)
     );
-    /* height: calc(var(--bottomBarHeight) + var(--topMargin)); */
-    /* height: min(
-        calc(100vh - var(--topMargin))
-    ); */
-    /* height: calc(
-        var(--bottomBarHeight) - var(--topMargin)
-    ); */
-    /* height: fit-content; */
     padding-bottom: 0;
     bottom: 0;
     user-select: none;
 }
-/* @supports (-webkit-touch-callout: none) {
-    .content.main .exhibits .tile .content > .mapsView {
-        height: calc(100% - var(--topMargin)) !important;
-    }
-} */
 
 .content.main .exhibits .tile .content .mapsView canvas {
     position: absolute;
@@ -707,9 +705,6 @@
 .content.main .exhibits .tile .content .mapsView .labelsArea {
     pointer-events: none;
     height: calc(100% + var(--topMargin));
-    /* height: calc(
-        var(--bottomBarHeight) + var(--topMargin)
-    ); */
     width: 100%;
     overflow: hidden;
 }
@@ -984,7 +979,11 @@
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened::after {
     background: transparent;
 }
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened .informations {
+    pointer-events: auto;
+}
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations {
+    pointer-events: none;
     position: relative;
     width: max-content;
     height: max-content;
@@ -1046,10 +1045,12 @@
     margin-bottom: 10px;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened > div.informations {
+    pointer-events: auto;
     opacity: 1;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > div.informations {
+    pointer-events: none;
     left: 0;
     text-align: left;
     opacity: 0;
@@ -1074,9 +1075,9 @@
     height: min-content;
     padding-left : 10px;
     padding-right: 10px;
-    cursor: normal;
+    cursor: default;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div.detail.button.pressable {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened div.detail.button.pressable {
     pointer-events: auto;
     cursor: pointer;
 }
