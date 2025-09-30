@@ -758,9 +758,7 @@ const maps_buttons_left = d.createElement("div");
 
 function maps_changeFloor (floor) {
     const floorButtons = maps_buttons_left.querySelectorAll("div.button");
-    floorButtons.forEach((button, index, arr) => {
-        if (index === arr.length - floor) button.click();
-    });
+    floorButtons[0].click();
 }
 
 function get_isEveryFloorValid () {
