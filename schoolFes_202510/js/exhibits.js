@@ -784,10 +784,10 @@ d.addEventListener("click", e => {
         const tile = e.target.closest(".tile");
         if (tile) openTile(tile);
     }
-    if (!searchBarsEl.contains(e.target) && !exhibitsBottomBar.contains(e.target)) {
-        searchAreaEl.classList.remove("opened");
-        updateSort("");
-    }
+    // if (!searchBarsEl.contains(e.target) && !exhibitsBottomBar.contains(e.target)) {
+    //     searchAreaEl.classList.remove("opened");
+    //     updateSort("");
+    // }
 });
 
 function startObserve({ target, callback, once = true, threshold = 0 }) {
@@ -1348,7 +1348,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
     const newSearchBarDisplayEl = d.createElement("div");
     newSearchBarDisplayEl.className = "searchBarDisplay";
 
-    const sagests = searchAreaEl.querySelector(".sagests");
+    const sagestsEl = searchAreaEl.querySelector(".sagests");
 
     newSearchBarEl.className = "searchBar";
     newSearchBarEl.type = "text";
@@ -1415,7 +1415,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
             }
         }, 150);
 
-        sagests.innerHTML = "";
+        sagestsEl.innerHTML = "";
         const isSagestVaild = searchWord && searchWord !== "" && searchWord.length !== 0;
         const sagestResults = [];
         let sagestsHeight = 0;
@@ -1457,12 +1457,12 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                 newExhibitName.textContent = sortResult.exhibits[i].name;
                 newExhibitName.className = "exhibitName";
                 
-                sagests.appendChild(newSet);
+                sagestsEl.appendChild(newSet);
                 newSet.appendChild(newSagest);
                 newSet.appendChild(newExhibitName);
             }
         });
-        sagestsHeight = sagests.clientHeight;
+        sagestsHeight = sagestsEl.clientHeight;
         mainContent.style.setProperty("--sagestsHeight", getIsOpened() && getIsFocus() ? sagestsHeight + "px" : 0);
         searchBarsEl.style.setProperty("--barShift", "0px");
         searchBarsEl.style.setProperty("--span0Width", "0px");
@@ -1483,13 +1483,18 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
         } else {
             newSearchBarDisplayEl.innerHTML = "検索できます";
         }
+        searchAreaEl.classList.add("focus");
         newSearchBarEl.focus();
         searchBarScroll();
     }
 
     newSearchBarEl.addEventListener("focus", () => {
-        searchAreaEl.classList.add("focus");
         searchInput();
+    });
+    newSearchBarEl.addEventListener("blur", () => {
+        setTimeout(() => {
+            searchAreaEl.classList.remove("focus");
+        }, 100);
     });
     newSearchBarEl.addEventListener("scroll", searchBarScroll);
 
@@ -2808,9 +2813,18 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                 button_currentPos.classList.remove("opened");
                 updateButtonText(button_currentPos, "現在地");
             }
-            function alertText () {
+            function alertText (type = 0) {
+                let text;
+                switch (type) {
+                    case 0:
+                        text = "位置情報が許可された\n場合に利用可能";
+                        break;
+                    case 1:
+                        text = "学園内にいる\n場合に利用可能";
+                        break;
+                }
                 button_currentPos.classList.add("opened");
-                updateButtonText(button_currentPos, "学園内にいて､位置情報が\n許可された場合に利用可能");
+                updateButtonText(button_currentPos, text);
                 setTimeout(() => {
                     if (button_currentPos.classList.contains("opened")) defaulText();
                 }, 3000);
@@ -2868,24 +2882,30 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                                 console.log("Updated location:", latitude, longitude);
 
-                                if (latitude && longitude && isPointInArea([
-                                    latitude, longitude
-                                ])) {
-                                    const pos = latlonToXYZ(latitude, longitude);
-                                    currentLocationPointMesh.position.set(
-                                        pos.x,
-                                        0,
-                                        pos.z,
-                                    );
-                                    currentLocationPointMesh.material.opacity = 1;
-                                    defaulText();
+                                if (latitude && longitude) {
+                                    if (isPointInArea([
+                                        latitude, longitude
+                                    ])) {
+
+                                        const pos = latlonToXYZ(latitude, longitude);
+                                        currentLocationPointMesh.position.set(
+                                            pos.x,
+                                            0,
+                                            pos.z,
+                                        );
+                                        currentLocationPointMesh.material.opacity = 1;
+                                        defaulText();
+                                    } else {
+                                        cansel();
+                                        alertText(1);
+                                    }
                                 } else {
                                     cansel();
-                                    alertText();
+                                    alertText(0);
                                 }
                             }, (error) => {
                                 cansel();
-                                alertText();
+                                alertText(0);
                                 console.log("Error getting location:", error);
                             }, {
                                 enableHighAccuracy: true,

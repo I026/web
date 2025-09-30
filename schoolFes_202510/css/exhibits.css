@@ -427,7 +427,12 @@
     margin-right: .5em;
 }
 .content.main .searchArea * {
-    transition: opacity .5s ease-in-out;
+    transition:
+    box-shadow .5s ease-in-out,
+    background-color .5s ease-in-out,
+    backdrop-filter .5s ease-in-out,
+    --webkit-backdrop-filter .5s ease-in-out,
+    opacity .5s ease-in-out;
 }
 .content.main .searchBars {
     position: relative;
@@ -528,7 +533,7 @@
     overflow-y: auto;
     pointer-events: none;
 }
-.content.main .searchArea.opened .sagests {
+.content.main .searchArea.opened.focus .sagests {
     opacity: 1;
     pointer-events: auto;
 }
@@ -555,6 +560,12 @@
     border-bottom-left-radius: 10px;
     border-top-left-radius: 10px;
 }
+.content.main .searchArea.opened.focus .sagests > div > div {
+    box-shadow: 0 0 20px gray;
+    backdrop-filter: blur(20px);
+    --webkit-backdrop-filter: blur(20px);
+    background-color: rgba(255, 255, 255, .1);
+}
 .content.main .searchArea .sagests > div > div {
     opacity: 0;
     position: relative;
@@ -564,10 +575,10 @@
     overflow: hidden;
     height: 2em;
     padding-left: 10px;
-    box-shadow: 0 0 20px gray;
-    backdrop-filter: blur(20px);
-    --webkit-backdrop-filter: blur(20px);
-    background-color: rgba(255, 255, 255, .1);
+    box-shadow: 0 0 0 transparent;
+    backdrop-filter: blur(0px);
+    --webkit-backdrop-filter: blur(0px);
+    background-color: transparent;
     /* width: calc(100% - 10px); */
     width: max-content;
     padding-right: 10px;
@@ -576,7 +587,7 @@
     cursor: pointer;
     pointer-events: none;
 }
-.content.main .searchArea.opened .sagests > div > div {
+.content.main .searchArea.opened.focus .sagests > div > div {
     opacity: 1;
     pointer-events: auto;
 }
