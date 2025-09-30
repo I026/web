@@ -1127,10 +1127,13 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    justify-content: flex-end;
     --buttonsHeight: 1.3em;
+    --offsetY: 0px;
+    transition: transform .5s ease-in-out;
     --topPos: calc(
-        var(--bottomBarHeight) - var(--topMargin) - var(--buttonsHeight) * 2
-    )
+        (var(--bottomBarHeight) - var(--topMargin) - var(--buttonsHeight) * 2)
+    );
 }
 .content.main .exhibits .tile:not(.opened) .content .buttons.right,
 .content.main .exhibits .tile:not(.opened) .content .buttons.left {
@@ -1149,6 +1152,13 @@
 .content.main .exhibits .tile .content .buttons.right {
     right: 5px;
     justify-content: flex-start;
+    font-weight: 200;
+}
+.content.main .exhibits .tile .content .buttons.right .opened span {
+    font-size: .5em;
+}
+.content.main .exhibits .tile .content .buttons .pushed {
+    font-weight: normal;
 }
 .content.main .exhibits .tile .content .buttons.left {
     left: 5px;
@@ -1202,9 +1212,17 @@
     --maxBorderRadius: .75em;
     max-height: var(--buttonsHeight);
     min-height: var(--buttonsHeight);
+    overflow: hidden;
     transition:
     opacity .5s ease-in-out,
+    font-weight .5s ease-in-out,
+    width .5s ease-in-out,
+    height .5s ease-in-out,
     box-shadow .5s ease-in-out;
+}
+.content.main .exhibits .tile .content .buttons .button span {
+    font-size: .8em;
+    transition: font-size .5s ease-in-out;
 }
 
 .content.main .exhibits .tile .content .buttons .button:first-child {

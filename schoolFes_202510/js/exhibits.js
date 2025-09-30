@@ -1059,10 +1059,15 @@ function getIsSortConforming (exhibit, conditions = getSortConditions(), searchW
     };
 }
 
-function updateButtonText (targetEl, newText) {
+function updateButtonText (targetEl, textValue) {
     if (!targetEl) return;
+    const newText = textValue;
     const newTextArea = d.createElement("span");
-    if (targetEl.querySelector("span")?.textContent !== newText) {
+    const existingSpan = targetEl.querySelector("span");
+    if (
+        existingSpan?.textContent !== newText ||
+        existingSpan?.innerHTML !== newText
+    ) {
         const animDuration = 300;
         targetEl.querySelectorAll("span").forEach(span => {
             span.style.animation = "none";
@@ -1072,7 +1077,7 @@ function updateButtonText (targetEl, newText) {
                 span.remove();
             }, animDuration * 2);
         });
-        newTextArea.textContent = newText;
+        newTextArea.innerHTML = newText.replaceAll("\n", "<br>");
         newTextArea.style.animation = `showText ${animDuration}ms ease-in-out both`;
         newTextArea.style.animationDelay = `${animDuration}ms`;
         newTextArea.style.position = "absolute";
@@ -1083,9 +1088,13 @@ function updateButtonText (targetEl, newText) {
         targetEl.style.display = "flex";
         targetEl.style.justifyContent = "center";
         targetEl.style.alignItems = "center";
-        setTimeout(() => {
-            targetEl.style.width  = `${newTextArea.offsetWidth + 20}px`;
-            targetEl.style.height = `${newTextArea.offsetHeight}px`;
+        requestAnimationFrame(() => {
+            const width  = newTextArea.offsetWidth + 10;
+            const height = newTextArea.offsetHeight;
+            targetEl.style.setProperty("--openedWidth",  width  + "px");
+            targetEl.style.setProperty("--openedHeight", height + "px");
+            targetEl.style.width  = width + "px";
+            targetEl.style.height = height + "px";
         });
     }
 }
@@ -2651,18 +2660,18 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
         button_currentPos.className = "button";
 
         const floors = {
-            f1: {
-                name: "1"
+            f3: {
+                name: "3"
             },
             f2: {
                 name: "2"
             },
-            f3: {
-                name: "3"
+            f1: {
+                name: "1"
             },
         };
 
-        Object.values(floors).forEach((floor, index) => {
+        Object.values(floors).slice().reverse().forEach((floor, index) => {
             const button = d.createElement("div");
             
             button.innerHTML = `<span>F</span>${floor.name}`;
@@ -2743,6 +2752,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
             button_dimension.addEventListener("click", () => {
                 isShow2DMap = !isShow2DMap;
                 if (isShow2DMap) {
+                    button_dimension.classList.add("pushed");
                     updateCameraAngle({
                         horizontal: getCamHorizontalSnap(camHorizontal),
                         vertical: 89.5,
@@ -2763,6 +2773,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         }
                     });
                 } else {
+                    button_dimension.classList.remove("pushed");
                     setCamAngleLimit()
                     updateCameraAngle({
                         horizontal: camHorizontal,
@@ -2775,112 +2786,130 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                 if (get_isEveryFloorValid()) maps_changeFloor(1);
             });
 
-            const currentPosTextEl = d.createElement("span");
-            currentPosTextEl.textContent = "現在地";
-            button_currentPos.appendChild(currentPosTextEl);
+            updateButtonText(button_currentPos, "現在地");
             let geoWatchId;
-            button_currentPos.addEventListener("click", () => {
-                button_currentPos.classList.toggle("currentPos");
-                if (button_currentPos.classList.contains("currentPos")) {
-                    currentLocationPointMesh.material.opacity = 1;
-                    const isGeolocationVaild = "geolocation" in navigator;
-                    console.log("isGeolocationVaild : ", isGeolocationVaild);
-                    if (!isGeolocationVaild) return;
-
-                    const baseLocation = [ // 0, 0, 0に対応する場所
-                        35.860550,
-                        139.269142
-                    ];
-
-                    function isPointInArea(point, quad = [
-                        [35.862096, 139.269525],
-                        [35.859773, 139.266558],
-                        [35.858807, 139.269504],
-                        [35.860690, 139.271212]
-                    ]) {
-                    // 三角形内判定（バリセンター法）
-                        function pointInTriangle(p, a, b, c) {
-                            const det = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]);
-                            const l1 = ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) / det;
-                            const l2 = ((c[0] - a[0]) * (p[1] - a[1]) - (c[1] - a[1]) * (p[0] - a[0])) / -det;
-                            const l3 = 1 - l1 - l2;
-                            return l1 >= 0 && l2 >= 0 && l3 >= 0;
-                        }
-                        // 四角形を2つの三角形に分けて判定
-                        return pointInTriangle(point, quad[0], quad[1], quad[2]) || pointInTriangle(point, quad[0], quad[2], quad[3]);
-                    }
-                    
-                    function latlonToXYZ(baseLat, baseLon){
-                        const lat = baseLat - baseLocation[0];
-                        const lon = baseLon - baseLocation[1];
-                        const M = [
-                            [866.69667299, 1236.85206018], // row for x
-                            [0.0, 0.0],                    // row for y
-                            [-2161.60126554, 20.85725703], // row for z
+            const isGeolocationVaild = "geolocation" in navigator;
+            function defaulText () {
+                button_currentPos.classList.remove("opened");
+                updateButtonText(button_currentPos, "現在地");
+            }
+            function alertText () {
+                button_currentPos.classList.add("opened");
+                updateButtonText(button_currentPos, "学園内にいて､位置情報が\n許可された場合に利用可能");
+                setTimeout(() => {
+                    if (button_currentPos.classList.contains("opened")) defaulText();
+                }, 3000);
+            }
+            function cansel () {
+                button_currentPos.classList.remove("pushed");
+                currentLocationPointMesh.material.opacity = 0;
+                navigator.geolocation.clearWatch(geoWatchId);
+            }
+            if (isGeolocationVaild) {
+                button_currentPos.addEventListener("click", () => {
+                    button_currentPos.classList.toggle("pushed");
+                    if (button_currentPos.classList.contains("pushed")) {
+                        const baseLocation = [ // 0, 0, 0に対応する場所
+                            35.860550,
+                            139.269142
                         ];
-                        const x = M[0][0]*lat + M[0][1]*lon;
-                        const y = M[1][0]*lat + M[1][1]*lon;
-                        const z = M[2][0]*lat + M[2][1]*lon;
-                        return { x, y, z };
+
+                        function isPointInArea(point, quad = [
+                            [35.862096, 139.269525],
+                            [35.859773, 139.266558],
+                            [35.858807, 139.269504],
+                            [35.860690, 139.271212]
+                        ]) {
+                        // 三角形内判定（バリセンター法）
+                            function pointInTriangle(p, a, b, c) {
+                                const det = (b[0] - a[0]) * (c[1] - a[1]) - (c[0] - a[0]) * (b[1] - a[1]);
+                                const l1 = ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])) / det;
+                                const l2 = ((c[0] - a[0]) * (p[1] - a[1]) - (c[1] - a[1]) * (p[0] - a[0])) / -det;
+                                const l3 = 1 - l1 - l2;
+                                return l1 >= 0 && l2 >= 0 && l3 >= 0;
+                            }
+                            // 四角形を2つの三角形に分けて判定
+                            return pointInTriangle(point, quad[0], quad[1], quad[2]) || pointInTriangle(point, quad[0], quad[2], quad[3]);
+                        }
+                        
+                        function latlonToXYZ(baseLat, baseLon){
+                            const lat = baseLat - baseLocation[0];
+                            const lon = baseLon - baseLocation[1];
+                            const M = [
+                                [866.69667299, 1236.85206018], // row for x
+                                [0.0, 0.0],                    // row for y
+                                [-2161.60126554, 20.85725703], // row for z
+                            ];
+                            const x = M[0][0]*lat + M[0][1]*lon;
+                            const y = M[1][0]*lat + M[1][1]*lon;
+                            const z = M[2][0]*lat + M[2][1]*lon;
+                            return { x, y, z };
+                        }
+
+                        geoWatchId = navigator.geolocation.watchPosition(
+                            (position) => {
+                                const latitude  = position.coords.latitude;
+                                const longitude = position.coords.longitude;
+
+                                console.log("Updated location:", latitude, longitude);
+
+                                if (latitude && longitude && isPointInArea([
+                                    latitude, longitude
+                                ])) {
+                                    const pos = latlonToXYZ(latitude, longitude);
+                                    currentLocationPointMesh.position.set(
+                                        pos.x,
+                                        0,
+                                        pos.z,
+                                    );
+                                    currentLocationPointMesh.material.opacity = 1;
+                                    defaulText();
+                                } else {
+                                    cansel();
+                                    alertText();
+                                }
+                            }, (error) => {
+                                cansel();
+                                alertText();
+                                console.log("Error getting location:", error);
+                            }, {
+                                enableHighAccuracy: true,
+                                timeout: 5000,
+                                maximumAge: 0
+                            }
+                        );
+                    } else {
+                        cansel();
                     }
 
-                    geoWatchId = navigator.geolocation.watchPosition(
-                        (position) => {
-                            // 35.860540  || 
-                            // 139.269142 || 
-                            const latitude  = position.coords.latitude;
-                            const longitude = position.coords.longitude;
+                    /* 
+                    
+                        0, 0,  0 : 35.860550, 139.269142
+                        1, 0,  0 : 35.860467, 139.269696
+                    -1, 0,  0 : 35.860490, 139.268412
 
-                            console.log("Updated location:", latitude, longitude);
+                        0, 0,  1 : 35.860096, 139.269190
+                        0, 0, -1 : 35.860991, 139.269053
 
-                            if (latitude && longitude && isPointInArea([
-                                latitude, longitude
-                            ])) {
-                                const pos = latlonToXYZ(latitude, longitude);
-                                currentLocationPointMesh.position.set(
-                                    pos.x,
-                                    0,
-                                    pos.z,
-                                );
-                            }
-                        }, (error) => {
-                            console.log("Error getting location:", error);
-                        }, {
-                            enableHighAccuracy: true,
-                            timeout: 5000,
-                            maximumAge: 0
-                        }
-                    );
-                } else {
-                    currentLocationPointMesh.material.opacity = 0;
-                    navigator.geolocation.clearWatch(geoWatchId);
-                }
+                        ___
 
-                /* 
-                
-                    0, 0,  0 : 35.860550, 139.269142
-                    1, 0,  0 : 35.860467, 139.269696
-                -1, 0,  0 : 35.860490, 139.268412
+                        0, 0,  0 :  0,         0
+                        1, 0,  0 : -0.000083,  0.000554
+                    -1, 0,  0 : -0.00006,  -0.00073
 
-                    0, 0,  1 : 35.860096, 139.269190
-                    0, 0, -1 : 35.860991, 139.269053
+                        0, 0,  1 : -0.000454,  0.000048
+                        0, 0, -1 :  0.000441, -0.000641
 
-                    ___
-
-                    0, 0,  0 :  0,         0
-                    1, 0,  0 : -0.000083,  0.000554
-                -1, 0,  0 : -0.00006,  -0.00073
-
-                    0, 0,  1 : -0.000454,  0.000048
-                    0, 0, -1 :  0.000441, -0.000641
-
-                敷地内 :
-                    35.862096, 139.269525
-                    35.859773, 139.266558
-                    35.858807, 139.269504
-                    35.860690, 139.271212
-                */
-            });
+                    敷地内 :
+                        35.862096, 139.269525
+                        35.859773, 139.266558
+                        35.858807, 139.269504
+                        35.860690, 139.271212
+                    */
+                });
+            } else {
+                button_currentPos.classList.add("invalid");
+            }
 
             maps_buttons_right.appendChild(button_currentPos);
             maps_buttons_right.appendChild(button_dimension);
