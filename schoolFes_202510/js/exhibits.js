@@ -269,9 +269,6 @@ const maps_locations = {
         location: {
             name: maps_locationNames.Woodworking,
         },
-        offset: {
-            y: .5,
-        },
     },
     F1_Science_A: {
         location: {
@@ -301,9 +298,6 @@ const maps_locations = {
     F1_Science_Laboratory: {
         location: {
             name: maps_locationNames.Science_Laboratory,
-        },
-        offset: {
-            y: .5,
         },
     },
     F2_SocialStudies_Laboratory: {
@@ -2114,6 +2108,16 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                             const topLabel = candidateLabels[0];
 
+                            function labelOpenCtrl (el, isToOpen = !el.classList.contains("opened")) {
+                                maps_addLabelTransition(el);
+                                if (isToOpen) {
+                                    el.classList.add("opened");
+                                } else {
+                                    el.classList.remove("opened");
+                                }
+                                updateLabelScale(el);
+                            }
+
                             if (
                                 Math.abs(x - touchStart[0]) < 5 &&
                                 Math.abs(y - touchStart[1]) < 5
@@ -2124,14 +2128,12 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                                         labelElement.classList.contains("opened") &&
                                         labelElement !== topLabel
                                     ) {
-                                        labelElement.classList.remove("opened");
-                                        maps_addLabelTransition(labelElement);
+                                        labelOpenCtrl(labelElement, false);
                                     }
                                 });
                             }
                             if (topLabel) {
-                                topLabel.classList.toggle("opened");
-                                maps_addLabelTransition(topLabel);
+                                labelOpenCtrl(topLabel);
                             }
                         }
 
@@ -2154,6 +2156,53 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                     const getFmtedPx = (px) => px.replace("px", "");
 
+                    function updateLabelScale (el) {
+                        const element = el;
+                            const labelChildWidths = [];
+                            let labelHeight = 0;
+                            let labelWidth  = 0;
+                            const title = element.querySelector(".title");
+                            if (element.classList.contains("opened")) {
+                                const childrens = Array.from(element.children).filter(child => !child.classList.contains("arrow"));
+                                childrens.forEach(child => {
+                                    labelChildWidths.push(child.offsetWidth);
+                                    const style = window.getComputedStyle(element);
+                                    labelHeight = Math.max(
+                                        child.offsetTop +
+                                        child.getBoundingClientRect().height +
+                                        parseFloat(style.marginBottom),
+                                        parseFloat(style.marginTop),
+                                        labelHeight
+                                    );
+                                });
+                                labelWidth = Math.max(...labelChildWidths);
+                            } else {
+                                if (title) {
+                                    labelWidth  = title.getBoundingClientRect().width;
+                                    labelHeight = title.getBoundingClientRect().height;
+                                }
+                            }
+
+                            const labelWidthProperty = "--width";
+                            const labelHeightProperty = "--height";
+
+                            function setLabelScale () {
+                                if (getComputedStyle(element).getPropertyValue(labelWidthProperty) !== labelWidth + "px") {
+                                    element.style.setProperty(labelWidthProperty,  labelWidth + "px");
+                                }
+                                if (getComputedStyle(element).getPropertyValue(labelHeightProperty) !== labelHeight + "px") {
+                                    element.style.setProperty(labelHeightProperty, labelHeight + "px");
+                                }
+                                
+                                if (element?.getBoundingClientRect().width < title?.getBoundingClientRect().width) {
+                                    element.classList.add("over");
+                                } else {
+                                    element.classList.remove("over");
+                                }
+                            }
+                            setLabelScale();
+                            return [labelWidth, labelHeight];
+                    }
 
                     function updateLabelsPosition() {
                         Object.values(maps_labels).forEach(({ element, part }, index) => {
@@ -2182,49 +2231,9 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             ));
 
                             if (element.getAttribute("isPressable") === "true" || (element.style.opacity !== 0 && element.visible)) {
-                                const labelChildWidths = [];
-                                let labelHeight = 0;
-                                let labelWidth  = 0;
-                                const title = element.querySelector(".title");
-                                if (element.classList.contains("opened")) {
-                                    const childrens = Array.from(element.children).filter(child => !child.classList.contains("arrow"));
-                                    childrens.forEach(child => {
-                                        labelChildWidths.push(child.offsetWidth);
-                                        const style = window.getComputedStyle(element);
-                                        labelHeight = Math.max(
-                                            child.offsetTop +
-                                            child.getBoundingClientRect().height +
-                                            parseFloat(style.marginBottom),
-                                            parseFloat(style.marginTop),
-                                            labelHeight
-                                        );
-                                    });
-                                    labelWidth = Math.max(...labelChildWidths);
-                                } else {
-                                    if (title) {
-                                        labelWidth  = title.getBoundingClientRect().width;
-                                        labelHeight = title.getBoundingClientRect().height;
-                                    }
-                                }
-
-                                const labelWidthProperty = "--width";
-                                const labelHeightProperty = "--height";
-
-                                function setLabelScale () {
-                                    if (getComputedStyle(element).getPropertyValue(labelWidthProperty) !== labelWidth + "px") {
-                                        element.style.setProperty(labelWidthProperty,  labelWidth + "px");
-                                    }
-                                    if (getComputedStyle(element).getPropertyValue(labelHeightProperty) !== labelHeight + "px") {
-                                        element.style.setProperty(labelHeightProperty, labelHeight + "px");
-                                    }
-                                    
-                                    if (element?.getBoundingClientRect().width < title?.getBoundingClientRect().width) {
-                                        element.classList.add("over");
-                                    } else {
-                                        element.classList.remove("over");
-                                    }
-                                }
-                                setLabelScale();
+                                const updateRes = updateLabelScale(element);
+                                const labelWidth  = updateRes[0];
+                                const labelHeight = updateRes[1];
 
                                 const match = element.style.transform.match(/translate\((-?\d+\.?\d*)px,\s*(-?\d+\.?\d*)px\)/);
                                 const labelXPx = parseFloat(match[1]);
