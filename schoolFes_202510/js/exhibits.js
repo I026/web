@@ -705,9 +705,8 @@ function maps_frameObject({
     // ワールド座標系に変換
     bbox.applyMatrix4(target.matrixWorld);
 
-    const size = new THREE.Vector3();
-    bbox.getSize(size);
     const center = new THREE.Vector3();
+    bbox.getSize(center);
     bbox.getCenter(center);
 
     // ズームもスムーズに変更する場合
@@ -735,6 +734,7 @@ function maps_frameObject({
             const newTarget = new THREE.Vector3(center.x, currentTarget.y, center.z);
             cameraPan({
                 x: newTarget.x,
+                y: newTarget.y,
                 z: newTarget.z,
                 duration: duration
             });
@@ -2156,12 +2156,6 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
 
                     function updateLabelsPosition() {
-                        const camPos = maps_camera.position;
-
-                        mapsView.style.setProperty("--camPosX", camPos.x);
-                        mapsView.style.setProperty("--camPosZ", camPos.z);
-                        mapsView.style.setProperty("--camZoom", maps_camera.zoom);
-
                         Object.values(maps_labels).forEach(({ element, part }, index) => {
                             // const objPos = part.userData?.originalTransform?.position.clone() || part.getWorldPosition(new THREE.Vector3());
                             // const camDistance = camPos.distanceTo(objPos);
@@ -2187,7 +2181,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                                 !element.classList.contains("invalid") && element.querySelector(".informations")?.innerHTML.length !== 0
                             ));
 
-                            if (element.getAttribute("isPressable") === "true" || element.style.opacity !== 0) {
+                            if (element.getAttribute("isPressable") === "true" || (element.style.opacity !== 0 && element.visible)) {
                                 const labelChildWidths = [];
                                 let labelHeight = 0;
                                 let labelWidth  = 0;
@@ -2473,6 +2467,11 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                         // コンパスを回転
                         compassImg.style.transform = `rotate(${camHorizontal}deg)`;
+
+                        const camPos = maps_camera.position;
+                        mapsView.style.setProperty("--camPosX", camPos.x);
+                        mapsView.style.setProperty("--camPosZ", camPos.z);
+                        mapsView.style.setProperty("--camZoom", maps_camera.zoom);
 
                         if (now - lastLabelUpdate > labelAnimUpdateThresholdMs * 8) {
                             lastLabelUpdate = now;

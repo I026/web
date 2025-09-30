@@ -274,7 +274,6 @@ setInterval(dateUpdate, 10000);
                 if (!scrollCheckInterval) {
                     scrollCheckInterval = setInterval(() => {
                         const isScrollNow = lastScrollLeft !== pagesArea.scrollLeft;
-                        console.log("isScrollNow?", isScrollNow);
                         if (!isScrollNow) {
                             scrollEnd();
                         }
