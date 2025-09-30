@@ -2768,9 +2768,13 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
         const getCamHorizontalSnap = (horizontal) => Math.round(Math.round(horizontal / 45) * 45);
 
+        let isMovingCam = false;
+
         (() => {
             button_dimension.addEventListener("click", () => {
+                if (isMovingCam) return;
                 isShow2DMap = !isShow2DMap;
+                isMovingCam = true;
                 if (isShow2DMap) {
                     button_dimension.classList.add("pushed");
                     updateCameraAngle({
@@ -2779,6 +2783,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         onComplete: () => {
                             setCamAngleLimit(0, 0);
                             mapsView.style.pointerEvents = "auto";
+                            isMovingCam = false;
                         }
                     });
                     controlMethodUpdate({
@@ -2799,6 +2804,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         horizontal: camHorizontal,
                         onComplete: () => {
                             setCamAngleLimit();
+                            isMovingCam = false;
                         }
                     });
                     controlMethodUpdate();
