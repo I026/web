@@ -125,6 +125,7 @@ const maps_words = {
 };
 
 const maps_locationNames = {
+    Bus: "バス",
     Entrance: "入口",
     Woodworking: `${maps_words.Subjects.Woodworking}${maps_words.Room}`,
     Dining: "食堂",
@@ -174,6 +175,11 @@ const maps_locations = {
         offset: {
             y: .2,
         },
+        description: `${maps_locationNames.Dining}のメニュー`,
+        onClick: () => {
+            window.location.href = "./?page=5";
+        },
+        image: "./medias/pages/0.png",
         isAlwaysShow: true,
         isEdgeShow: true,
     },
@@ -357,8 +363,8 @@ const maps_locations = {
         },
     },
     BusStation_Base: {
-        name: "バス停",
-        description: '<img src="./medias/pages/0.png" />',
+        name: `${maps_locationNames.Bus}停`,
+        description: `${maps_locationNames.Bus}ダイヤを見る`,
         image: "./medias/pages/0.png",
         onClick: () => {
             window.location.href = "./?page=5";
@@ -1367,12 +1373,16 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
     }
 
     function searchBarScroll () {
+        if (
+            (newSearchBarEl.scrollWidth - newSearchBarEl.offsetWidth) <= 0
+        ) {
+            newSearchBarEl.scrollLeft = 0;
+        }
+
         const offsetPx = newSearchBarEl.scrollLeft;
-        console.log("offsetPx : ", offsetPx);
         newSearchBarDisplayEl.style.setProperty("--barScrollPx", (
             offsetPx * -1
         ) + "px");
-
         searchBarsEl.style.setProperty("--scrollLeft", searchBarsEl.scrollLeft + "px");
     }
 
@@ -1412,9 +1422,6 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
         sortResult.searchHits.forEach((hitItem, i) => {
             if (isSagestVaild) {
                 const sagestSplit = sortResult.spliteds[i][hitItem?.[0]?.[0][1]];
-                // const sagestSplit = hitItem?.[0]?.[0]?.[0]?.split(
-                //     new RegExp(`(${getEscapeReg(searchWord)})`)
-                // );
                 const sagestTexts = [
                     sagestSplit?.[0] || "",
                     sagestSplit?.[1] || "",
@@ -1476,13 +1483,8 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
         } else {
             newSearchBarDisplayEl.innerHTML = "検索できます";
         }
-        searchBarScroll();
-        console.log(
-            "clog\n",
-            newSearchBarEl.scrollLeft,
-            newSearchBarEl.scrollWidth - newSearchBarEl.clientWidth
-        );
         newSearchBarEl.focus();
+        searchBarScroll();
     }
 
     newSearchBarEl.addEventListener("focus", () => {
@@ -1803,7 +1805,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                                     let geom = mesh.geometry.clone();
 
                                     // 1. 重複頂点の削除
-                                    const tolerance = 0.015; // 適宜調整
+                                    const tolerance = 0.0005; // 適宜調整
                                     geom = BufferGeometryUtils.mergeVertices(geom, tolerance);
 
                                     // 2. ワールド変換を適用
@@ -1973,6 +1975,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             const titleText = getIsHTMLTag(maps_locations[partName]?.name) ? maps_locations[partName].name : truncateText({text: maps_locations[partName].name, length: 10});
                             const descriptionText = maps_locations[partName]?.description;
                             const locationText = maps_locations[partName]?.location?.name;
+                            const imgLink = maps_locations[partName]?.image;
                             const detailTile = exhibitsArea.querySelector(`.tile[exhibits=${getFmtedObjName(partName)}]`);
 
                             if (titleText) {
@@ -2014,6 +2017,12 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                                     });
                                 }
                                 informations.appendChild(detail);
+                            }
+
+                            if (imgLink) {
+                                const img = d.createElement("img");
+                                img.src = imgLink;
+                                informations.appendChild(img);
                             }
                         }
 
