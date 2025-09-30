@@ -2817,10 +2817,10 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                 let text;
                 switch (type) {
                     case 0:
-                        text = "位置情報が許可された\n場合に利用可能";
+                        text = "位置情報が許可された\n場合に利用できます";
                         break;
                     case 1:
-                        text = "学園内にいる\n場合に利用可能";
+                        text = "学園内にいる場合に\n利用できます";
                         break;
                 }
                 button_currentPos.classList.add("opened");
