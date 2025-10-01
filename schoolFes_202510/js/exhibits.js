@@ -656,7 +656,7 @@ function cameraPan({
     const offset = new THREE.Vector3().subVectors(maps_camera.position, maps_controls.target);
 
     function instantMove () {
-        maps_controls.target.set(targetX, maps_controls.target.y, targetZ);
+        // maps_controls.target.set(targetX, maps_controls.target.y, targetZ);
         maps_camera.position.copy(maps_controls.target).add(offset);
         maps_controls.update();
     }
@@ -673,7 +673,7 @@ function cameraPan({
             duration: duration,
             ease: "power2.inOut",
             onUpdate: () => {
-                maps_controls.target.set(startTarget.x, maps_controls.target.y, startTarget.z);
+                // maps_controls.target.set(startTarget.x, maps_controls.target.y, startTarget.z);
                 maps_camera.position.copy(maps_controls.target).add(offset);
                 maps_controls.update();
             },
@@ -747,7 +747,7 @@ let maps_modelParts = {};
 const mapsView = d.createElement("div");
 
 function maps_addLabelTransition (label, transitionDuration = .5) {
-    label.style.setProperty("--duration", `${transitionDuration}s`)
+    label.style.setProperty("--duration", `${transitionDuration}s`);
     label.classList.add("addTransition");
     const onTransitionEnd = (e) => {
         if (e.target === label) { // この要素自身のトランジションのみ対象
@@ -2129,7 +2129,9 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                                 }
                                 updateLabelScale(el);
                             }
-
+                            const openCtrlTimeoutMs = Math.min(
+                                2.1 - maps_camera.zoom, .8
+                            ) * 1000;
                             if (
                                 Math.abs(x - touchStart[0]) < 5 &&
                                 Math.abs(y - touchStart[1]) < 5
@@ -2140,12 +2142,16 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                                         labelElement.classList.contains("opened") &&
                                         labelElement !== topLabel
                                     ) {
-                                        labelOpenCtrl(labelElement, false);
+                                        setTimeout(() => {
+                                            labelOpenCtrl(labelElement, false);
+                                        }, openCtrlTimeoutMs);
                                     }
                                 });
                             }
                             if (topLabel) {
-                                labelOpenCtrl(topLabel);
+                                setTimeout(() => {
+                                    labelOpenCtrl(topLabel);
+                                }, openCtrlTimeoutMs);
                             }
                         }
 
@@ -2297,7 +2303,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                     const labelPosUpdateThreshold = 2;
                     function animate() {
                         requestAnimationFrame(animate);
-                        if ((Date.now() - lastAnimUpdateAt > labelAnimUpdateThresholdMs * .6) || !lastAnimUpdateAt) {
+                        if ((Date.now() - lastAnimUpdateAt > labelAnimUpdateThresholdMs) || !lastAnimUpdateAt) {
                             maps_renderer.render(scene, maps_camera);
                             maps_labelRenderer.render(scene, maps_camera);
                             maps_controls.update();
@@ -2443,6 +2449,8 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                     let lastLabelUpdate = 0;
 
+                    let lastCamZoom;
+
                     let lastIsShow2DMap;
                     // パン操作時にモデルから離れすぎないように制限
                     maps_controls.addEventListener("change", () => {
@@ -2487,14 +2495,18 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         camVertical = Math.asin(cameraDirection.y) * -radToDeg;
 
                         // コンパスを回転
-                        compassImg.style.transform = `rotate(${camHorizontal}deg)`;
+                        const compassRotate = `rotate(${camHorizontal}deg)`;
+                        if (compassImg.style.transform !== compassRotate) compassImg.style.transform = compassRotate;
 
                         const camPos = maps_camera.position;
                         mapsView.style.setProperty("--camPosX", camPos.x);
                         mapsView.style.setProperty("--camPosZ", camPos.z);
                         mapsView.style.setProperty("--camZoom", maps_camera.zoom);
 
-                        if (now - lastLabelUpdate > labelAnimUpdateThresholdMs * 8) {
+                        if (
+                            (now - lastLabelUpdate > labelAnimUpdateThresholdMs * 8) ||
+                            lastCamZoom !== maps_camera.zoom
+                        ) {
                             lastLabelUpdate = now;
                             updateLabelsPosition();
 
@@ -2503,6 +2515,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                             lastIsShow2DMap = isShow2DMap;
                         }
+                        lastCamZoom = maps_camera.zoom;
                     });
                 },
                 (xhr) => {
@@ -2793,7 +2806,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         },
                         mouseButtons: {
                             LEFT: THREE.MOUSE.PAN,
-                            MIDDLE: THREE.MOUSE.NONE,
+                            MIDDLE: THREE.MOUSE.PAN,
                             RIGHT: THREE.MOUSE.NONE
                         }
                     });

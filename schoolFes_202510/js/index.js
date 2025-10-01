@@ -217,15 +217,18 @@ setInterval(dateUpdate, 10000);
         let pageRestored = false;
 
         setTimeout(() => {
-            window.scrollTo({
-                top: getScrollYFromRatio(
-                    queryParameter({
-                        type: "get",
-                        key: "page",
-                    })[0] * 1 / pageContents.length
-                ),
-                behavior: "smooth"
-            });
+            const top = getScrollYFromRatio(
+                queryParameter({
+                    type: "get",
+                    key: "page",
+                })[0] * 1 / pageContents.length
+            );
+            if (top) {
+                window.scrollTo({
+                    top: top,
+                    behavior: "smooth"
+                });
+            }
             pageRestored = true;
         }, 100);
 

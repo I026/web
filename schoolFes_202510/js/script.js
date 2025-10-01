@@ -311,7 +311,7 @@ function setPathViewBox() {
     });
 }
 
-(() => { // スムーズスクロール (停止中)
+(() => { // スムーズスクロール 無効化済み
     const scriptTag = d.createElement("script");
     scriptTag.src = "https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.19/bundled/lenis.min.js";
     d.head.appendChild(scriptTag);
@@ -487,7 +487,7 @@ footers.appendChild(footer);
 
 
 function scrollProcess() {
-    const scrollRatio = window.scrollY / window.innerHeight;
+    // const scrollRatio = window.scrollY / window.innerHeight;
 
     d.documentElement.style.setProperty("--scrollPx", `${window.scrollY}px`);
 

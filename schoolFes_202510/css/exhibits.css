@@ -959,7 +959,7 @@
     background-color: gray;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel:not(.opened) {
-    padding: 4px;
+    padding: 2px;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened {
     --labelPadding: 8px;
@@ -1054,9 +1054,10 @@
     opacity: 1;
 }
 
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel div img {
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel img {
     height: 1em;
     width : 1em;
+    border-radius: .35em;
     font-size: 1.25em;
     object-fit: cover;
 }
@@ -1178,7 +1179,7 @@
 }
 .content.main .exhibits .tile .content .buttons.left span {
     font-size: .5em;
-    margin-bottom: .15em;
+    margin-bottom: .1em;
     margin-right: .1em;
 }
 .content.main .exhibits .tile .content .buttons.top {
