@@ -2284,16 +2284,20 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                                         .5 - labelXRatio,
                                         .5 - labelYRatio,
                                     ];
-                                    element.style.setProperty("--differenceDeg",`${Math.atan2(
-                                        difference[1],
-                                        difference[0],
-                                    ) * (180 / Math.PI)}deg`);
+                                    const differenceDeg = (() => {
+                                        const deg = Math.atan2(
+                                            difference[1],
+                                            difference[0],
+                                        ) * (180 / Math.PI);
+                                        return deg < 0 ? (deg + 360) : deg;
+                                    })();
+                                    element.style.setProperty("--differenceDeg",`${differenceDeg}deg`);
                                 } else {
                                     if (element.classList.contains("edge")) {
                                         element.classList.remove("edge");
                                     }
                                 }
-                                // element.style.setProperty("--camDistance", camDistance);
+                                updateLabelScale(element);
                             }
                         });
                     }
@@ -2311,6 +2315,8 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         }
                     }
                     animate();
+
+                    updateLabelsPosition();
 
                     let deviceorientationHandler;
 
@@ -2504,7 +2510,7 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                         mapsView.style.setProperty("--camZoom", maps_camera.zoom);
 
                         if (
-                            (now - lastLabelUpdate > labelAnimUpdateThresholdMs * 8) ||
+                            (now - lastLabelUpdate > labelAnimUpdateThresholdMs * 15) ||
                             lastCamZoom !== maps_camera.zoom
                         ) {
                             lastLabelUpdate = now;

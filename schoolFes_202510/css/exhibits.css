@@ -904,9 +904,8 @@
     height: var(--arrowScale);
     box-shadow: 0 0 10px gray;
     background-color: rgba(211, 211, 211, .75);
-    /* position: relative; */
+    /* transition: transform .5s ease-in-out; */
     top: 1.5em;
-    /* background-color: transparent; */
     color: black;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.edge.edgeShow .arrow svg {
