@@ -755,7 +755,8 @@
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel[exhibits="currentLocationPoint"] {
     z-index: 10001 !important;
-    background-color: rgb(220, 80, 110);
+    --currentLocationColor: rgb(220, 80, 110);
+    background-color: var(--currentLocationColor);
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
     opacity: var(--labelOpacity);
@@ -1020,6 +1021,9 @@
     position: relative;
     width : 100%;
     height: 100%;
+    border-radius: 10px;
+    top: 5px;
+    margin-bottom: 5px;
     max-width: 15em;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .title {

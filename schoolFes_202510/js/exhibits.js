@@ -616,11 +616,11 @@ import * as BufferGeometryUtils from "three/examples/jsm/utils/BufferGeometryUti
 import { gsap } from "https://cdn.jsdelivr.net/npm/gsap@3.12.2/index.js";
 import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 /**
- * @param {THREE.Object3D} target
- * @param {THREE.OrthographicCamera} camera
- * @param {THREE.OrbitControls} controls
- * @param {number} margin
- */
+* @param {THREE.Object3D} target
+* @param {THREE.OrthographicCamera} camera
+* @param {THREE.OrbitControls} controls
+* @param {number} margin
+*/
 
 // カメラ
 const maps_renderer = new THREE.WebGLRenderer({
@@ -2864,15 +2864,14 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                     button_currentPos.classList.toggle("pushed");
                     if (button_currentPos.classList.contains("pushed")) {
                         const baseLocation = [ // 0, 0, 0に対応する場所
-                            35.860550,
-                            139.269142
+                            35.860550, 139.269142
                         ];
 
                         function isPointInArea(point, quad = [
-                            [35.862096, 139.269525],
-                            [35.859773, 139.266558],
-                            [35.858807, 139.269504],
-                            [35.860690, 139.271212]
+                            [35.860508, 139.267363],
+                            [35.862815, 139.270346],
+                            [35.861254, 139.272300],
+                            [35.859430, 139.268763],
                         ]) {
                         // 三角形内判定（バリセンター法）
                             function pointInTriangle(p, a, b, c) {
@@ -2885,68 +2884,123 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
                             // 四角形を2つの三角形に分けて判定
                             return pointInTriangle(point, quad[0], quad[1], quad[2]) || pointInTriangle(point, quad[0], quad[2], quad[3]);
                         }
-                        
-                        function latlonToXYZ(baseLat, baseLon){
-                            const lat = baseLat - baseLocation[0];
-                            const lon = baseLon - baseLocation[1];
-                            const M = [
-                                [866.69667299, 1236.85206018], // row for x
-                                [0.0, 0.0],                    // row for y
-                                [-2161.60126554, 20.85725703], // row for z
-                            ];
-                            const x = M[0][0]*lat + M[0][1]*lon;
-                            const y = M[1][0]*lat + M[1][1]*lon;
-                            const z = M[2][0]*lat + M[2][1]*lon;
-                            return { x, y, z };
+
+                        function rotatePointDeg(x, y, angleDeg, cx = 0, cy = 0) {
+                            const rad = angleDeg * Math.PI / 180;
+                            const c = Math.cos(rad);
+                            const s = Math.sin(rad);
+
+                            // 中心を原点に平行移動して回転、戻す
+                            const tx = x - cx;
+                            const ty = y - cy;
+                            const xr = tx * c - ty * s + cx;
+                            const yr = tx * s + ty * c + cy;
+                            return [xr, yr];
                         }
 
-                        geoWatchId = navigator.geolocation.watchPosition(
-                            (position) => {
-                                const latitude  = position.coords.latitude;
-                                const longitude = position.coords.longitude;
+                        function latlonToXYZ(baseLat, baseLon) {
+                            const rotated = rotatePointDeg(
+                                baseLocation[0] - baseLat,
+                                baseLocation[1] - baseLon,
+                                44
+                            );
+                            const lat = rotated[1] * -10000 / (rotated[1] > 0 ? 6.3 : 4.7);
+                            const lon = rotated[0] * -10000 / 6;
 
-                                console.log("Updated location:", latitude, longitude);
+                            console.log(
+                                
+                            );
 
-                                if (latitude && longitude) {
-                                    if (isPointInArea([
-                                        latitude, longitude
-                                    ])) {
+                            return {
+                                x: lon,
+                                y: 0,
+                                z: lat,
+                            };
+                        }
 
-                                        const pos = latlonToXYZ(latitude, longitude);
-                                        currentLocationPointMesh.position.set(
-                                            pos.x,
-                                            0,
-                                            pos.z,
-                                        );
-                                        currentLocationPointMesh.material.opacity = 1;
-                                        defaulText();
+                        if (false) { // debug = true
+                            const pos = latlonToXYZ(
+                                35.860346, 139.268930
+                            );
+                            currentLocationPointMesh.position.set(
+                                pos.x,
+                                pos.y,
+                                pos.z,
+                                // 0,
+                                // 0,
+                                // 1,
+                            );
+                            currentLocationPointMesh.material.opacity = 1;
+                        } else {
+                            geoWatchId = navigator.geolocation.watchPosition(
+                                (position) => {
+                                    const debug = [
+                                        35.860847, 139.269506
+                                    ];
+                                    // const latitude  = debug[0];
+                                    // const longitude = debug[1];
+                                    const latitude  = position.coords.latitude;
+                                    const longitude = position.coords.longitude;
+
+                                    if (latitude && longitude) {
+                                        if (isPointInArea([
+                                            latitude, longitude
+                                        ])) {
+                                            const pos = latlonToXYZ(latitude, longitude);
+                                            console.log(
+                                                "latlon : ", latitude + ", " + longitude,
+                                                "pos : ", pos
+                                            );
+                                            currentLocationPointMesh.position.set(
+                                                pos.x,
+                                                pos.y,
+                                                pos.z,
+                                            );
+                                            currentLocationPointMesh.material.opacity = 1;
+                                            defaulText();
+                                        } else {
+                                            cansel();
+                                            alertText(1);
+                                        }
                                     } else {
                                         cansel();
-                                        alertText(1);
+                                        alertText(0);
                                     }
-                                } else {
+                                }, (error) => {
                                     cansel();
                                     alertText(0);
+                                    console.log("Error getting location:", error);
+                                }, {
+                                    enableHighAccuracy: true,
+                                    timeout: 5000,
+                                    maximumAge: 0
                                 }
-                            }, (error) => {
-                                cansel();
-                                alertText(0);
-                                console.log("Error getting location:", error);
-                            }, {
-                                enableHighAccuracy: true,
-                                timeout: 5000,
-                                maximumAge: 0
-                            }
-                        );
+                            );
+                        }
                     } else {
                         cansel();
                     }
 
                     /* 
+                        [[0, 0, 0] , [35.860563, 139.269066]],
+                        [[1, 0, 0] , [35.860885, 139.268676]],
+                        [[-1, 0, 0], [35.860223, 139.269531]],
+                        [[0, 0, 1] , [35.860821, 139.269523]],
+                        [[0, 0, -1], [35.860181, 139.268701]],
+                        [[1, 0, 1], [35.861312, 139.268994]],
+                        [[1, 0, -1], [35.860616, 139.268268]],
+                        [[-1, 0, 1], [35.860484, 139.269955]],
+                        [[-1, 0, -1], [35.859870, 139.269138]],
+                        [[.5, 0, 0], [35.860700, 139.268877]],
+                        [[-.5, 0, 0], [35.860403, 139.269322]],
+                        [[0, 0, .5], [35.860716, 139.269328]],
+                        [[0, 0, -.5], [35.860381, 139.268893]],
                     
+                        ___
+
                         0, 0,  0 : 35.860550, 139.269142
                         1, 0,  0 : 35.860467, 139.269696
-                    -1, 0,  0 : 35.860490, 139.268412
+                       -1, 0,  0 : 35.860490, 139.268412
 
                         0, 0,  1 : 35.860096, 139.269190
                         0, 0, -1 : 35.860991, 139.269053
@@ -2955,16 +3009,16 @@ const getSearchValue = () => searchAreaEl.classList.contains("opened") ? newSear
 
                         0, 0,  0 :  0,         0
                         1, 0,  0 : -0.000083,  0.000554
-                    -1, 0,  0 : -0.00006,  -0.00073
+                       -1, 0,  0 : -0.00006,  -0.00073
 
                         0, 0,  1 : -0.000454,  0.000048
                         0, 0, -1 :  0.000441, -0.000641
 
                     敷地内 :
-                        35.862096, 139.269525
-                        35.859773, 139.266558
-                        35.858807, 139.269504
-                        35.860690, 139.271212
+                        35.860508, 139.267363
+                        35.862815, 139.270346
+                        35.861254, 139.272300
+                        35.859430, 139.268763
                     */
                 });
             } else {
