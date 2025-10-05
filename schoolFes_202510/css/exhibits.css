@@ -5,7 +5,7 @@
     /* display: flex;
     justify-content: center;
     flex-direction: column; */
-    margin-top: var(--sagestsHeight);
+    /* margin-top: var(--sagestsHeight); */
     transition: margin-top .5s ease-in-out;
     min-height: 100vh;
 }
@@ -109,14 +109,14 @@
     );
 }
 
-.content.main .exhibits .tile .description {
+.content.main .exhibits .tile > .description {
     top: 15px;
     position: relative;
     display: block;
     width: calc(100% - var(--padding) * 2);
     padding: var(--padding);
 }
-.content.main .exhibits .tile .location {
+.content.main .exhibits .tile > .location {
     position: absolute;
     right: 10px;
     top: 10px;
@@ -538,6 +538,7 @@
     pointer-events: auto;
 }
 .content.main .searchArea .sagests > div {
+    pointer-events: none;
     position: relative;
     left: 20px;
     width: calc(100% - 20px);
@@ -714,13 +715,10 @@
     top: 0;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea {
-    pointer-events: none;
+    /* pointer-events: none; */
     height: calc(100% + var(--topMargin));
     width: 100%;
     overflow: hidden;
-}
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations .location{
-    right: auto;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.addTransition {
     transition:
@@ -758,7 +756,7 @@
     --currentLocationColor: rgb(220, 80, 110);
     background-color: var(--currentLocationColor);
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
+/* .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
     opacity: var(--labelOpacity);
     position: absolute;
     color: white;
@@ -769,28 +767,8 @@
     user-select: none;
     padding: 0;
     border-radius: .5em;
-    /* z-index: calc(
-        10000 - (var(--camDistance) * 10)
-    ); */
-    /* font-size: (max(.05vw, .11vh) * .1); */
-    /* --fontSize: min(calc(
-        (
-            10000 - (var(--camDistance) * 10)
-        ) * .000075em
-    ), max(1vw, 1.5vh)); */
-    --fontSize: calc(
-        max(
-            .2em,
-            .2vw
-        ) * (var(--camZoom) + 0.5)
-    );
+    --fontSize: calc(var(--camZoom) * .2em);
     font-size: var(--fontSize);
-    /* font-size: max(min(
-        calc(
-            min(max(max(.6vw, .6vh), .2em), .65em) * var(--camZoom)
-        ),
-        1em
-    ), 0em); */
     --labelMinScale: .4em;
     width:  max(min(var(--width), 5.2em), var(--labelMinScale));
     height: max(var(--height), var(--labelMinScale));
@@ -802,14 +780,104 @@
     opacity          var(--transitionDuration) ease-out,
     color            var(--transitionDuration) ease-out,
     background-color var(--transitionDuration) ease-out;
-    /* top : var(--topPx);
-    left: var(--leftPx); */
-    /* transform: translate3d(
-        var(--leftPx),
-        var(--topPx),
-        0
-    ); */
+} */
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel {
+    position: relative;
+    --fontSize: calc(var(--camZoom) * .3em);
+    font-size: var(--fontSize);
+    height: calc(
+        var(--fontSize) * 3
+    );
+    width: auto;
+    max-width: min(
+        70vw,
+        calc(100px * var(--camZoom))
+    );
+    border-radius: calc(
+        2px
+    );
+    --labelBackgroundColor: lightgray;
+    background-color: transparent;
+    padding: 0;
+    overflow: visible;
+    --labelPadding: calc(
+        var(--camZoom) * 2px
+    );
+    padding: var(--labelPadding);
+    display: flex;
+    justify-content: center;
+    --transitionDuration: .5s;
+    transition:
+    opacity          var(--transitionDuration) ease-out,
+    color            var(--transitionDuration) ease-out,
+    background-color var(--transitionDuration) ease-out;
 }
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations {
+    position: relative;
+    height: min-content;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    --informationsRadius: calc(
+        var(--camZoom) * 5px
+    );
+    border-radius: var(--informationsRadius);
+    background-color: var(--labelBackgroundColor);
+    /* var(--fontSize) * 2.75 */
+    --topTranslate: calc(
+        10px * var(--camZoom)
+    );
+    transform: translateY(calc(
+        var(--fontSize) / (var(--numOfEl) / 4) + var(--topTranslate)
+    ));
+    transform-origin: 0% 0%;
+    gap: calc(
+        var(--camZoom) * 1px
+    );
+    padding: calc(
+        var(--camZoom) * 2px
+    );
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations > div {
+    position: relative;
+    width: auto;
+    height: min-content;
+    display: flex;
+    /* border-radius: calc(.5em - var(--labelPadding)); */
+    border-radius: calc(
+        (var(--informationsRadius) - var(--labelPadding)) * .75
+    );
+    padding: var(--labelPadding);
+    background-color: rgb(191, 191, 191);
+    backdrop-filter: blur(10px);
+    --webkit-backdrop-filter: blur(10px);
+    margin: 0;
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations > .detail {
+    pointer-events: auto;
+    /* cursor: pointer; */
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations > .detail .arrow {
+    opacity: 1;
+    position: relative;
+    --arrowScale: calc(
+        var(--camZoom) * 6px
+    );
+    left: calc(
+        100% - var(--arrowScale)
+    );
+    margin-top: calc(var(--arrowScale) * .2);
+    margin-bottom: calc(var(--arrowScale) * .2);
+    height: var(--arrowScale);
+    height: var(--arrowScale);
+    transform: translateX(-10%) rotate(225deg);
+}
+.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations > .detail .arrow path {
+    stroke-width: 100;
+}
+
 @keyframes label_edgeAnim {
     from {
         transform: translate(0px, 0px) rotate(0deg);
@@ -958,24 +1026,6 @@
     height: .1em;
     background-color: gray;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel:not(.opened) {
-    padding: 2px;
-}
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened {
-    --labelPadding: 8px;
-    padding: var(--labelPadding);
-    border-radius: calc(var(--labelPadding) * 2);
-    width:  var(--width);
-    font-size: calc(var(--fontSize) * 1.25);
-    height: calc(var(--height) - var(--labelPadding));
-    margin-top: calc(var(--height) * -.1);
-    z-index: 10001 !important;
-    box-shadow: 0 0 10px gray;
-    backdrop-filter: blur(10px);
-    color: white;
-    opacity: 1;
-    --webkit-backdrop-filter: blur(10px);
-}
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel::after {
     content: "";
     position: absolute;
@@ -997,11 +1047,7 @@
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened::after {
     background: transparent;
 }
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened .informations {
-    pointer-events: auto;
-}
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations {
-    pointer-events: none;
+/* .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations {
     position: relative;
     width: max-content;
     height: max-content;
@@ -1016,15 +1062,11 @@
     opacity .5s ease-out,
     margin  .5s ease-out
     !important;
-}
+} */
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .informations img {
     position: relative;
     width : 100%;
     height: 100%;
-    border-radius: 10px;
-    top: 5px;
-    margin-bottom: 5px;
-    max-width: 15em;
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .title {
     position: relative;
@@ -1066,22 +1108,6 @@
 }
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened > div.title {
     margin-bottom: 10px;
-}
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel.opened > div.informations {
-    pointer-events: auto;
-    opacity: 1;
-}
-
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > div.informations {
-    pointer-events: none;
-    left: 0;
-    text-align: left;
-    opacity: 0;
-}
-.content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel > div.informations .location {
-    position: relative;
-    margin-bottom: 15px;
-    top: 0;
 }
 
 .content.main .exhibits .tile .content .mapsView .labelsArea .mapsLabel .emphasis {

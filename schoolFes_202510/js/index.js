@@ -232,7 +232,7 @@ setInterval(dateUpdate, 10000);
             pageRestored = true;
         }, 100);
 
-        let isPageShowNow = false;;
+        let isPageShowNow = false;
 
         (() => {
             let touchStartScrollY;
@@ -261,13 +261,15 @@ setInterval(dateUpdate, 10000);
                 if (!touchStartScrollY) touchStartScrollY = window.scrollY;
             });
 
+            let scrollEnded = false;
             function scrollEnd () {
-                if (isPageShowNow) {
+                if (isPageShowNow && !scrollEnded) {
                     window.scrollTo({
                         top: getScrollYFromRatio(
                             pagesArea.scrollLeft / (pagesArea.scrollWidth - getPageWidth()),
                         )
                     });
+                    scrollEnded = true;
                 }
             }
 
@@ -277,7 +279,9 @@ setInterval(dateUpdate, 10000);
                 if (!scrollCheckInterval) {
                     scrollCheckInterval = setInterval(() => {
                         const isScrollNow = lastScrollLeft !== pagesArea.scrollLeft;
-                        if (!isScrollNow) {
+                        if (isScrollNow) {
+                            scrollEnded = false;
+                        } else {
                             scrollEnd();
                         }
                         lastScrollLeft = pagesArea.scrollLeft;
@@ -363,7 +367,9 @@ setInterval(dateUpdate, 10000);
                 currentIndex < pageContents.length
             )
 
+            const pageButtonsEl = pagesArea.querySelector(".buttons");
             if (isPageShowNow) {
+                pageButtonsEl.style.transition = "opacity .5s ease-in-out";
                 pagesArea.classList.add("showNow");
                 if (pageRestored) {
                     queryParameter({
