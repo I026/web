@@ -156,9 +156,6 @@ const maps_locations = {
         name: "現在地",
         description: "おおよその現在地",
         isEdgeShow: true,
-        offset: {
-            y: .1,
-        },
     },
 
     F1_Entrance_Arch: {
@@ -2111,7 +2108,7 @@ function removeAllLabel () {
                         const ctx = canvas.getContext("2d");
                         const scaleFactor = Math.max(Math.min(window.innerWidth / 1250, 2), .5);
 
-                        function drawLabelText () {
+                        function drawLabelText (backgroundColor = "rgba(45, 45, 45, 0.8)") {
                             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                             const text = maps_locations[partName]?.name || "";
@@ -2124,7 +2121,7 @@ function removeAllLabel () {
                             const textBoxMargin = scaleFactor * 80;
 
                             // 背景（角丸）
-                            ctx.fillStyle = "rgba(45, 45, 45, 0.8)";
+                            ctx.fillStyle = backgroundColor;
 
                             function roundRect(ctx, x, y, width, height, radius) {
                                 if (typeof radius === "number") {
@@ -2167,11 +2164,12 @@ function removeAllLabel () {
                             width: newWidth,
                             height: newHeight,
                             sprite: sprite,
+                            backgroundColor: backgroundColor
                         }) {
                             canvas.width = 512 * scaleFactor * newWidth;
                             canvas.height = 512 * scaleFactor * newHeight;
                             ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            drawLabelText(); // ← 背景と文字を再描画
+                            drawLabelText(backgroundColor); // ← 背景と文字を再描画
                             if (sprite && sprite.material.map instanceof THREE.CanvasTexture) {   
                                 sprite.material.map.needsUpdate = true;
                             }
@@ -2215,10 +2213,12 @@ function removeAllLabel () {
                                     baseScale,
                                 ];
                             }
+
                             resizeLabelCanvas({
                                 width: width || 1,
                                 height: height || 1,
-                                sprite: sprite
+                                sprite: sprite,
+                                backgroundColor: part === currentLocationPointMesh ? "rgba(220, 45, 80, .8)" : undefined,
                             });
 
                             sprite.transparent = true;
@@ -3079,36 +3079,108 @@ function removeAllLabel () {
                         }
 
                         function latlonToXYZ(baseLat, baseLon) {
-                            const rotated = rotatePointDeg(
-                                baseLocation[0] - baseLat,
-                                baseLocation[1] - baseLon,
-                                44
-                            );
-                            const lat = rotated[1] * -10000 / (rotated[1] > 0 ? 6.3 : 4.7);
-                            const lon = rotated[0] * -10000 / 6;
+                            {
+                                const rotated = rotatePointDeg(
+                                    baseLocation[0] - baseLat,
+                                    baseLocation[1] - baseLon,
+                                    44
+                                );
+                                const formated = [
+                                    rotated[0] * -10000,
+                                    rotated[1] * -10000,
+                                ];
 
-                            console.log(
+                                let latRatio = .18;
+                                if (formated[1] > 0) latRatio = .13;
+                                if (formated[1] < -6.5) latRatio = .16;
+                                                            
+                                let lonRatio = .07;
+                                if (formated[0] > 2.2) lonRatio = .14;
+                                if (formated[0] < -2.2) lonRatio = .2;
+
+                                console.log(
+                                    formated[0] + " * " + lonRatio + "\n",
+                                    formated[1] + " * " + latRatio,
+                                );
                                 
-                            );
+                                const lat = formated[1] * latRatio;
+                                const lon = formated[0] * lonRatio;
 
-                            return {
-                                x: lon,
-                                y: 0,
-                                z: lat,
-                            };
+                                return {
+                                    x: lon,
+                                    y: 0,
+                                    z: lat,
+                                };
+                            }
+
+                            {
+                                return;
+                                const mapping = [
+                                    [[0, 0, 0],  [35.860563, 139.269066]],
+                                    [[1, 0, 0],  [35.860885, 139.268676]],
+                                    [[-1, 0, 0], [35.860223, 139.269531]],
+                                    [[0, 0, 1],  [35.860821, 139.269523]],
+                                    [[0, 0, -1], [35.860181, 139.268701]],
+                                ];
+
+                                const avgLat = mapping.reduce((sum, m) => sum + m[1][0], 0) / mapping.length;
+                                const avgLon = mapping.reduce((sum, m) => sum + m[1][1], 0) / mapping.length;
+
+                                const avgX = mapping.reduce((sum, m) => sum + m[0][0], 0) / mapping.length;
+                                const avgZ = mapping.reduce((sum, m) => sum + m[0][2], 0) / mapping.length;
+
+                                // Δ値を配列化
+                                const deltas = mapping.map(([xyz, latlon]) => ({
+                                    dx: xyz[0] - avgX,
+                                    dz: xyz[2] - avgZ,
+                                    dLat: (latlon[0] - avgLat),
+                                    dLon: (latlon[1] - avgLon),
+                                }));
+
+                                // 緯度と経度の変化に対する3D上のスケールを推定（単純な線形近似）
+                                const latToZ = deltas.reduce((sum, d) => sum + d.dz / d.dLat, 0) / deltas.length;
+                                const lonToX = deltas.reduce((sum, d) => sum + d.dx / d.dLon, 0) / deltas.length;
+
+                                // 入力緯度経度 → Δ換算
+                                const dLat = baseLat - avgLat;
+                                const dLon = baseLon - avgLon;
+
+                                // 座標を算出
+                                const x = avgX + dLon * lonToX;
+                                const y = 0;
+                                const z = avgZ + dLat * latToZ;
+
+                                return { x, y, z };
+                            }
                         }
 
-                        if (false) { // debug = true
-                            const pos = latlonToXYZ(
-                                35.860346, 139.268930
+                        function updateMeshPos ( mesh, x, y, z ) {
+                            const offset = maps_locations[mesh.name]?.offset;
+                            mesh.position.set(
+                                x,
+                                y,
+                                z,
                             );
-                            currentLocationPointMesh.position.set(
+                            mesh.updateMatrixWorld();
+                            const labelObj = maps_labels[mesh.name].object;
+                            labelObj.position.copy(mesh.getWorldPosition(new THREE.Vector3()));
+                            labelObj.position.x += offset?.x || 0;
+                            labelObj.position.y += offset?.y || 0;
+                            labelObj.position.z += offset?.z || 0;
+                        }
+
+                        if (true) { // debug = true
+                            const pos = latlonToXYZ(
+                                35.860700, 139.268795
+                            );
+                            updateMeshPos(
+                                currentLocationPointMesh,
                                 pos.x,
                                 pos.y,
                                 pos.z,
                                 // 0,
                                 // 0,
-                                // 1,
+                                // 0,
                             );
                             currentLocationPointMesh.material.opacity = 1;
                         } else {
@@ -3131,7 +3203,8 @@ function removeAllLabel () {
                                                 "latlon : ", latitude + ", " + longitude,
                                                 "pos : ", pos
                                             );
-                                            currentLocationPointMesh.position.set(
+                                            updateMeshPos(
+                                                currentLocationPointMesh,
                                                 pos.x,
                                                 pos.y,
                                                 pos.z,
