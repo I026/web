@@ -3169,7 +3169,7 @@ function removeAllLabel () {
                             labelObj.position.z += offset?.z || 0;
                         }
 
-                        if (true) { // debug = true
+                        if (false) { // debug = true
                             const pos = latlonToXYZ(
                                 35.860700, 139.268795
                             );

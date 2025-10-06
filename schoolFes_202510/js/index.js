@@ -263,12 +263,17 @@ setInterval(dateUpdate, 10000);
 
             let scrollEnded = false;
             function scrollEnd () {
-                if (isPageShowNow && !scrollEnded) {
-                    window.scrollTo({
-                        top: getScrollYFromRatio(
-                            pagesArea.scrollLeft / (pagesArea.scrollWidth - getPageWidth()),
-                        )
-                    });
+                if (
+                    isPageShowNow && !scrollEnded
+                ) {
+                    const leftRatio = pagesArea.scrollLeft / (pagesArea.scrollWidth - getPageWidth());
+                    if (leftRatio >= 0) {
+                        window.scrollTo({
+                            top: getScrollYFromRatio(
+                                leftRatio,
+                            )
+                        });
+                    }
                     scrollEnded = true;
                 }
             }
@@ -362,10 +367,12 @@ setInterval(dateUpdate, 10000);
             }
 
             isPageShowNow = (
-                scrollY >= window.innerHeight - 20
+                scrollY >= (window.innerHeight * .75) - 20
             ) && (
                 currentIndex < pageContents.length
-            )
+            );
+
+            pagesArea.style.pointerEvents = isPageShowNow ? "auto" : "none";
 
             const pageButtonsEl = pagesArea.querySelector(".buttons");
             if (isPageShowNow) {
