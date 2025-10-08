@@ -129,6 +129,7 @@ const maps_locationNames = {
     Entrance: "入口",
     Woodworking: `${maps_words.Subjects.Woodworking}${maps_words.Room}`,
     Dining: "食堂",
+    Secretariat: "事務局",
     Gym: `${maps_words.Subjects.PhysicalEdu}館`,
     Art: `${maps_words.Subjects.Art}棟`,
     Multipurpose: "多目的ホール",
@@ -194,6 +195,11 @@ const maps_locations = {
     F1_J_WC: {
         location: {
             name: `${getClassName("J", 1, 3)}${maps_words.NextTo}`,
+        }
+    },
+    F1_CurveRoom_WC: {
+        location: {
+            name: `${maps_locationNames.Secretariat}${maps_words.Infront}`,
         }
     },
     F2_J_WC: {
@@ -1169,8 +1175,12 @@ function updateSort (searchWord = getSearchValue()) {
 
     (() => {
         const sortDisplay = mainContent.querySelector(".sortDisplay");
-        sortDisplay.innerHTML = "";
-        [getSearchValue(), ...conditions].forEach((condition, i, arr) => {
+        const conditionsArea = sortDisplay.querySelector(".conditions");
+        const numOfHitsArea = sortDisplay.querySelector(".numOfHits");
+
+        conditionsArea.innerHTML = "";
+        [getSearchValue() || null, ...conditions].forEach((condition, i, arr) => {
+            if (!condition) return;
             const newDisplayEl = d.createElement("div");
             newDisplayEl.className = "display";
             newDisplayEl.textContent = tagOrder[condition] ? tagOrder[condition]?.displayName : (() => {
@@ -1182,14 +1192,16 @@ function updateSort (searchWord = getSearchValue()) {
                 }
             })();
             newDisplayEl.style.backgroundColor = tagOrder[condition]?.themeColor;
-            sortDisplay.appendChild(newDisplayEl);
+            conditionsArea.appendChild(newDisplayEl);
             
             const newAndEl = d.createElement("div");
             newAndEl.className = "and";
             newAndEl.textContent = (arr.length >= 1) && (i !== arr.length - 1) && (newDisplayEl.textContent !== "") ? "かつ" : "";
-            sortDisplay.appendChild(newAndEl);
+            conditionsArea.appendChild(newAndEl);
 
         });
+
+        numOfHitsArea.innerHTML = `<span>${targetExhibits.length}</span> / <span>${Object.keys(exhibits).length}</span> <span class="subText">件が該当</span>`;
     })();
 
     return {

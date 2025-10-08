@@ -407,21 +407,35 @@
     display: none;
 }
 .content.main .sortDisplay {
-    min-height: 2em;
+    padding: 10px;
     transition: width .5s ease-in-out;
 }
 .content.main .sortDisplay > div {
-    display: inline-block;
+    position: relative;
+    min-height: 2em;
 }
-.content.main .sortDisplay > div.display {
-    color: white;
-    padding: 1px;
-    border-radius: 5px;
-    padding-left : 3px;
-    padding-right: 3px;
+.content.main .sortDisplay .conditions > div {
+    display: inline-block;
+    margin-bottom: .8em;
+}
+.content.main .sortDisplay .numOfHits {
     font-size: .8em;
 }
-.content.main .sortDisplay > div.and {
+.content.main .sortDisplay .numOfHits > span:not(.subText) {
+    position: relative;
+    display: inline-block;
+    min-width: 1em;
+    text-align: right;
+}
+.content.main .sortDisplay .conditions > div.display {
+    color: white;
+    padding: 1px;
+    padding-left : 3px;
+    padding-right: 3px;
+    border-radius: 5px;
+    font-size: .8em;
+}
+.content.main .sortDisplay .conditions > div.and {
     font-size: .5em;
     margin-left: .5em;
     margin-right: .5em;
@@ -1251,7 +1265,7 @@
     align-items: flex-end;
     text-align: center;
     background-color: white;
-    --maxBorderRadius: .75em;
+    --maxBorderRadius: 1em;
     max-height: var(--buttonsHeight);
     min-height: var(--buttonsHeight);
     overflow: hidden;
