@@ -1,0 +1,1 @@
+window.location.href = `https://26i0.github.io/web/schoolFes_202510/${window.location.pathname.split("/").pop().split(".")[0]}`;
