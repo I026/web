@@ -234,6 +234,34 @@ setInterval(dateUpdate, 10000);
 
         let isPageShowNow = false;
 
+        let scrollEnded = false;
+        function scrollEnd () {
+            if (
+                isPageShowNow && !scrollEnded
+            ) {
+                const leftRatio = pagesArea.scrollLeft / (pagesArea.scrollWidth - getPageWidth());
+                if (leftRatio >= 0) {
+                    const topPx = getScrollYFromRatio(
+                        leftRatio,
+                    );
+                    window.scrollTo({
+                        top: topPx
+                    });
+                }
+                scrollEnded = true;
+            }
+        }
+        let lastScrollLeft;
+        function scrollCheck () {
+            const isScrollNow = lastScrollLeft !== pagesArea.scrollLeft;
+            if (isScrollNow) {
+                scrollEnded = false;
+            } else {
+                scrollEnd();
+            }
+            lastScrollLeft = pagesArea.scrollLeft;
+        }
+
         (() => {
             let touchStartScrollY;
             let touchStartPos = [];
@@ -261,38 +289,7 @@ setInterval(dateUpdate, 10000);
                 if (!touchStartScrollY) touchStartScrollY = window.scrollY;
             });
 
-            let scrollEnded = false;
-            function scrollEnd () {
-                if (
-                    isPageShowNow && !scrollEnded
-                ) {
-                    const leftRatio = pagesArea.scrollLeft / (pagesArea.scrollWidth - getPageWidth());
-                    if (leftRatio >= 0) {
-                        window.scrollTo({
-                            top: getScrollYFromRatio(
-                                leftRatio,
-                            )
-                        });
-                    }
-                    scrollEnded = true;
-                }
-            }
-
-            let lastScrollLeft;
-            let scrollCheckInterval;
-            pagesArea.addEventListener("scroll", () => {
-                if (!scrollCheckInterval) {
-                    scrollCheckInterval = setInterval(() => {
-                        const isScrollNow = lastScrollLeft !== pagesArea.scrollLeft;
-                        if (isScrollNow) {
-                            scrollEnded = false;
-                        } else {
-                            if (pagesArea.scrollLeft !== 0) scrollEnd();
-                        }
-                        lastScrollLeft = pagesArea.scrollLeft;
-                    }, 100);
-                }
-            });
+            setInterval(scrollCheck, 100);
 
             pagesArea.addEventListener("touchend", () => {
                 const difX = difference?.[0];
@@ -394,6 +391,8 @@ setInterval(dateUpdate, 10000);
                     });
                 }
             }
+
+            if (scrollLeftPx <= 0) scrollCheck();
         }
         window.addEventListener("scroll", windowScroll);
         windowScroll();
