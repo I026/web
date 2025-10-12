@@ -396,7 +396,7 @@
     ); */
     height: 100%;
     scroll-snap-type: x mandatory;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: visible;
     display: flex;
     flex-direction: row;
@@ -1208,6 +1208,9 @@
 .content.main .exhibits .tile .content .buttons.right {
     right: 5px;
     justify-content: flex-start;
+}
+.content.main .exhibits .tile .content .buttons.right,
+.content.main .exhibits .tile .content .buttons.left .invalid {
     font-weight: 200;
 }
 .content.main .exhibits .tile .content .buttons.right .opened span {

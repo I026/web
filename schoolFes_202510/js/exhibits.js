@@ -37,7 +37,7 @@ const exhibits = {
         ],
     },
     J2_1: {
-        name: "8番出口",
+        name: "3番出口",
         description: "地下鉄の改札を出て白い地下通路を歩いていく。天井には【出口8】の看板。しかしいつまでも出口に辿り着くことができない。",
         tag: [
             "byClass",
@@ -1462,13 +1462,21 @@ function pushLabel (targetName) {
 
     label.style.setProperty("--numOfEl", generateEls.length);
 
-    setTimeout(() => {
-        maps_frameObject({
-            target: maps_modelParts[targetName],
-            offsetZ: Math.max(informations.offsetHeight * -.002, -.3),
-        });
-        updateLabelOpacity();
-    }, 50);
+    (() => {
+        function onload () {
+            maps_frameObject({
+                target: maps_modelParts[targetName],
+                offsetZ: Math.max(informations.offsetHeight * -.002, -.3),
+            });
+            updateLabelOpacity();
+        }
+        const img = generateEls.filter(item => item?.className.includes("image"))[0]?.querySelector("img");
+        if (img) {
+            img.onload = onload;
+        } else {
+            onload();
+        }
+    })();
 
 }
 function removeLabel(meshName) {
@@ -2533,9 +2541,11 @@ function removeAllLabel () {
 
                     // 描画ループ
                     let lastAnimUpdateAt;
-                    function animate() {
+                    function animate () {
                         requestAnimationFrame(animate);
-                        if ((Date.now() - lastAnimUpdateAt > labelAnimUpdateThresholdMs) || !lastAnimUpdateAt) {
+                        if (
+                            ((Date.now() - lastAnimUpdateAt > labelAnimUpdateThresholdMs) || !lastAnimUpdateAt) && !d.hidden
+                        ) {
                             maps_renderer.render(scene, maps_camera);
                             maps_labelRenderer.render(scene, maps_camera);
                             maps_controls.update();
