@@ -287,7 +287,7 @@ setInterval(dateUpdate, 10000);
                         if (isScrollNow) {
                             scrollEnded = false;
                         } else {
-                            scrollEnd();
+                            if (pagesArea.scrollLeft !== 0) scrollEnd();
                         }
                         lastScrollLeft = pagesArea.scrollLeft;
                     }, 100);
